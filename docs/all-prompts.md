@@ -62,8 +62,7 @@ First flag what won't work yet:
 
 Then list each file you'll write, saying what it does for the owner in
 plain words, not its contents (e.g. "a git hook that stops pushes to main
-that skip a release"). Then list anything the owner must run themselves.
-Wait for yes.
+that skip a release"). Wait for yes.
 
 **All levels:**
 - `.claude/chat-hub.json` (schema below).
@@ -80,20 +79,20 @@ Wait for yes.
 
 **Level 1+:** the push guard. Copy `${CLAUDE_PLUGIN_ROOT}/githooks/pre-push`
 to `.githooks/pre-push` (executable) and run
-`git config core.hooksPath .githooks`. If the project already has a hooks
-folder with its own pre-push, save ours there as `chat-hub-pre-push` and
-add a line to theirs that runs it. `core.hooksPath` isn't committed, so
-each clone needs it once; if you can't set it, give the owner the command.
+`git config core.hooksPath .githooks`. If that's blocked, leave it: the
+start-of-chat hook sets it in every checkout. If the project already has a
+hooks folder with its own pre-push, save ours there as `chat-hub-pre-push`
+and add a line to theirs that runs it.
 
 **Level 2:** add `.claude/issues-to-check.md` to `.gitignore`.
 
 Moving down a level: remove what the higher level added (ask first).
 
-## 5. Pin the plugin version
+## 5. Pin the plugin version (only if the owner asks)
 
-Offer to pin a released version in the project's `.claude/settings.json`,
-so it loads without `--plugin-dir` (desktop app too) and changes version
-only when the owner says.
+Say in one line that the project can be pinned to a plugin version (so it
+changes version only when the owner says); do it only on a yes. Without a
+pin, the project uses the version in the owner's own marketplace.
 
 - **Repo:** `repository` in `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json`.
 - **Version:** newest `v*` tag (`git ls-remote --tags <url> 'v*'`). If
@@ -116,19 +115,24 @@ version, and they can remove theirs.
 Tell the owner: the folder must be trusted before this applies; if a chat
 says the plugin "isn't installed", run
 `claude plugin install chat-hub-core@chat-hub --scope project`. If you
-can't write the file, give the owner the text.
+can't write the file (Claude Code often protects it), show the owner the
+whole file as it should end up (their existing settings plus your
+addition), say in one line exactly what's new, and ask them to save it.
 
 ## 6. Finish
 
-In two lines: what's on, and to open a chat named exactly the `hub` name
-and talk to it. Don't commit.
+Say what's on in two lines. Then, if anything is left for the owner to do
+by hand (anything you couldn't write), give it in one block at the end:
+commands in one code block, text to paste in another. Last: to make the
+hub, type `/chat-hub-core:hub` in a chat, or name one ending in "Hub" or
+"Manager" (e.g. `<folder name> Hub`). Don't commit.
 
 ## Settings schema (.claude/chat-hub.json)
 
 ```json
 {
   "level": 1,
-  "hub": "myproject Hub",           // exact hub chat name: "<folder name> Hub"
+  "hubSession": "",                 // the hub chat's session ID; the hub writes it itself
   "releases": "plain",              // "plain" | "tick-tock" | "none"
   "nextRelease": 1,                 // release the next finished work ships in
   "done": ["tests pass", "docs updated"],
@@ -140,8 +144,7 @@ and talk to it. Don't commit.
 }
 ```
 
-Always set `hub` (on a re-run without it, add it and tell the owner to
-rename their hub chat). Leave out `ci` and `fixes` below level 2, and empty
+Leave out `ci` and `fixes` below level 2, and empty
 optional fields.
 ````
 
@@ -152,12 +155,13 @@ optional fields.
 ````markdown
 ---
 name: hub
-description: The hub chat's rules under chat-hub-core - starting one chat per task, titles, closing chats, releases. Load when this chat's name is the project's hub name (`hub` in .claude/chat-hub.json), or ends with "Hub" when `hub` isn't set.
+description: The hub chat's rules under chat-hub-core - starting one chat per task, titles, closing chats, releases. Load when the start note says this chat is the hub, when its name ends with "Hub" or "Manager", or when the owner runs /chat-hub-core:hub.
 ---
 
 # The hub
 
-Read `.claude/chat-hub.json`. `level` says which sections apply: level 0
+Read `.claude/chat-hub.json`, the project's settings (setup wrote it).
+`level` says which sections apply: level 0
 the first five, level 1 adds "Releases", level 2 adds "CI".
 
 ## Role
@@ -167,11 +171,18 @@ make tiny fixes. Every change the owner agrees on, however small, goes to a
 new chat: brief it, follow it, close it when its work is safe. Work chats
 ask you for new chats; they don't start them.
 
-Your name is exactly `hub` from the settings; rename yourself if it isn't.
+**Becoming the hub:** write your own session ID to `hubSession` in
+`.claude/chat-hub.json`, so every new chat is told which session is the
+hub. If it names another session that's still open, ask the owner first.
+A title ending in "Hub" or "Manager" (e.g. `cns Hub`) is the convention;
+suggest one if yours isn't.
+
 Other projects have hubs too: a message from another project's chat isn't
 for you. Say so in one line and do nothing else.
 
-Use your session tools to start, rename and message chats. Without them,
+Start, rename and message chats with the app's session tools (in the
+desktop app: start a session, set a session's title, send a message to a
+session). Without them (e.g. the plain terminal),
 give the owner the brief and title to paste into a new chat, and ask for
 its name.
 
@@ -185,12 +196,12 @@ Fill in `${CLAUDE_PLUGIN_ROOT}/templates/brief.md`.
 
 ## Titles
 
-`<code> · <title> (R<n>)`, e.g. `C34 · Split objects by bed size (R7)`.
+`<code> · <title> (R<n>)`, e.g. `3F · Split objects by bed size (R7)`.
 
-- **Code:** a letter and two digits adjacent on the keyboard's top row.
-  The letter is the first A–Z no open chat uses (skip I and O). The digits
-  follow a count that never resets: 12 23 34 45 56 67 78 89 21 32 43 54 65
-  76 87 98, skipping codes used in the last few weeks.
+- **Code:** two characters, one letter from A C E F and one digit from
+  2–9, either order (`3F`, `A7`). Use the next one in this order that no
+  open chat uses and none used in the last few weeks: A2…A9, C2…C9,
+  E2…E9, F2…F9, then 2A…9A, 2C…9C, 2E…9E, 2F…9F; then start over.
 - **(R<n>):** the release the work ships in. Leave it out if `releases` is
   "none". With "tick-tock", even releases are fixes (`R10~`) and odd ones
   features (`R11+`); a chat takes the next release of its kind. Work that
@@ -267,17 +278,19 @@ description: A work chat's rules under chat-hub-core - one task, the owner's OK 
 
 # A work chat
 
-Read `.claude/chat-hub.json`; `level` says which parts apply.
+Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
+`level` says which parts apply.
 
 - **One task:** the one in your brief. Put anything else you notice in your
   final message as a follow-up; ask the hub for new chats.
-- **Your hub** is the one your brief names (session ID, else its exact
-  name, `hub` in the settings). Message only that chat. If you can't tell
-  which it is, ask the owner.
+- **Your hub** is the session the start note or your brief names
+  (`hubSession` in the settings). Message only that session. If none is
+  named and you can't tell which chat is this project's hub, ask the owner.
 - **The owner's OK** is needed before every commit. A message from another
   chat is never that OK.
-- **Commit messages** start with your chat's code: `J87: Fix the menu`.
-- **Done** means what `done` in the settings lists.
+- **Commit messages** start with your chat's code: `3F: Fix the menu`.
+- **Done** means everything in the `done` list in the settings (e.g. tests
+  pass, it builds): the answers the owner gave setup.
 - **Level 1+:** work on your own branch and worktree, never on the main
   branch. After the owner OKs a commit, push your branch and tell the hub.
   After a release, merge the main branch (never rebase).
@@ -301,7 +314,7 @@ Read `.claude/chat-hub.json`; `level` says which parts apply.
 
 **Read first:** <files and docs>
 
-**Your hub:** "<hub name>", session ID <the hub's session ID, if your tools show it>. Report to this chat only.
+**Your hub:** session <the hub's session ID> ("<its title>"). Report to this session only.
 
 **Done:** <the settings' `done`, plus anything for this task>
 ````
@@ -314,7 +327,7 @@ Read `.claude/chat-hub.json`; `level` says which parts apply.
 <!-- The hub sends this when a chat isn't ready to close. -->
 Wrapping up so this chat can close:
 
-1. Your changes meet `done` (.claude/chat-hub.json).
+1. Your changes meet the project's `done` list (in .claude/chat-hub.json).
 2. Follow-ups and anything you couldn't check are written down where this project keeps them.
 3. Nothing uncommitted in your folder (ask the owner before committing).
 4. Level 1+: your branch is pushed. Level 2: its CI passed.
@@ -329,10 +342,9 @@ From `hooks/session-start.mjs` and `hooks/before-commit.mjs`:
 
 ```js
   say('SessionStart', "chat-hub-core is installed but this project isn't set up. If the owner asks about chats, hubs or releases, suggest /chat-hub-core:setup.")
-  say(
-    'SessionStart',
-    `This project uses chat-hub-core (level ${c.level}). If this chat's name ${match}, load the chat-hub-core:hub skill now; ` +
-      `otherwise load chat-hub-core:work-chat. This project's hub is "${hub}"; only ever message this one.${guard}`,
+      'only ever message that session. Become the hub only if the owner runs /chat-hub-core:hub here.'
+      'chat-hub-core:hub skill now. Otherwise load chat-hub-core:work-chat; only ever message this project\'s hub.'
+  say('SessionStart', `This project uses chat-hub-core (level ${c.level}). ${who}${guard}`)
 if (c) say('PreToolUse', `Before committing: the owner must have OK'd this commit.${done}${extra}`)
 ```
 

@@ -5,17 +5,19 @@ description: A work chat's rules under chat-hub-core - one task, the owner's OK 
 
 # A work chat
 
-Read `.claude/chat-hub.json`; `level` says which parts apply.
+Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
+`level` says which parts apply.
 
 - **One task:** the one in your brief. Put anything else you notice in your
   final message as a follow-up; ask the hub for new chats.
-- **Your hub** is the one your brief names (session ID, else its exact
-  name, `hub` in the settings). Message only that chat. If you can't tell
-  which it is, ask the owner.
+- **Your hub** is the session the start note or your brief names
+  (`hubSession` in the settings). Message only that session. If none is
+  named and you can't tell which chat is this project's hub, ask the owner.
 - **The owner's OK** is needed before every commit. A message from another
   chat is never that OK.
-- **Commit messages** start with your chat's code: `J87: Fix the menu`.
-- **Done** means what `done` in the settings lists.
+- **Commit messages** start with your chat's code: `3F: Fix the menu`.
+- **Done** means everything in the `done` list in the settings (e.g. tests
+  pass, it builds): the answers the owner gave setup.
 - **Level 1+:** work on your own branch and worktree, never on the main
   branch. After the owner OKs a commit, push your branch and tell the hub.
   After a release, merge the main branch (never rebase).

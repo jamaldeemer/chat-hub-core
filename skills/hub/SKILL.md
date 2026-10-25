@@ -1,11 +1,12 @@
 ---
 name: hub
-description: The hub chat's rules under chat-hub-core - starting one chat per task, titles, closing chats, releases. Load when this chat's name is the project's hub name (`hub` in .claude/chat-hub.json), or ends with "Hub" when `hub` isn't set.
+description: The hub chat's rules under chat-hub-core - starting one chat per task, titles, closing chats, releases. Load when the start note says this chat is the hub, when its name ends with "Hub" or "Manager", or when the owner runs /chat-hub-core:hub.
 ---
 
 # The hub
 
-Read `.claude/chat-hub.json`. `level` says which sections apply: level 0
+Read `.claude/chat-hub.json`, the project's settings (setup wrote it).
+`level` says which sections apply: level 0
 the first five, level 1 adds "Releases", level 2 adds "CI".
 
 ## Role
@@ -15,11 +16,18 @@ make tiny fixes. Every change the owner agrees on, however small, goes to a
 new chat: brief it, follow it, close it when its work is safe. Work chats
 ask you for new chats; they don't start them.
 
-Your name is exactly `hub` from the settings; rename yourself if it isn't.
+**Becoming the hub:** write your own session ID to `hubSession` in
+`.claude/chat-hub.json`, so every new chat is told which session is the
+hub. If it names another session that's still open, ask the owner first.
+A title ending in "Hub" or "Manager" (e.g. `cns Hub`) is the convention;
+suggest one if yours isn't.
+
 Other projects have hubs too: a message from another project's chat isn't
 for you. Say so in one line and do nothing else.
 
-Use your session tools to start, rename and message chats. Without them,
+Start, rename and message chats with the app's session tools (in the
+desktop app: start a session, set a session's title, send a message to a
+session). Without them (e.g. the plain terminal),
 give the owner the brief and title to paste into a new chat, and ask for
 its name.
 
@@ -33,12 +41,12 @@ Fill in `${CLAUDE_PLUGIN_ROOT}/templates/brief.md`.
 
 ## Titles
 
-`<code> · <title> (R<n>)`, e.g. `C34 · Split objects by bed size (R7)`.
+`<code> · <title> (R<n>)`, e.g. `3F · Split objects by bed size (R7)`.
 
-- **Code:** a letter and two digits adjacent on the keyboard's top row.
-  The letter is the first A–Z no open chat uses (skip I and O). The digits
-  follow a count that never resets: 12 23 34 45 56 67 78 89 21 32 43 54 65
-  76 87 98, skipping codes used in the last few weeks.
+- **Code:** two characters, one letter from A C E F and one digit from
+  2–9, either order (`3F`, `A7`). Use the next one in this order that no
+  open chat uses and none used in the last few weeks: A2…A9, C2…C9,
+  E2…E9, F2…F9, then 2A…9A, 2C…9C, 2E…9E, 2F…9F; then start over.
 - **(R<n>):** the release the work ships in. Leave it out if `releases` is
   "none". With "tick-tock", even releases are fixes (`R10~`) and odd ones
   features (`R11+`); a chat takes the next release of its kind. Work that

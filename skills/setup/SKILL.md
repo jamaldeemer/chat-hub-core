@@ -53,8 +53,7 @@ First flag what won't work yet:
 
 Then list each file you'll write, saying what it does for the owner in
 plain words, not its contents (e.g. "a git hook that stops pushes to main
-that skip a release"). Then list anything the owner must run themselves.
-Wait for yes.
+that skip a release"). Wait for yes.
 
 **All levels:**
 - `.claude/chat-hub.json` (schema below).
@@ -71,20 +70,20 @@ Wait for yes.
 
 **Level 1+:** the push guard. Copy `${CLAUDE_PLUGIN_ROOT}/githooks/pre-push`
 to `.githooks/pre-push` (executable) and run
-`git config core.hooksPath .githooks`. If the project already has a hooks
-folder with its own pre-push, save ours there as `chat-hub-pre-push` and
-add a line to theirs that runs it. `core.hooksPath` isn't committed, so
-each clone needs it once; if you can't set it, give the owner the command.
+`git config core.hooksPath .githooks`. If that's blocked, leave it: the
+start-of-chat hook sets it in every checkout. If the project already has a
+hooks folder with its own pre-push, save ours there as `chat-hub-pre-push`
+and add a line to theirs that runs it.
 
 **Level 2:** add `.claude/issues-to-check.md` to `.gitignore`.
 
 Moving down a level: remove what the higher level added (ask first).
 
-## 5. Pin the plugin version
+## 5. Pin the plugin version (only if the owner asks)
 
-Offer to pin a released version in the project's `.claude/settings.json`,
-so it loads without `--plugin-dir` (desktop app too) and changes version
-only when the owner says.
+Say in one line that the project can be pinned to a plugin version (so it
+changes version only when the owner says); do it only on a yes. Without a
+pin, the project uses the version in the owner's own marketplace.
 
 - **Repo:** `repository` in `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json`.
 - **Version:** newest `v*` tag (`git ls-remote --tags <url> 'v*'`). If
@@ -107,19 +106,24 @@ version, and they can remove theirs.
 Tell the owner: the folder must be trusted before this applies; if a chat
 says the plugin "isn't installed", run
 `claude plugin install chat-hub-core@chat-hub --scope project`. If you
-can't write the file, give the owner the text.
+can't write the file (Claude Code often protects it), show the owner the
+whole file as it should end up (their existing settings plus your
+addition), say in one line exactly what's new, and ask them to save it.
 
 ## 6. Finish
 
-In two lines: what's on, and to open a chat named exactly the `hub` name
-and talk to it. Don't commit.
+Say what's on in two lines. Then, if anything is left for the owner to do
+by hand (anything you couldn't write), give it in one block at the end:
+commands in one code block, text to paste in another. Last: to make the
+hub, type `/chat-hub-core:hub` in a chat, or name one ending in "Hub" or
+"Manager" (e.g. `<folder name> Hub`). Don't commit.
 
 ## Settings schema (.claude/chat-hub.json)
 
 ```json
 {
   "level": 1,
-  "hub": "myproject Hub",           // exact hub chat name: "<folder name> Hub"
+  "hubSession": "",                 // the hub chat's session ID; the hub writes it itself
   "releases": "plain",              // "plain" | "tick-tock" | "none"
   "nextRelease": 1,                 // release the next finished work ships in
   "done": ["tests pass", "docs updated"],
@@ -131,6 +135,5 @@ and talk to it. Don't commit.
 }
 ```
 
-Always set `hub` (on a re-run without it, add it and tell the owner to
-rename their hub chat). Leave out `ci` and `fixes` below level 2, and empty
+Leave out `ci` and `fixes` below level 2, and empty
 optional fields.

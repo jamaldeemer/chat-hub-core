@@ -3,6 +3,6 @@
 
 **Read first:** <files and docs>
 
-**Your hub:** "<hub name>", session ID <the hub's session ID, if your tools show it>. Report to this chat only.
+**Your hub:** session <the hub's session ID> ("<its title>"). Report to this session only.
 
 **Done:** <the settings' `done`, plus anything for this task>

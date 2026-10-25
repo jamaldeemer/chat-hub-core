@@ -25,19 +25,67 @@ You need Claude Code (terminal or the desktop app's Code tab), git and Node.
 3. Open a new chat in the project (terminal or desktop app; trust the
    folder if asked) and type `/chat-hub-core:setup`. It asks a few
    questions, shows what it will write, and writes it when you say yes.
-4. Name one chat what setup says (`<project> Hub`) and talk to it.
+4. Make one chat the hub: type `/chat-hub-core:hub` in it, or give it a
+   name ending in "Hub" or "Manager" (e.g. `cns Hub`). It records its
+   session ID, so every other chat knows exactly which one it is. Then talk
+   to it.
 
-Run setup again to change level or move to a newer version. Commit the files
-it writes and anyone who clones the project gets the same setup (they only
-repeat steps 1–2).
+Setup writes only inside your project, and only after you say yes:
+
+- `.claude/chat-hub.json`: the settings.
+- `CLAUDE.md`: a short block between `<!-- chat-hub -->` markers.
+- `.claude/settings.json`: only if you ask to pin a plugin version.
+- Level 1+: `.githooks/pre-push`, the push guard. Each chat switches it on
+  in its checkout if needed (`core.hooksPath`, which git doesn't commit).
+- Level 2: one line in `.gitignore`.
+
+Commit them and anyone who clones the project gets the same setup (they
+only repeat steps 1–2). Run setup again to change level or move to a newer
+version.
 
 ## Levels
 
 | Level | Adds | Needs |
 |---|---|---|
-| 0 | Hub + one chat per task, codes in titles (`C34 · Title (R7)`), briefs, wrap-ups | nothing |
+| 0 | Hub + one chat per task, codes in titles (`3F · Title (R7)`), briefs, wrap-ups | nothing |
 | 1 | Each chat on its own branch; releases gather finished branches | git |
 | 2 | `main` only gets releases that passed CI and whose fixes you've checked | CI you can ask "did commit X pass?" |
+
+What happens to your code at each level:
+
+```
+LEVEL 0 · chats only (git optional)
+
+  you <-> hub --brief--> 3F chat  --commits, with your OK--> your project
+
+
+LEVEL 1 · + branches
+
+  3F chat  --+   each on its own branch + worktree
+  A7 chat  --+--push branch--> hub merges each finished branch into
+  ...      --+                 `release` (a preview) and runs your
+                               `done` checks (tests, build...)
+                                          |
+                     you say "release" and pick the branches
+                                          v
+                               `release` = main + those branches
+                                          |  you push it to main
+                                          v
+                                        main --> every open chat merges main
+
+
+LEVEL 2 · + CI and checks
+
+  chat pushes its branch ----> CI runs     (title shows "! " meanwhile)
+  you push `release` --------> CI runs on that exact commit
+                                          |
+                  CI passed, and you've tried every "Fixes #n" it ships
+                                          v
+                        you push that same commit to main
+
+  The pre-push hook refuses main if CI hasn't passed on that commit,
+  or a fix it ships is still listed in .claude/issues-to-check.md.
+```
 
 ## How it works
 

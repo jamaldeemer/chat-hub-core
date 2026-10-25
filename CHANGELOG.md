@@ -5,10 +5,21 @@ Each version is a git tag (`v0.1.0`). Projects pin a tag in
 
 ## 0.3.1
 
-- README rewritten for a new user: install from GitHub first, then setup.
-- Skills, templates and hook messages trimmed (about a third shorter); no
-  rules changed. The brief no longer repeats the work-chat rules.
-- Shorter plugin description.
+- **The hub is found by session ID.** The hub writes its session ID to
+  `hubSession` in `.claude/chat-hub.json`; the start hook tells every chat
+  which session that is. Make any chat the hub with `/chat-hub-core:hub`
+  or a name ending in "Hub" or "Manager". The `hub` name setting is gone.
+- **Chat codes are two characters:** one of A C E F plus one digit 2–9
+  (`3F`, `A7`), no lookalikes.
+- **The push guard switches itself on:** the start hook sets
+  `core.hooksPath` when the project has `.githooks/pre-push` and nothing
+  else is set. No manual step.
+- **Setup:** pins a plugin version only if you ask; anything left to do by
+  hand comes in one block at the end; when it can't write
+  `.claude/settings.json` it shows the whole merged file.
+- README rewritten for a new user (install first, a diagram of the
+  levels, the files setup writes). Skills, templates and hook messages
+  trimmed by about a third and clarified.
 
 ## 0.3.0
 

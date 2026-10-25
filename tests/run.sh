@@ -4,19 +4,19 @@ set -u
 root=$(cd "$(dirname "$0")/.." && pwd); fail=0
 t() { if [ "$2" = "$3" ]; then echo "ok   $1"; else echo "FAIL $1: got [$2] want [$3]"; fail=1; fi; }
 tmp=$(mktemp -d "${TMPDIR:-/tmp}/chat-hub-test.XXXXXX") && [ -d "$tmp" ] || { echo "no temp folder"; exit 1; }; cd "$tmp" || exit 1
-t "no config: suggests setup" "$(node "$root/hooks/session-start.mjs" | grep -c 'chat-hub-core:setup')" 1
+t "no config: suggests setup" "$(echo '{}' | node "$root/hooks/session-start.mjs" | grep -c 'chat-hub-core:setup')" 1
 mkdir .claude; echo '{"level":0,"done":["tests pass"]}' > .claude/chat-hub.json
-t "config: names hub" "$(node "$root/hooks/session-start.mjs" | grep -c 'or ends with .*Hub')" 1
-echo '{"level":0,"hub":"cns Hub"}' > .claude/chat-hub.json
-t "hub name: exact match" "$(node "$root/hooks/session-start.mjs" | grep -c 'is exactly \\"cns Hub\\"')" 1
-t "hub name: only message this one" "$(node "$root/hooks/session-start.mjs" | grep -c 'only ever message this one')" 1
+t "no hub yet: names Hub/Manager" "$(echo '{}' | node "$root/hooks/session-start.mjs" | grep -c 'ends with .*Hub.* or .*Manager')" 1
+echo '{"level":0,"hubSession":"s1"}' > .claude/chat-hub.json
+t "hub session: this chat is the hub" "$(echo '{"session_id":"s1"}' | node "$root/hooks/session-start.mjs" | grep -c 'This chat is the hub')" 1
+t "hub session: others message only it" "$(echo '{"session_id":"s2"}' | node "$root/hooks/session-start.mjs" | grep -c 'only ever message that session')" 1
 echo '{"level":0,"done":["tests pass"]}' > .claude/chat-hub.json
 t "commit reminder: done" "$(node "$root/hooks/before-commit.mjs" | grep -c 'tests pass')" 1
 git init -q -b main &&  git -c user.email=a@b -c user.name=t commit -q --allow-empty -m one
 mkdir .githooks && touch .githooks/pre-push; echo '{"level":1}' > .claude/chat-hub.json
-t "level 1: guard off is flagged" "$(node "$root/hooks/session-start.mjs" | grep -c 'push guard')" 1
-git config core.hooksPath .githooks
-t "level 1: guard on is quiet" "$(node "$root/hooks/session-start.mjs" | grep -c 'push guard')" 0
+t "level 1: guard switched on" "$(echo '{}' | node "$root/hooks/session-start.mjs" | grep -c 'switched on')" 1
+t "level 1: hooksPath set" "$(git config core.hooksPath)" ".githooks"
+t "level 1: guard on is quiet" "$(echo '{}' | node "$root/hooks/session-start.mjs" | grep -c 'push guard')" 0
 git config --unset core.hooksPath
 sha=$(git rev-parse HEAD); z=0000000000000000000000000000000000000000
 push() { echo "refs/heads/x $sha refs/heads/$1 $z" | sh "$root/githooks/pre-push" >/dev/null 2>&1; echo $?; }
