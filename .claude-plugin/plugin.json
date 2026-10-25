@@ -1,6 +1,6 @@
 {
   "name": "chat-hub-core",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Manage many Claude Code chats on one project: one hub chat hands out tasks, tracks them, and gathers their work into releases.",
   "author": {
     "name": "Jamal Deemer"

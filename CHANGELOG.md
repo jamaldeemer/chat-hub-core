@@ -3,6 +3,12 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## 0.3.2
+
+- Setup ends with numbered "Get started" steps for the project's level.
+- README: an "Updating" section, and a note to `git init` an empty folder
+  first for level 1 or 2.
+
 ## 0.3.1
 
 - **The hub is found by session ID.** The hub writes its session ID to

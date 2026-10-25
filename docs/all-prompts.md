@@ -121,11 +121,22 @@ addition), say in one line exactly what's new, and ask them to save it.
 
 ## 6. Finish
 
-Say what's on in two lines. Then, if anything is left for the owner to do
-by hand (anything you couldn't write), give it in one block at the end:
-commands in one code block, text to paste in another. Last: to make the
-hub, type `/chat-hub-core:hub` in a chat, or name one ending in "Hub" or
-"Manager" (e.g. `<folder name> Hub`). Don't commit.
+End with three short parts, in this order:
+
+1. **Done:** what's on, in one or two lines (level, release style).
+2. **Left for you** (only if anything is): what you couldn't write, in one
+   block: commands in one code block, text to paste in another.
+3. **Get started:** numbered steps for this project's level, e.g.:
+   1. Make a hub: type `/chat-hub-core:hub` in a chat, or open one named
+      `<folder name> Hub` (any name ending in "Hub" or "Manager" works).
+   2. Tell the hub what you want: "start a chat to <task>". It starts a
+      chat with a code like `A2`, briefs it, and follows it.
+   3. Work in that chat; it asks before every commit.
+   4. The hub tells you when a chat can close.
+   5. Level 1+: when finished work piles up, tell the hub "release".
+   Level 2: add one line on what blocks main (CI, unchecked fixes).
+
+Don't commit.
 
 ## Settings schema (.claude/chat-hub.json)
 

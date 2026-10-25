@@ -12,7 +12,7 @@ You need Claude Code (terminal or the desktop app's Code tab), git and Node.
 1. Add this marketplace (once per computer), in a terminal:
 
    ```
-   claude plugin marketplace add jamaldeemer/chat-hub-core#v0.3.1
+   claude plugin marketplace add jamaldeemer/chat-hub-core#v0.3.2
    ```
 
 2. Turn the plugin on in your project:
@@ -21,6 +21,9 @@ You need Claude Code (terminal or the desktop app's Code tab), git and Node.
    cd path/to/your-project
    claude plugin install chat-hub-core@chat-hub --scope project
    ```
+
+   Starting from an empty folder? Run `git init` there first if you want
+   level 1 or 2 (branches need git).
 
 3. Open a new chat in the project (terminal or desktop app; trust the
    folder if asked) and type `/chat-hub-core:setup`. It asks a few
@@ -42,6 +45,21 @@ Setup writes only inside your project, and only after you say yes:
 Commit them and anyone who clones the project gets the same setup (they
 only repeat steps 1–2). Run setup again to change level or move to a newer
 version.
+
+## Updating
+
+A project uses the version your marketplace points at. To move to a new
+one (e.g. `v0.4.0`):
+
+```
+claude plugin marketplace remove chat-hub
+claude plugin marketplace add jamaldeemer/chat-hub-core#v0.4.0
+cd path/to/your-project
+claude plugin install chat-hub-core@chat-hub --scope project
+```
+
+Then start a new chat (open chats keep the old version) and run setup
+again if the CHANGELOG says to.
 
 ## Levels
 
