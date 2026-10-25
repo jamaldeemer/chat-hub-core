@@ -3,6 +3,13 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## 0.3.1
+
+- README rewritten for a new user: install from GitHub first, then setup.
+- Skills, templates and hook messages trimmed (about a third shorter); no
+  rules changed. The brief no longer repeats the work-chat rules.
+- Shorter plugin description.
+
 ## 0.3.0
 
 - Renamed from chat-core to **chat-hub-core**, the core of a chat-hub

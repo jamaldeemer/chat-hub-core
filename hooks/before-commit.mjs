@@ -2,6 +2,6 @@
 import { readConfig, say } from './config.mjs'
 
 const c = readConfig()
-const done = c?.done?.length ? ` Definition of "done": ${c.done.join('; ')}.` : ''
+const done = c?.done?.length ? ` Done means: ${c.done.join('; ')}.` : ''
 const extra = c?.commitReminder ? ` ${c.commitReminder}` : ''
-if (c) say('PreToolUse', `About to commit: make sure the owner OK'd this commit.${done}${extra}`)
+if (c) say('PreToolUse', `Before committing: the owner must have OK'd this commit.${done}${extra}`)

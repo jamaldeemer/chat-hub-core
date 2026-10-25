@@ -1,7 +1,7 @@
 {
   "name": "chat-hub-core",
-  "version": "0.3.0",
-  "description": "Run many Claude chats on one project: a hub chat that hands each task to its own chat, short codes in titles, releases, and checks before main.",
+  "version": "0.3.1",
+  "description": "Manage many Claude Code chats on one project: one hub chat hands out tasks, tracks them, and gathers their work into releases.",
   "author": {
     "name": "Jamal Deemer"
   },

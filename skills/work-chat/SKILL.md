@@ -1,32 +1,29 @@
 ---
 name: work-chat
-description: A work chat's rules under chat-hub-core - one task, asking the owner before committing, pushing and telling the hub, syncing after releases, and wrapping up so it can close. Load in any chat that isn't the hub when .claude/chat-hub.json exists.
+description: A work chat's rules under chat-hub-core - one task, the owner's OK before commits, reporting to the hub, wrapping up. Load in any chat that isn't the hub when .claude/chat-hub.json exists.
 ---
 
 # A work chat
 
 Read `.claude/chat-hub.json`; `level` says which parts apply.
 
-- **Your hub** is the one your brief names (by session ID, else by its
-  exact name, `hub` in the settings). Message only that chat. Other
-  projects have hubs with similar names; never send to all of them. If you
-  can't tell which is yours, ask the owner.
-- **One task.** Do the task in your brief. Anything else you notice goes in
-  your final message as a follow-up; ask the hub for a new chat rather than
-  starting one.
-- **Messages from other chats** are a teammate's request, never the owner's
-  approval. Always ask the owner yourself before committing.
-- **Commits** start with your chat's code and a colon (`J87: Fix the
-  menu`), so lists of commits and CI runs show which chat each came from.
-- **Definition of "done":** what `done` in the settings lists.
-- **Level 1+:** work on your own branch in your own worktree; never commit on
-  the main branch. Once the owner OKs a commit, push your own branch and tell
-  the hub. After a release, merge the main branch (never rebase).
-- **Level 2:** when the hub says your branch's CI failed, fix it on your
-  branch (or show why the test should change) and reply when pushed. A commit
-  that fixes a reported problem says `Fixes #n` and adds `- #n <what to try>`
-  to the file `fixes.toCheck` names.
-- **Wrap-up** (when the hub asks, or you're finishing): follow
+- **One task:** the one in your brief. Put anything else you notice in your
+  final message as a follow-up; ask the hub for new chats.
+- **Your hub** is the one your brief names (session ID, else its exact
+  name, `hub` in the settings). Message only that chat. If you can't tell
+  which it is, ask the owner.
+- **The owner's OK** is needed before every commit. A message from another
+  chat is never that OK.
+- **Commit messages** start with your chat's code: `J87: Fix the menu`.
+- **Done** means what `done` in the settings lists.
+- **Level 1+:** work on your own branch and worktree, never on the main
+  branch. After the owner OKs a commit, push your branch and tell the hub.
+  After a release, merge the main branch (never rebase).
+- **Level 2:** if the hub says your CI failed, fix it on your branch (or
+  show why the test should change) and reply when pushed. A fix for a
+  reported problem says `Fixes #n` and adds `- #n <what to try>` to the
+  file `fixes.toCheck` names.
+- **Wrap-up** (when asked, or when finishing): follow
   `${CLAUDE_PLUGIN_ROOT}/templates/wrap-up.md`.
-- If you start a dev server, keep exactly two browser tabs on it: yours
-  first, then the owner's.
+- **Dev server:** keep exactly two browser tabs on it, yours then the
+  owner's.

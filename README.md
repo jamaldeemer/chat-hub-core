@@ -1,78 +1,60 @@
 # chat-hub-core
 
-A Claude Code plugin for running many Claude chats on one project: one hub
-chat you talk to, which hands each task to its own short-lived chat, keeps
-their titles tidy, and (if you want) gathers their work into releases that
-reach your main branch only after CI passes and you've checked the fixes.
+A Claude Code plugin for running many Claude chats on one project. You talk
+to one **hub** chat; it starts a chat for each task, keeps their titles
+tidy, tells you when each can close, and (optionally) gathers their work
+into releases that reach `main` only after CI passes.
 
-## Install in a project
+## Install
 
-1. In the project, start Claude with the plugin (terminal):
-   `claude --plugin-dir ~/projects/chat_core`
-2. Type `/chat-hub-core:setup`. It looks at the project, asks 2–5 questions, shows
-   what it will write, and writes it when you say yes. It also offers to pin
-   a released version of the plugin in the project's `.claude/settings.json`;
-   after that it loads in the desktop app too, without step 1.
-3. Name one chat as setup says (`<project> Hub`, e.g. `object_creator
-   Hub`) and talk to it. Each project's hub has its own name, so chats never
-   message another project's hub.
+You need Claude Code (terminal or the desktop app's Code tab), git and Node.
 
-Or install it for yourself from the private repo (needs git access to it):
-`/plugin install chat-hub-core --marketplace jamaldeemer/chat-hub-core`, then step 2.
+1. Add this marketplace (once per computer), in a terminal:
 
-Run `/chat-hub-core:setup` again any time to change the answers or the level, or
-to move the project to a newer version.
+   ```
+   claude plugin marketplace add jamaldeemer/chat-hub-core#v0.3.1
+   ```
 
-## Releasing a version
+2. Turn the plugin on in your project:
 
-1. Bump `version` in `.claude-plugin/plugin.json` and add a section to
-   `CHANGELOG.md`.
-2. Commit, then tag: `git tag v0.2.0`.
-3. Push the branch and the tag: `git push origin main v0.2.0`.
+   ```
+   cd path/to/your-project
+   claude plugin install chat-hub-core@chat-hub --scope project
+   ```
 
-Projects stay on their pinned tag until setup (or you) moves them.
+3. Open a new chat in the project (terminal or desktop app; trust the
+   folder if asked) and type `/chat-hub-core:setup`. It asks a few
+   questions, shows what it will write, and writes it when you say yes.
+4. Name one chat what setup says (`<project> Hub`) and talk to it.
+
+Run setup again to change level or move to a newer version. Commit the files
+it writes and anyone who clones the project gets the same setup (they only
+repeat steps 1–2).
 
 ## Levels
 
-| Level | What you get | Needs |
+| Level | Adds | Needs |
 |---|---|---|
-| 0 · chats | Hub + one chat per task, codes in titles (`C34 · Title (R7)`), briefs, wrap-ups, "(Ready to close)", no idle pings | nothing |
-| 1 · branches | Each chat on its own branch and worktree; a release gathers finished branches; chats merge main after each release | git |
-| 2 · CI and checks | Main only gets a release whose exact commit passed CI; unchecked fixes block it; "! " in titles while a push is in CI | CI you can ask "did commit X pass?" |
+| 0 | Hub + one chat per task, codes in titles (`C34 · Title (R7)`), briefs, wrap-ups | nothing |
+| 1 | Each chat on its own branch; releases gather finished branches | git |
+| 2 | `main` only gets releases that passed CI and whose fixes you've checked | CI you can ask "did commit X pass?" |
 
-## Design
+## How it works
 
-**Behaviour is in the plugin, not in your CLAUDE.md.** The rules live in
-three skills (`setup`, `hub`, `work-chat`); a SessionStart hook
-tells each chat which one to load. Your CLAUDE.md only gets a three-line
-pointer, so your own project rules stay readable.
+The rules are three skills: `setup`, `hub`, `work-chat`. A start-of-chat
+hook tells each chat which to load. Your project gets a settings file,
+`.claude/chat-hub.json` (level, release style, what "done" means, the CI
+command), and a three-line note in CLAUDE.md. Nothing in the plugin names
+a git host, CI service or framework.
 
-**The interfaces are settings, not code.** Everything the core needs from
-the outside world is in `.claude/chat-hub.json`:
+## Working on the plugin
 
-| Need | Setting | Example |
-|---|---|---|
-| Did CI pass on a commit? | `ci.passed`: a shell command with `$SHA`, prints `1` if yes | `gh run list --commit $SHA --status success --json headSha --jq length` |
-| Which fixes aren't checked yet? | `fixes.toCheck`: a file in each worktree, lines `- #n what to try` | `.claude/issues-to-check.md` |
-| Definition of "done" | `done`: a list | `["tests pass", "it builds"]` |
-| Branch names | `branches.main`, `branches.release` | `main`, `release` |
-| Releases in titles | `releases`: `plain` (default), `tick-tock`, `none`; `nextRelease` | |
-| Plugin version | `.claude/settings.json` pins a tag of this repo (setup writes it) | `"ref": "v0.1.0"` |
-| Start, rename, message chats | whatever session tools Claude has; without them the hub hands you the brief to paste | |
-| Dev server per chat | `devServer.command` (optional) | `npm run dev -- --port 0` |
-
-Nothing in the core names a git host, CI service, framework or app. A
-project-specific layer (e.g. a CI view page, an issues page, a version
-stamp) stays in that project and reads the same settings.
-
-**Files:** `skills/` (the rules), `hooks/` (session start, before commit),
-`githooks/pre-push` (the gate on main, POSIX sh + node), `templates/` (brief,
-wrap-up), `tests/run.sh` (the hooks and gate in throwaway repos).
-
-## Checks
-
-`sh tests/run.sh` · `claude plugin validate .`
+- Try unreleased changes: `claude --plugin-dir path/to/chat-hub-core`
+- Checks: `sh tests/run.sh` and `claude plugin validate .`
+- Release: bump `version` in `.claude-plugin/plugin.json`, add a
+  `CHANGELOG.md` section, commit, `git tag vX.Y.Z`, push the branch and tag.
+  Projects keep their pinned version until setup moves them.
 
 ## License
 
-MIT, see `LICENSE`.
+MIT
