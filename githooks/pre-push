@@ -1,11 +1,11 @@
 #!/bin/sh
-# chat-core: a push to the main branch is a release. It's refused unless
-# - (level 2) CI passed on that exact commit (`ci.passed` in .claude/chat-core.json), and
+# chat-hub-core: a push to the main branch is a release. It's refused unless
+# - (level 2) CI passed on that exact commit (`ci.passed` in .claude/chat-hub.json), and
 # - (level 2) no fix it ships is still listed in any worktree's to-check file.
 # Pushing any other branch is never blocked. RELEASE_UNTESTED=1 skips the CI check only.
-cfg=.claude/chat-core.json
+cfg=.claude/chat-hub.json
 [ -f "$cfg" ] || exit 0
-command -v node >/dev/null 2>&1 || { echo "chat-core pre-push: node not found, not checking." >&2; exit 0; }
+command -v node >/dev/null 2>&1 || { echo "chat-hub-core pre-push: node not found, not checking." >&2; exit 0; }
 get() { node -e "const c=require('./$cfg');const v=($1);process.stdout.write(v==null?'':String(v))"; }
 level=$(get 'c.level'); main=$(get 'c.branches?.main ?? "main"'); passed=$(get 'c.ci?.passed')
 tocheck=$(get 'c.fixes?.toCheck ?? ".claude/issues-to-check.md"')

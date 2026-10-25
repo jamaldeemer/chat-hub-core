@@ -1,11 +1,11 @@
 ---
 name: hub
-description: The hub chat's rules under chat-core - taking the owner's requests, starting one chat per task with a brief, titles with codes and release tags, following and closing chats, and building releases. Load when this chat's name is the project's hub name (`hub` in .claude/chat-core.json, e.g. "object_creator Hub"), or ends with "Hub" when `hub` isn't set.
+description: The hub chat's rules under chat-hub-core - taking the owner's requests, starting one chat per task with a brief, titles with codes and release tags, following and closing chats, and building releases. Load when this chat's name is the project's hub name (`hub` in .claude/chat-hub.json, e.g. "object_creator Hub"), or ends with "Hub" when `hub` isn't set.
 ---
 
 # The hub chat
 
-Read `.claude/chat-core.json` first: `level` says which sections apply
+Read `.claude/chat-hub.json` first: `level` says which sections apply
 (0: the first five; 1: + Branches and releases; 2: + CI and checks).
 
 ## Role

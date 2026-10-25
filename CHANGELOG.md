@@ -1,7 +1,21 @@
-# Changelog
+# Changelog (chat-hub-core, formerly chat-core)
 
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
+
+## 0.3.0
+
+- Renamed from chat-core to **chat-hub-core**, the core of a chat-hub
+  family (a `chat-hub-local` layer can follow). Commands are now
+  `/chat-hub-core:setup`; skills `chat-hub-core:hub` and
+  `chat-hub-core:work-chat`.
+- Shared names use `chat-hub`: the marketplace (`chat-hub-core@chat-hub`),
+  the settings file `.claude/chat-hub.json`, the CLAUDE.md markers
+  `<!-- chat-hub -->`.
+- The repo is `jamaldeemer/chat-hub-core`.
+- Released under the MIT license (`LICENSE`).
+- Upgrading from 0.2.x or older: install the new name, then run
+  `/chat-hub-core:setup`; it moves the old files to the new names.
 
 ## 0.2.0
 

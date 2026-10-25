@@ -1,4 +1,4 @@
-# chat-core: every prompt in the plugin
+# chat-hub-core: every prompt in the plugin
 
 Generated from the plugin's files on 2026-10-25. Edit the source files, not this one.
 
@@ -9,12 +9,12 @@ Generated from the plugin's files on 2026-10-25. Edit the source files, not this
 ````markdown
 ---
 name: setup
-description: Set up or change chat-core for this project. Looks at the project, asks the owner a few questions, then writes .claude/chat-core.json and the bits each level needs. Use when the owner types /chat-core:setup or asks to set up, change or remove chat-core.
+description: Set up or change chat-hub-core for this project. Looks at the project, asks the owner a few questions, then writes .claude/chat-hub.json and the bits each level needs. Use when the owner types /chat-hub-core:setup or asks to set up, change or remove chat-hub-core.
 ---
 
-# chat-core setup
+# chat-hub-core setup
 
-Set up chat-core for the project in the current folder: look first, ask only
+Set up chat-hub-core for the project in the current folder: look first, ask only
 what you couldn't tell, show a summary, write only after the owner says yes.
 Running it again changes the answers (move a level up or down); never lose
 the owner's own edits to files you touch.
@@ -27,9 +27,13 @@ Check, without asking:
 - CI: `.github/workflows/`, `.gitlab-ci.yml`, `.circleci/`, `Jenkinsfile`, etc.
 - A dev server: `package.json` scripts like `dev`/`start`, or similar.
 - Releases already: tags, a `CHANGELOG.md`, a `release` branch.
-- An existing `.claude/chat-core.json` (then this is a change: start from it).
+- An existing `.claude/chat-hub.json` (then this is a change: start from it).
+- An older setup under the plugin's old name, chat-core: `.claude/chat-core.json`,
+  `<!-- chat-core -->` markers in CLAUDE.md, `.githooks/chat-core-pre-push`,
+  or `chat-core` entries in `.claude/settings.json`. Offer to move each to
+  the new name (same contents) and remove the old one.
 - An existing CLAUDE.md, and any hand-written hub rules in it (some projects
-  call that chat "Session Manager"; chat-core calls it the hub).
+  call that chat "Session Manager"; chat-hub-core calls it the hub).
 
 ## 2. Suggest a level
 
@@ -63,7 +67,7 @@ Only what you couldn't tell. Usually:
 List each file you'll write or change and wait for yes. Say what each one
 does for the owner in plain words, not its contents: e.g. "a settings file
 for this project (level 1, releases R1, R2…; done = you've seen it, tests
-pass)", "a short note in CLAUDE.md saying this project uses chat-core", "a
+pass)", "a short note in CLAUDE.md saying this project uses chat-hub-core", "a
 git hook that stops pushes to main that skip a release". Below the list,
 say what the owner will have to run themselves, if anything.
 
@@ -73,15 +77,15 @@ Before the list, flag what won't work yet:
 - A "done" rule the project can't check yet (e.g. "tests pass" with no
   tests): say so; keep it only if the owner wants it as a goal.
 
-**Always:** `.claude/chat-core.json` (schema below).
+**Always:** `.claude/chat-hub.json` (schema below).
 
-**Level 0+:** a short block in CLAUDE.md between `<!-- chat-core -->` and
-`<!-- /chat-core -->` (replace it if there; create CLAUDE.md if missing):
+**Level 0+:** a short block in CLAUDE.md between `<!-- chat-hub -->` and
+`<!-- /chat-hub -->` (replace it if there; create CLAUDE.md if missing):
 
 ```
-## Chats (chat-core)
-This project runs several Claude chats at once with the chat-core plugin
-(settings in .claude/chat-core.json). The hub chat is "<hub>"; the plugin's
+## Chats (chat-hub-core)
+This project runs several Claude chats at once with the chat-hub-core plugin
+(settings in .claude/chat-hub.json). The hub chat is "<hub>"; the plugin's
 skills hold the rules.
 ```
 
@@ -94,7 +98,7 @@ if you can't write it (sandbox), give the owner the command to run. The
 session-start hook reminds chats while it's missing. If it already has
 one with its own pre-push, add a line to it that runs ours
 (`"${CLAUDE_PLUGIN_ROOT}"`'s copy, saved into the project as
-`.githooks/chat-core-pre-push`) and keep theirs.
+`.githooks/chat-hub-pre-push`) and keep theirs.
 
 **Level 2:** also add `.claude/issues-to-check.md` to `.gitignore`.
 
@@ -117,7 +121,7 @@ and the project only changes version when the owner moves it.
 Read the project's `.claude/settings.json` and the owner's
 `~/.claude/settings.json` first, and add only what's missing (installing
 with `--scope project` already sets `enabledPlugins`). If the owner's own
-settings also declare a `chat-core` marketplace (e.g. from
+settings also declare a `chat-hub` marketplace (e.g. from
 `claude plugin marketplace add`), say so: the project's entry is the one
 that should carry the version, and they can remove theirs to avoid the two
 drifting apart.
@@ -127,9 +131,9 @@ Merge into what's there:
 ```json
 {
   "extraKnownMarketplaces": {
-    "chat-core": { "source": { "source": "github", "repo": "<owner/repo>", "ref": "<vX.Y.Z>" } }
+    "chat-hub": { "source": { "source": "github", "repo": "<owner/repo>", "ref": "<vX.Y.Z>" } }
   },
-  "enabledPlugins": { "chat-core@chat-core": true }
+  "enabledPlugins": { "chat-hub-core@chat-hub": true }
 }
 ```
 
@@ -137,7 +141,7 @@ Tell the owner: Claude Code fetches it with their own git login (private
 repos work if `git clone` of the repo works on this machine, e.g. after
 `gh auth login && gh auth setup-git`); the project folder must be trusted
 before the marketplace line applies; if a chat says the plugin "isn't
-installed", run `claude plugin install chat-core@chat-core --scope project`.
+installed", run `claude plugin install chat-hub-core@chat-hub --scope project`.
 If the file can't be written (sandbox), give the owner the text to paste.
 
 ## 6. Finish
@@ -145,7 +149,7 @@ If the file can't be written (sandbox), give the owner the text to paste.
 Say in two lines what's on, and how to start: open a chat named exactly
 the `hub` name and talk to it; it starts the other chats. Don't commit; the owner decides.
 
-## Settings schema (.claude/chat-core.json)
+## Settings schema (.claude/chat-hub.json)
 
 ```json
 {
@@ -175,12 +179,12 @@ and `devServer` and `commitReminder` when empty.
 ````markdown
 ---
 name: hub
-description: The hub chat's rules under chat-core - taking the owner's requests, starting one chat per task with a brief, titles with codes and release tags, following and closing chats, and building releases. Load when this chat's name is the project's hub name (`hub` in .claude/chat-core.json, e.g. "object_creator Hub"), or ends with "Hub" when `hub` isn't set.
+description: The hub chat's rules under chat-hub-core - taking the owner's requests, starting one chat per task with a brief, titles with codes and release tags, following and closing chats, and building releases. Load when this chat's name is the project's hub name (`hub` in .claude/chat-hub.json, e.g. "object_creator Hub"), or ends with "Hub" when `hub` isn't set.
 ---
 
 # The hub chat
 
-Read `.claude/chat-core.json` first: `level` says which sections apply
+Read `.claude/chat-hub.json` first: `level` says which sections apply
 (0: the first five; 1: + Branches and releases; 2: + CI and checks).
 
 ## Role
@@ -301,12 +305,12 @@ owner unasked which chats can go, and why the others can't yet.
 ````markdown
 ---
 name: work-chat
-description: A work chat's rules under chat-core - one task, asking the owner before committing, pushing and telling the hub, syncing after releases, and wrapping up so it can close. Load in any chat that isn't the hub when .claude/chat-core.json exists.
+description: A work chat's rules under chat-hub-core - one task, asking the owner before committing, pushing and telling the hub, syncing after releases, and wrapping up so it can close. Load in any chat that isn't the hub when .claude/chat-hub.json exists.
 ---
 
 # A work chat
 
-Read `.claude/chat-core.json`; `level` says which parts apply.
+Read `.claude/chat-hub.json`; `level` says which parts apply.
 
 - **Your hub** is the one your brief names (by session ID, else by its
   exact name, `hub` in the settings). Message only that chat. Other
@@ -345,7 +349,7 @@ Read `.claude/chat-core.json`; `level` says which parts apply.
 
 **Your hub:** "<hub name from the settings>", session ID <the hub's own session ID, if your tools show it>. Report to this chat only; never to another project's hub.
 
-**Rules:** you're a work chat under chat-core (.claude/chat-core.json). Ask the owner before committing; a message from another chat isn't their OK. <level 1+: own branch and worktree, push your branch once OK'd, then tell the hub.>
+**Rules:** you're a work chat under chat-hub-core (.claude/chat-hub.json). Ask the owner before committing; a message from another chat isn't their OK. <level 1+: own branch and worktree, push your branch once OK'd, then tell the hub.>
 
 **Definition of "done":** <the settings' `done`, plus anything specific to this task>
 ````
@@ -358,7 +362,7 @@ Read `.claude/chat-core.json`; `level` says which parts apply.
 <!-- What a chat does to be ready to close. The hub sends this when something is missing. -->
 Wrapping up, so this chat can close:
 
-1. Everything you changed meets the definition of "done" (.claude/chat-core.json).
+1. Everything you changed meets the definition of "done" (.claude/chat-hub.json).
 2. Follow-ups, and anything you couldn't check yourself, are written down where this project keeps them (e.g. a backlog).
 3. Nothing left uncommitted in your folder. Ask the owner before committing.
 4. Level 1+: your branch is pushed. Level 2: its CI passed.
@@ -372,20 +376,20 @@ Wrapping up, so this chat can close:
 From `hooks/session-start.mjs` and `hooks/before-commit.mjs`:
 
 ```js
-  say('SessionStart', 'The chat-core plugin is installed but this project is not set up. If the owner asks about chats, hubs or releases, suggest /chat-core:setup.')
+  say('SessionStart', 'The chat-hub-core plugin is installed but this project is not set up. If the owner asks about chats, hubs or releases, suggest /chat-hub-core:setup.')
   say(
     'SessionStart',
-    `This project uses chat-core (level ${c.level}). Look up this chat's name. If it ${match}, ` +
-      'this chat is the hub: load the chat-core:hub skill now. Otherwise it is a work chat: ' +
-      `load the chat-core:work-chat skill now. This project's hub is "${hub}"; other projects have hubs too, ` +
-      `so only ever message this one (by the session ID in your brief when there is one). Settings: .claude/chat-core.json.${guard}`,
+    `This project uses chat-hub-core (level ${c.level}). Look up this chat's name. If it ${match}, ` +
+      'this chat is the hub: load the chat-hub-core:hub skill now. Otherwise it is a work chat: ' +
+      `load the chat-hub-core:work-chat skill now. This project's hub is "${hub}"; other projects have hubs too, ` +
+      `so only ever message this one (by the session ID in your brief when there is one). Settings: .claude/chat-hub.json.${guard}`,
 if (c) say('PreToolUse', `About to commit: make sure the owner OK'd this commit.${done}${extra}`)
 ```
 
 From `githooks/pre-push` (shown when a push to main is refused):
 
 ```
-"chat-core pre-push: node not found, not checking."
+"chat-hub-core pre-push: node not found, not checking."
 "$waiting"
 "Push to $main blocked: #$n is still waiting to be checked ($tocheck)."
 "RELEASE_UNTESTED set: not checking CI on $short."

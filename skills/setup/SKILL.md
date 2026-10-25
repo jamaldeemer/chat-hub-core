@@ -1,11 +1,11 @@
 ---
 name: setup
-description: Set up or change chat-core for this project. Looks at the project, asks the owner a few questions, then writes .claude/chat-core.json and the bits each level needs. Use when the owner types /chat-core:setup or asks to set up, change or remove chat-core.
+description: Set up or change chat-hub-core for this project. Looks at the project, asks the owner a few questions, then writes .claude/chat-hub.json and the bits each level needs. Use when the owner types /chat-hub-core:setup or asks to set up, change or remove chat-hub-core.
 ---
 
-# chat-core setup
+# chat-hub-core setup
 
-Set up chat-core for the project in the current folder: look first, ask only
+Set up chat-hub-core for the project in the current folder: look first, ask only
 what you couldn't tell, show a summary, write only after the owner says yes.
 Running it again changes the answers (move a level up or down); never lose
 the owner's own edits to files you touch.
@@ -18,9 +18,13 @@ Check, without asking:
 - CI: `.github/workflows/`, `.gitlab-ci.yml`, `.circleci/`, `Jenkinsfile`, etc.
 - A dev server: `package.json` scripts like `dev`/`start`, or similar.
 - Releases already: tags, a `CHANGELOG.md`, a `release` branch.
-- An existing `.claude/chat-core.json` (then this is a change: start from it).
+- An existing `.claude/chat-hub.json` (then this is a change: start from it).
+- An older setup under the plugin's old name, chat-core: `.claude/chat-core.json`,
+  `<!-- chat-core -->` markers in CLAUDE.md, `.githooks/chat-core-pre-push`,
+  or `chat-core` entries in `.claude/settings.json`. Offer to move each to
+  the new name (same contents) and remove the old one.
 - An existing CLAUDE.md, and any hand-written hub rules in it (some projects
-  call that chat "Session Manager"; chat-core calls it the hub).
+  call that chat "Session Manager"; chat-hub-core calls it the hub).
 
 ## 2. Suggest a level
 
@@ -54,7 +58,7 @@ Only what you couldn't tell. Usually:
 List each file you'll write or change and wait for yes. Say what each one
 does for the owner in plain words, not its contents: e.g. "a settings file
 for this project (level 1, releases R1, R2…; done = you've seen it, tests
-pass)", "a short note in CLAUDE.md saying this project uses chat-core", "a
+pass)", "a short note in CLAUDE.md saying this project uses chat-hub-core", "a
 git hook that stops pushes to main that skip a release". Below the list,
 say what the owner will have to run themselves, if anything.
 
@@ -64,15 +68,15 @@ Before the list, flag what won't work yet:
 - A "done" rule the project can't check yet (e.g. "tests pass" with no
   tests): say so; keep it only if the owner wants it as a goal.
 
-**Always:** `.claude/chat-core.json` (schema below).
+**Always:** `.claude/chat-hub.json` (schema below).
 
-**Level 0+:** a short block in CLAUDE.md between `<!-- chat-core -->` and
-`<!-- /chat-core -->` (replace it if there; create CLAUDE.md if missing):
+**Level 0+:** a short block in CLAUDE.md between `<!-- chat-hub -->` and
+`<!-- /chat-hub -->` (replace it if there; create CLAUDE.md if missing):
 
 ```
-## Chats (chat-core)
-This project runs several Claude chats at once with the chat-core plugin
-(settings in .claude/chat-core.json). The hub chat is "<hub>"; the plugin's
+## Chats (chat-hub-core)
+This project runs several Claude chats at once with the chat-hub-core plugin
+(settings in .claude/chat-hub.json). The hub chat is "<hub>"; the plugin's
 skills hold the rules.
 ```
 
@@ -85,7 +89,7 @@ if you can't write it (sandbox), give the owner the command to run. The
 session-start hook reminds chats while it's missing. If it already has
 one with its own pre-push, add a line to it that runs ours
 (`"${CLAUDE_PLUGIN_ROOT}"`'s copy, saved into the project as
-`.githooks/chat-core-pre-push`) and keep theirs.
+`.githooks/chat-hub-pre-push`) and keep theirs.
 
 **Level 2:** also add `.claude/issues-to-check.md` to `.gitignore`.
 
@@ -108,7 +112,7 @@ and the project only changes version when the owner moves it.
 Read the project's `.claude/settings.json` and the owner's
 `~/.claude/settings.json` first, and add only what's missing (installing
 with `--scope project` already sets `enabledPlugins`). If the owner's own
-settings also declare a `chat-core` marketplace (e.g. from
+settings also declare a `chat-hub` marketplace (e.g. from
 `claude plugin marketplace add`), say so: the project's entry is the one
 that should carry the version, and they can remove theirs to avoid the two
 drifting apart.
@@ -118,9 +122,9 @@ Merge into what's there:
 ```json
 {
   "extraKnownMarketplaces": {
-    "chat-core": { "source": { "source": "github", "repo": "<owner/repo>", "ref": "<vX.Y.Z>" } }
+    "chat-hub": { "source": { "source": "github", "repo": "<owner/repo>", "ref": "<vX.Y.Z>" } }
   },
-  "enabledPlugins": { "chat-core@chat-core": true }
+  "enabledPlugins": { "chat-hub-core@chat-hub": true }
 }
 ```
 
@@ -128,7 +132,7 @@ Tell the owner: Claude Code fetches it with their own git login (private
 repos work if `git clone` of the repo works on this machine, e.g. after
 `gh auth login && gh auth setup-git`); the project folder must be trusted
 before the marketplace line applies; if a chat says the plugin "isn't
-installed", run `claude plugin install chat-core@chat-core --scope project`.
+installed", run `claude plugin install chat-hub-core@chat-hub --scope project`.
 If the file can't be written (sandbox), give the owner the text to paste.
 
 ## 6. Finish
@@ -136,7 +140,7 @@ If the file can't be written (sandbox), give the owner the text to paste.
 Say in two lines what's on, and how to start: open a chat named exactly
 the `hub` name and talk to it; it starts the other chats. Don't commit; the owner decides.
 
-## Settings schema (.claude/chat-core.json)
+## Settings schema (.claude/chat-hub.json)
 
 ```json
 {

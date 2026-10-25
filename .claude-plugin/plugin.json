@@ -1,9 +1,10 @@
 {
-  "name": "chat-core",
-  "version": "0.2.0",
+  "name": "chat-hub-core",
+  "version": "0.3.0",
   "description": "Run many Claude chats on one project: a hub chat that hands each task to its own chat, short codes in titles, releases, and checks before main.",
   "author": {
     "name": "Jamal Deemer"
   },
-  "repository": "https://github.com/jamaldeemer/chat-core"
+  "repository": "https://github.com/jamaldeemer/chat-hub-core",
+  "license": "MIT"
 }

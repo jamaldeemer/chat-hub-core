@@ -1,4 +1,4 @@
-# chat-core
+# chat-hub-core
 
 A Claude Code plugin for running many Claude chats on one project: one hub
 chat you talk to, which hands each task to its own short-lived chat, keeps
@@ -9,7 +9,7 @@ reach your main branch only after CI passes and you've checked the fixes.
 
 1. In the project, start Claude with the plugin (terminal):
    `claude --plugin-dir ~/projects/chat_core`
-2. Type `/chat-core:setup`. It looks at the project, asks 2–5 questions, shows
+2. Type `/chat-hub-core:setup`. It looks at the project, asks 2–5 questions, shows
    what it will write, and writes it when you say yes. It also offers to pin
    a released version of the plugin in the project's `.claude/settings.json`;
    after that it loads in the desktop app too, without step 1.
@@ -18,9 +18,9 @@ reach your main branch only after CI passes and you've checked the fixes.
    message another project's hub.
 
 Or install it for yourself from the private repo (needs git access to it):
-`/plugin install chat-core --marketplace jamaldeemer/chat-core`, then step 2.
+`/plugin install chat-hub-core --marketplace jamaldeemer/chat-hub-core`, then step 2.
 
-Run `/chat-core:setup` again any time to change the answers or the level, or
+Run `/chat-hub-core:setup` again any time to change the answers or the level, or
 to move the project to a newer version.
 
 ## Releasing a version
@@ -48,7 +48,7 @@ tells each chat which one to load. Your CLAUDE.md only gets a three-line
 pointer, so your own project rules stay readable.
 
 **The interfaces are settings, not code.** Everything the core needs from
-the outside world is in `.claude/chat-core.json`:
+the outside world is in `.claude/chat-hub.json`:
 
 | Need | Setting | Example |
 |---|---|---|
@@ -72,3 +72,7 @@ wrap-up), `tests/run.sh` (the hooks and gate in throwaway repos).
 ## Checks
 
 `sh tests/run.sh` · `claude plugin validate .`
+
+## License
+
+MIT, see `LICENSE`.

@@ -1,10 +1,12 @@
 {
-  "name": "chat-core",
-  "description": "The chat-core plugin.",
-  "owner": { "name": "Jamal Deemer" },
+  "name": "chat-hub",
+  "description": "The chat-hub plugins.",
+  "owner": {
+    "name": "Jamal Deemer"
+  },
   "plugins": [
     {
-      "name": "chat-core",
+      "name": "chat-hub-core",
       "source": ".",
       "description": "Run many Claude chats on one project: a hub chat that hands each task to its own chat, short codes in titles, releases, and checks before main."
     }
