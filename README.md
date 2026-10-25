@@ -15,6 +15,9 @@ reach your main branch only after CI passes and you've checked the fixes.
    after that it loads in the desktop app too, without step 1.
 3. Name one chat "Session Manager" and talk to it.
 
+Or install it for yourself from the private repo (needs git access to it):
+`/plugin install chat-core --marketplace jamaldeemer/chat-core`, then step 2.
+
 Run `/chat-core:setup` again any time to change the answers or the level, or
 to move the project to a newer version.
 
