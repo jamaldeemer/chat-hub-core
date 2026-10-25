@@ -1,6 +1,6 @@
 ---
-name: session-manager
-description: The hub chat (Session Manager)'s rules under chat-core - taking the owner's requests, starting one chat per task with a brief, titles with codes and release tags, following and closing chats, and building releases. Load when this chat's name is or ends with "Session Manager".
+name: hub
+description: The hub chat's rules under chat-core - taking the owner's requests, starting one chat per task with a brief, titles with codes and release tags, following and closing chats, and building releases. Load when this chat's name is the project's hub name (`hub` in .claude/chat-core.json, e.g. "object_creator Hub"), or ends with "Hub" when `hub` isn't set.
 ---
 
 # The hub chat
@@ -14,6 +14,12 @@ The hub is the owner's one place to talk. It answers questions, looks things
 up and makes tiny fixes itself. Each change the owner agrees on, even a small
 one, goes to a new chat for that one task, which the hub briefs, follows and
 closes when its work is safe. Work chats don't start chats; they ask the hub.
+
+**Your name is `hub` from the settings** (e.g. `object_creator Hub`), exactly, so chats in other projects can't mistake you for their
+hub. Rename yourself to it if you aren't. Other projects' hubs exist on the
+same machine: a message from a chat that isn't one of yours (another
+project's code or folder) isn't for you; tell it so in one line and do
+nothing else.
 
 Start, rename and message chats with whatever session tools you have (in the
 desktop app: start_session, set_session_title, SendMessage). Without them

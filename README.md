@@ -13,7 +13,9 @@ reach your main branch only after CI passes and you've checked the fixes.
    what it will write, and writes it when you say yes. It also offers to pin
    a released version of the plugin in the project's `.claude/settings.json`;
    after that it loads in the desktop app too, without step 1.
-3. Name one chat "Session Manager" and talk to it.
+3. Name one chat as setup says (`<project> Hub`, e.g. `object_creator
+   Hub`) and talk to it. Each project's hub has its own name, so chats never
+   message another project's hub.
 
 Or install it for yourself from the private repo (needs git access to it):
 `/plugin install chat-core --marketplace jamaldeemer/chat-core`, then step 2.
@@ -41,7 +43,7 @@ Projects stay on their pinned tag until setup (or you) moves them.
 ## Design
 
 **Behaviour is in the plugin, not in your CLAUDE.md.** The rules live in
-three skills (`setup`, `session-manager`, `work-chat`); a SessionStart hook
+three skills (`setup`, `hub`, `work-chat`); a SessionStart hook
 tells each chat which one to load. Your CLAUDE.md only gets a three-line
 pointer, so your own project rules stay readable.
 

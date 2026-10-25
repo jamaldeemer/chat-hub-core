@@ -6,7 +6,11 @@ t() { if [ "$2" = "$3" ]; then echo "ok   $1"; else echo "FAIL $1: got [$2] want
 tmp=$(mktemp -d "${TMPDIR:-/tmp}/chat-core-test.XXXXXX") && [ -d "$tmp" ] || { echo "no temp folder"; exit 1; }; cd "$tmp" || exit 1
 t "no config: suggests setup" "$(node "$root/hooks/session-start.mjs" | grep -c 'chat-core:setup')" 1
 mkdir .claude; echo '{"level":0,"done":["tests pass"]}' > .claude/chat-core.json
-t "config: names hub" "$(node "$root/hooks/session-start.mjs" | grep -c 'or ends with .*Session Manager')" 1
+t "config: names hub" "$(node "$root/hooks/session-start.mjs" | grep -c 'or ends with .*Hub')" 1
+echo '{"level":0,"hub":"cns Hub"}' > .claude/chat-core.json
+t "hub name: exact match" "$(node "$root/hooks/session-start.mjs" | grep -c 'is exactly \\"cns Hub\\"')" 1
+t "hub name: only message this one" "$(node "$root/hooks/session-start.mjs" | grep -c 'only ever message this one')" 1
+echo '{"level":0,"done":["tests pass"]}' > .claude/chat-core.json
 t "commit reminder: done" "$(node "$root/hooks/before-commit.mjs" | grep -c 'tests pass')" 1
 git init -q -b main &&  git -c user.email=a@b -c user.name=t commit -q --allow-empty -m one
 mkdir .githooks && touch .githooks/pre-push; echo '{"level":1}' > .claude/chat-core.json

@@ -1,12 +1,16 @@
 ---
 name: work-chat
-description: A work chat's rules under chat-core - one task, asking the owner before committing, pushing and telling the hub, syncing after releases, and wrapping up so it can close. Load in any chat that isn't Session Manager when .claude/chat-core.json exists.
+description: A work chat's rules under chat-core - one task, asking the owner before committing, pushing and telling the hub, syncing after releases, and wrapping up so it can close. Load in any chat that isn't the hub when .claude/chat-core.json exists.
 ---
 
 # A work chat
 
 Read `.claude/chat-core.json`; `level` says which parts apply.
 
+- **Your hub** is the one your brief names (by session ID, else by its
+  exact name, `hub` in the settings). Message only that chat. Other
+  projects have hubs with similar names; never send to all of them. If you
+  can't tell which is yours, ask the owner.
 - **One task.** Do the task in your brief. Anything else you notice goes in
   your final message as a follow-up; ask the hub for a new chat rather than
   starting one.

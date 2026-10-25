@@ -19,7 +19,8 @@ Check, without asking:
 - A dev server: `package.json` scripts like `dev`/`start`, or similar.
 - Releases already: tags, a `CHANGELOG.md`, a `release` branch.
 - An existing `.claude/chat-core.json` (then this is a change: start from it).
-- An existing CLAUDE.md, and any hand-written "Session Manager" rules in it.
+- An existing CLAUDE.md, and any hand-written hub rules in it (some projects
+  call that chat "Session Manager"; chat-core calls it the hub).
 
 ## 2. Suggest a level
 
@@ -71,7 +72,7 @@ Before the list, flag what won't work yet:
 ```
 ## Chats (chat-core)
 This project runs several Claude chats at once with the chat-core plugin
-(settings in .claude/chat-core.json). The hub chat is "Session Manager"; the plugin's
+(settings in .claude/chat-core.json). The hub chat is "<hub>"; the plugin's
 skills hold the rules.
 ```
 
@@ -132,14 +133,15 @@ If the file can't be written (sandbox), give the owner the text to paste.
 
 ## 6. Finish
 
-Say in two lines what's on, and how to start: open a chat named "Session Manager" and
-talk to it; it starts the other chats. Don't commit; the owner decides.
+Say in two lines what's on, and how to start: open a chat named exactly
+the `hub` name and talk to it; it starts the other chats. Don't commit; the owner decides.
 
 ## Settings schema (.claude/chat-core.json)
 
 ```json
 {
   "level": 1,
+  "hub": "object_creator Hub", // the hub chat's exact name: "<folder name> Hub"; unique per project
   "releases": "plain",              // "plain" (default) | "tick-tock" | "none"
   "nextRelease": 1,                 // the release the next finished work ships in
   "done": ["tests pass", "docs updated"],  // the definition of "done"
@@ -151,5 +153,7 @@ talk to it; it starts the other chats. Don't commit; the owner decides.
 }
 ```
 
+Always set `hub` (suggest `<folder name> Hub`; on a re-run of an
+older setup without it, add it and tell the owner to rename their hub chat).
 Write only the fields that apply: leave out `ci` and `fixes` below level 2,
 and `devServer` and `commitReminder` when empty.

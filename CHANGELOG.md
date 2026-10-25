@@ -3,6 +3,16 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## 0.2.0
+
+- One word for the chat you talk to: the **hub** (was also "Session
+  Manager"). The skill is now `chat-core:hub`.
+- Each project's hub has its own name, `hub` in `.claude/chat-core.json`
+  (`<project> Hub`), so chats in two projects never message each other's
+  hub. Briefs carry the hub's session ID; work chats message only that hub.
+- The hub ignores (and says so to) messages from other projects' chats.
+- Upgrading from 0.1.x: re-run setup to add `hub`, then rename the hub chat.
+
 ## 0.1.1
 
 Fixes from the first sandbox run of setup:

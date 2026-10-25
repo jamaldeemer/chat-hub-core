@@ -1,6 +1,6 @@
 {
   "name": "chat-core",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Run many Claude chats on one project: a hub chat that hands each task to its own chat, short codes in titles, releases, and checks before main.",
   "author": {
     "name": "Jamal Deemer"

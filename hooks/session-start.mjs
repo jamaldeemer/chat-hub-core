@@ -20,10 +20,14 @@ if (!c) {
   const guard = c.level >= 1 && guardOff()
     ? ' The push guard on main is off in this checkout: tell the owner once to run `git config core.hooksPath .githooks`.'
     : ''
+  // The hub's name is per project (settings `hub`), so chats in two projects never mix up their hubs.
+  const hub = c.hub || 'Hub'
+  const match = c.hub ? `is exactly "${hub}"` : `is or ends with "${hub}"`
   say(
     'SessionStart',
-    `This project uses chat-core (level ${c.level}). Look up this chat's name. If it is or ends with "Session Manager", ` +
-      'this chat is the hub: load the chat-core:session-manager skill now. Otherwise it is a work chat: ' +
-      `load the chat-core:work-chat skill now. Settings: .claude/chat-core.json.${guard}`,
+    `This project uses chat-core (level ${c.level}). Look up this chat's name. If it ${match}, ` +
+      'this chat is the hub: load the chat-core:hub skill now. Otherwise it is a work chat: ' +
+      `load the chat-core:work-chat skill now. This project's hub is "${hub}"; other projects have hubs too, ` +
+      `so only ever message this one (by the session ID in your brief when there is one). Settings: .claude/chat-core.json.${guard}`,
   )
 }

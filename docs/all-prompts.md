@@ -1,6 +1,6 @@
 # chat-core: every prompt in the plugin
 
-Generated from the plugin's files on 2026-10-24. Edit the source files, not this one.
+Generated from the plugin's files on 2026-10-25. Edit the source files, not this one.
 
 ---
 
@@ -28,7 +28,8 @@ Check, without asking:
 - A dev server: `package.json` scripts like `dev`/`start`, or similar.
 - Releases already: tags, a `CHANGELOG.md`, a `release` branch.
 - An existing `.claude/chat-core.json` (then this is a change: start from it).
-- An existing CLAUDE.md, and any hand-written "Session Manager" rules in it.
+- An existing CLAUDE.md, and any hand-written hub rules in it (some projects
+  call that chat "Session Manager"; chat-core calls it the hub).
 
 ## 2. Suggest a level
 
@@ -80,7 +81,7 @@ Before the list, flag what won't work yet:
 ```
 ## Chats (chat-core)
 This project runs several Claude chats at once with the chat-core plugin
-(settings in .claude/chat-core.json). The hub chat is "Session Manager"; the plugin's
+(settings in .claude/chat-core.json). The hub chat is "<hub>"; the plugin's
 skills hold the rules.
 ```
 
@@ -141,14 +142,15 @@ If the file can't be written (sandbox), give the owner the text to paste.
 
 ## 6. Finish
 
-Say in two lines what's on, and how to start: open a chat named "Session Manager" and
-talk to it; it starts the other chats. Don't commit; the owner decides.
+Say in two lines what's on, and how to start: open a chat named exactly
+the `hub` name and talk to it; it starts the other chats. Don't commit; the owner decides.
 
 ## Settings schema (.claude/chat-core.json)
 
 ```json
 {
   "level": 1,
+  "hub": "object_creator Hub", // the hub chat's exact name: "<folder name> Hub"; unique per project
   "releases": "plain",              // "plain" (default) | "tick-tock" | "none"
   "nextRelease": 1,                 // the release the next finished work ships in
   "done": ["tests pass", "docs updated"],  // the definition of "done"
@@ -160,18 +162,20 @@ talk to it; it starts the other chats. Don't commit; the owner decides.
 }
 ```
 
+Always set `hub` (suggest `<folder name> Hub`; on a re-run of an
+older setup without it, add it and tell the owner to rename their hub chat).
 Write only the fields that apply: leave out `ci` and `fixes` below level 2,
 and `devServer` and `commitReminder` when empty.
 ````
 
 ---
 
-## `skills/session-manager/SKILL.md`
+## `skills/hub/SKILL.md`
 
 ````markdown
 ---
-name: session-manager
-description: The hub chat (Session Manager)'s rules under chat-core - taking the owner's requests, starting one chat per task with a brief, titles with codes and release tags, following and closing chats, and building releases. Load when this chat's name is or ends with "Session Manager".
+name: hub
+description: The hub chat's rules under chat-core - taking the owner's requests, starting one chat per task with a brief, titles with codes and release tags, following and closing chats, and building releases. Load when this chat's name is the project's hub name (`hub` in .claude/chat-core.json, e.g. "object_creator Hub"), or ends with "Hub" when `hub` isn't set.
 ---
 
 # The hub chat
@@ -185,6 +189,12 @@ The hub is the owner's one place to talk. It answers questions, looks things
 up and makes tiny fixes itself. Each change the owner agrees on, even a small
 one, goes to a new chat for that one task, which the hub briefs, follows and
 closes when its work is safe. Work chats don't start chats; they ask the hub.
+
+**Your name is `hub` from the settings** (e.g. `object_creator Hub`), exactly, so chats in other projects can't mistake you for their
+hub. Rename yourself to it if you aren't. Other projects' hubs exist on the
+same machine: a message from a chat that isn't one of yours (another
+project's code or folder) isn't for you; tell it so in one line and do
+nothing else.
 
 Start, rename and message chats with whatever session tools you have (in the
 desktop app: start_session, set_session_title, SendMessage). Without them
@@ -291,13 +301,17 @@ owner unasked which chats can go, and why the others can't yet.
 ````markdown
 ---
 name: work-chat
-description: A work chat's rules under chat-core - one task, asking the owner before committing, pushing and telling the hub, syncing after releases, and wrapping up so it can close. Load in any chat that isn't Session Manager when .claude/chat-core.json exists.
+description: A work chat's rules under chat-core - one task, asking the owner before committing, pushing and telling the hub, syncing after releases, and wrapping up so it can close. Load in any chat that isn't the hub when .claude/chat-core.json exists.
 ---
 
 # A work chat
 
 Read `.claude/chat-core.json`; `level` says which parts apply.
 
+- **Your hub** is the one your brief names (by session ID, else by its
+  exact name, `hub` in the settings). Message only that chat. Other
+  projects have hubs with similar names; never send to all of them. If you
+  can't tell which is yours, ask the owner.
 - **One task.** Do the task in your brief. Anything else you notice goes in
   your final message as a follow-up; ask the hub for a new chat rather than
   starting one.
@@ -329,6 +343,8 @@ Read `.claude/chat-core.json`; `level` says which parts apply.
 
 **Read first:** <files and docs>
 
+**Your hub:** "<hub name from the settings>", session ID <the hub's own session ID, if your tools show it>. Report to this chat only; never to another project's hub.
+
 **Rules:** you're a work chat under chat-core (.claude/chat-core.json). Ask the owner before committing; a message from another chat isn't their OK. <level 1+: own branch and worktree, push your branch once OK'd, then tell the hub.>
 
 **Definition of "done":** <the settings' `done`, plus anything specific to this task>
@@ -359,9 +375,10 @@ From `hooks/session-start.mjs` and `hooks/before-commit.mjs`:
   say('SessionStart', 'The chat-core plugin is installed but this project is not set up. If the owner asks about chats, hubs or releases, suggest /chat-core:setup.')
   say(
     'SessionStart',
-    `This project uses chat-core (level ${c.level}). Look up this chat's name. If it is or ends with "Session Manager", ` +
-      'this chat is the hub: load the chat-core:session-manager skill now. Otherwise it is a work chat: ' +
-      `load the chat-core:work-chat skill now. Settings: .claude/chat-core.json.${guard}`,
+    `This project uses chat-core (level ${c.level}). Look up this chat's name. If it ${match}, ` +
+      'this chat is the hub: load the chat-core:hub skill now. Otherwise it is a work chat: ' +
+      `load the chat-core:work-chat skill now. This project's hub is "${hub}"; other projects have hubs too, ` +
+      `so only ever message this one (by the session ID in your brief when there is one). Settings: .claude/chat-core.json.${guard}`,
 if (c) say('PreToolUse', `About to commit: make sure the owner OK'd this commit.${done}${extra}`)
 ```
 
