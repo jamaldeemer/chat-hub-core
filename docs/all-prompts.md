@@ -59,7 +59,18 @@ Only what you couldn't tell. Usually:
 
 ## 4. Show the summary, then write
 
-List each file you'll write or change, one line each, and wait for yes.
+List each file you'll write or change and wait for yes. Say what each one
+does for the owner in plain words, not its contents: e.g. "a settings file
+for this project (level 1, releases R1, R2…; done = you've seen it, tests
+pass)", "a short note in CLAUDE.md saying this project uses chat-core", "a
+git hook that stops pushes to main that skip a release". Below the list,
+say what the owner will have to run themselves, if anything.
+
+Before the list, flag what won't work yet:
+- Level 1+ on a repo with no commits: chats can't make branches until
+  `main` has a first commit. Say so, and offer to leave it to the owner.
+- A "done" rule the project can't check yet (e.g. "tests pass" with no
+  tests): say so; keep it only if the owner wants it as a goal.
 
 **Always:** `.claude/chat-core.json` (schema below).
 
@@ -76,7 +87,10 @@ skills hold the rules.
 **Level 1+:** `git config core.hooksPath` must point at a folder with the
 plugin's `pre-push`. If the project has no hooks folder, copy
 `${CLAUDE_PLUGIN_ROOT}/githooks/pre-push` to `.githooks/pre-push`
-(executable) and set `git config core.hooksPath .githooks`. If it already has
+(executable) and set `git config core.hooksPath .githooks`. That setting
+lives in `.git/config`, so it isn't committed and each clone needs it once;
+if you can't write it (sandbox), give the owner the command to run. The
+session-start hook reminds chats while it's missing. If it already has
 one with its own pre-push, add a line to it that runs ours
 (`"${CLAUDE_PLUGIN_ROOT}"`'s copy, saved into the project as
 `.githooks/chat-core-pre-push`) and keep theirs.
@@ -91,12 +105,21 @@ Offer to add the plugin to the project's `.claude/settings.json`, pinned to
 one released version, so it loads without `--plugin-dir` (desktop app too)
 and the project only changes version when the owner moves it.
 
-- **Repo:** the GitHub `owner/repo` the plugin is published from. Suggest
-  it from `git -C "${CLAUDE_PLUGIN_ROOT}" remote get-url origin`; ask if
-  there's none.
+- **Repo:** the GitHub `owner/repo` the plugin is published from: the
+  `repository` field of `${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json`
+  (the installed copy isn't a git checkout, so don't ask git). Ask if it's
+  missing.
 - **Version:** the newest `v*` tag (`git ls-remote --tags <url> 'v*'`).
   Already pinned: show the current tag and the newer ones (with their
   CHANGELOG lines), and ask whether to move.
+
+Read the project's `.claude/settings.json` and the owner's
+`~/.claude/settings.json` first, and add only what's missing (installing
+with `--scope project` already sets `enabledPlugins`). If the owner's own
+settings also declare a `chat-core` marketplace (e.g. from
+`claude plugin marketplace add`), say so: the project's entry is the one
+that should carry the version, and they can remove theirs to avoid the two
+drifting apart.
 
 Merge into what's there:
 
@@ -131,11 +154,14 @@ talk to it; it starts the other chats. Don't commit; the owner decides.
   "done": ["tests pass", "docs updated"],  // the definition of "done"
   "commitReminder": "",             // extra text shown before every commit
   "branches": { "main": "main", "release": "release" },
-  "ci": { "passed": "" },           // level 2: shell command, $SHA set; exit 0 and print 1 if CI passed on it
-  "fixes": { "toCheck": ".claude/issues-to-check.md" }, // level 2
+  "ci": { "passed": "" },           // level 2 only: shell command, $SHA set; exit 0 and print 1 if CI passed on it
+  "fixes": { "toCheck": ".claude/issues-to-check.md" }, // level 2 only
   "devServer": { "command": "" }    // optional: how a chat starts its own server
 }
 ```
+
+Write only the fields that apply: leave out `ci` and `fixes` below level 2,
+and `devServer` and `commitReminder` when empty.
 ````
 
 ---
@@ -335,7 +361,7 @@ From `hooks/session-start.mjs` and `hooks/before-commit.mjs`:
     'SessionStart',
     `This project uses chat-core (level ${c.level}). Look up this chat's name. If it is or ends with "Session Manager", ` +
       'this chat is the hub: load the chat-core:session-manager skill now. Otherwise it is a work chat: ' +
-      'load the chat-core:work-chat skill now. Settings: .claude/chat-core.json.',
+      `load the chat-core:work-chat skill now. Settings: .claude/chat-core.json.${guard}`,
 if (c) say('PreToolUse', `About to commit: make sure the owner OK'd this commit.${done}${extra}`)
 ```
 

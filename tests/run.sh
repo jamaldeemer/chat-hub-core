@@ -9,6 +9,11 @@ mkdir .claude; echo '{"level":0,"done":["tests pass"]}' > .claude/chat-core.json
 t "config: names hub" "$(node "$root/hooks/session-start.mjs" | grep -c 'or ends with .*Session Manager')" 1
 t "commit reminder: done" "$(node "$root/hooks/before-commit.mjs" | grep -c 'tests pass')" 1
 git init -q -b main &&  git -c user.email=a@b -c user.name=t commit -q --allow-empty -m one
+mkdir .githooks && touch .githooks/pre-push; echo '{"level":1}' > .claude/chat-core.json
+t "level 1: guard off is flagged" "$(node "$root/hooks/session-start.mjs" | grep -c 'push guard')" 1
+git config core.hooksPath .githooks
+t "level 1: guard on is quiet" "$(node "$root/hooks/session-start.mjs" | grep -c 'push guard')" 0
+git config --unset core.hooksPath
 sha=$(git rev-parse HEAD); z=0000000000000000000000000000000000000000
 push() { echo "refs/heads/x $sha refs/heads/$1 $z" | sh "$root/githooks/pre-push" >/dev/null 2>&1; echo $?; }
 t "level 0: main not gated" "$(push main)" 0
