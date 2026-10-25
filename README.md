@@ -10,12 +10,22 @@ reach your main branch only after CI passes and you've checked the fixes.
 1. In the project, start Claude with the plugin (terminal):
    `claude --plugin-dir ~/projects/chat_core`
 2. Type `/chat-core:setup`. It looks at the project, asks 2–5 questions, shows
-   what it will write, and writes it when you say yes. It can also add the
-   plugin to the project's `.claude/settings.json`, so it then loads in the
-   desktop app without step 1.
+   what it will write, and writes it when you say yes. It also offers to pin
+   a released version of the plugin in the project's `.claude/settings.json`;
+   after that it loads in the desktop app too, without step 1.
 3. Name one chat "Session Manager" and talk to it.
 
-Run `/chat-core:setup` again any time to change the answers or the level.
+Run `/chat-core:setup` again any time to change the answers or the level, or
+to move the project to a newer version.
+
+## Releasing a version
+
+1. Bump `version` in `.claude-plugin/plugin.json` and add a section to
+   `CHANGELOG.md`.
+2. Commit, then tag: `git tag v0.2.0`.
+3. Push the branch and the tag: `git push origin main v0.2.0`.
+
+Projects stay on their pinned tag until setup (or you) moves them.
 
 ## Levels
 
@@ -42,6 +52,7 @@ the outside world is in `.claude/chat-core.json`:
 | Definition of "done" | `done`: a list | `["tests pass", "it builds"]` |
 | Branch names | `branches.main`, `branches.release` | `main`, `release` |
 | Releases in titles | `releases`: `plain` (default), `tick-tock`, `none`; `nextRelease` | |
+| Plugin version | `.claude/settings.json` pins a tag of this repo (setup writes it) | `"ref": "v0.1.0"` |
 | Start, rename, message chats | whatever session tools Claude has; without them the hub hands you the brief to paste | |
 | Dev server per chat | `devServer.command` (optional) | `npm run dev -- --port 0` |
 

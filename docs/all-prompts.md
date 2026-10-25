@@ -85,21 +85,36 @@ one with its own pre-push, add a line to it that runs ours
 
 Lower level: remove what the higher level added (ask first).
 
-## 5. Make the plugin load in the desktop app too
+## 5. Pin a version of the plugin
 
-Offer to add the plugin to the project's `.claude/settings.json` so it
-loads without `--plugin-dir`. Ask where the plugin lives (a local folder or a
-git URL), then add:
+Offer to add the plugin to the project's `.claude/settings.json`, pinned to
+one released version, so it loads without `--plugin-dir` (desktop app too)
+and the project only changes version when the owner moves it.
+
+- **Repo:** the GitHub `owner/repo` the plugin is published from. Suggest
+  it from `git -C "${CLAUDE_PLUGIN_ROOT}" remote get-url origin`; ask if
+  there's none.
+- **Version:** the newest `v*` tag (`git ls-remote --tags <url> 'v*'`).
+  Already pinned: show the current tag and the newer ones (with their
+  CHANGELOG lines), and ask whether to move.
+
+Merge into what's there:
 
 ```json
 {
-  "extraKnownMarketplaces": { "chat-core": { "source": { "source": "directory", "path": "<folder>" } } },
+  "extraKnownMarketplaces": {
+    "chat-core": { "source": { "source": "github", "repo": "<owner/repo>", "ref": "<vX.Y.Z>" } }
+  },
   "enabledPlugins": { "chat-core@chat-core": true }
 }
 ```
 
-merged into what's there. If that file can't be written (sandbox), give the
-owner the text to paste.
+Tell the owner: Claude Code fetches it with their own git login (private
+repos work if `git clone` of the repo works on this machine, e.g. after
+`gh auth login && gh auth setup-git`); the project folder must be trusted
+before the marketplace line applies; if a chat says the plugin "isn't
+installed", run `claude plugin install chat-core@chat-core --scope project`.
+If the file can't be written (sandbox), give the owner the text to paste.
 
 ## 6. Finish
 
