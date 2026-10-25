@@ -8,7 +8,7 @@
     {
       "name": "chat-hub-core",
       "source": ".",
-      "description": "Manage many Claude Code chats on one project: one hub chat hands out tasks, tracks them, and gathers their work into releases."
+      "description": "My hub-worker system for Claude Code chats: one chat runs the rest. Optionally, releases gated on CI."
     }
   ]
 }

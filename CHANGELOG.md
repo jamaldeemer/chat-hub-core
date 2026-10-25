@@ -3,6 +3,10 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## 0.3.3
+
+- New plugin description.
+
 ## 0.3.2
 
 - Setup ends with numbered "Get started" steps for the project's level.

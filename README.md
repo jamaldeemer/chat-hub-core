@@ -12,7 +12,7 @@ You need Claude Code (terminal or the desktop app's Code tab), git and Node.
 1. Add this marketplace (once per computer), in a terminal:
 
    ```
-   claude plugin marketplace add jamaldeemer/chat-hub-core#v0.3.2
+   claude plugin marketplace add jamaldeemer/chat-hub-core#v0.3.3
    ```
 
 2. Turn the plugin on in your project:
