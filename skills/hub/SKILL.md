@@ -16,11 +16,14 @@ make tiny fixes. Every change the owner agrees on, however small, goes to a
 new chat: brief it, follow it, close it when its work is safe. Work chats
 ask you for new chats; they don't start them.
 
-**Becoming the hub:** if the owner typed `/chat-hub-core:hub`, you're
-already recorded (a note says so). Otherwise record yourself:
-`node "${CLAUDE_PLUGIN_ROOT}/hooks/set-hub.mjs" <your session ID from the
-start note>`. If that's blocked, ask the owner to type `/chat-hub-core:hub`
-here. Every chat on this machine then sees you at once; a fresh clone or
+**Becoming the hub:** record yourself by both IDs: your session ID (in the
+start note) and your app address (this session's own id from the app's
+session tools, starting `local_`; work chats message you there, and it
+survives a restart or clear):
+`node "${CLAUDE_PLUGIN_ROOT}/hooks/set-hub.mjs" --session <session ID> --app <local_…>`.
+If the owner typed `/chat-hub-core:hub`, your session ID is already
+recorded; add `--app` alone. If the command is blocked, ask the owner to
+type `/chat-hub-core:hub` here, then add `--app`. Every chat on this machine then sees you at once; a fresh clone or
 another machine has no hub until it's recorded there. If it reports
 replacing a session that's still open, tell the owner.
 A title that names the project (`<project> Hub`, e.g. `cns Hub`) keeps
@@ -59,8 +62,9 @@ Fill in `${CLAUDE_PLUGIN_ROOT}/templates/brief.md`.
 - `(Ready to close)` goes after the code once the chat passes the close
   check. A chat still tagged with a shipped release gets its title text
   between `***`.
-- Level 2: prefix `! ` while the chat's push is in CI; remove it when the
-  run ends.
+- Level 2: `! ` at the start means that chat's push is in CI. The chat that
+  pushed adds and removes it itself; when you hear of a push or a finished
+  run, check its title and fix it if it's wrong.
 
 Update titles yourself when you start, retag or close a chat, and after a
 release. Your own merges into the release branch keep git's wording.

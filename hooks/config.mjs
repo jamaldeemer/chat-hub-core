@@ -21,9 +21,10 @@ export function hookInput() {
   try { return JSON.parse(readFileSync(0, 'utf8') || '{}') } catch { return {} }
 }
 
-// The hub's session ID is kept in git's shared folder (the .git every worktree points to),
-// so every chat sees it at once and it's never committed. Without git, it falls back to
-// `hubSession` in the settings.
+// The hub is kept in git's shared folder (the .git every worktree points to), so every chat
+// sees it at once and it's never committed. It's stored by two IDs: Claude's session ID (what
+// hooks see) and the desktop app's address, `local_…` (what the app's messaging uses, and
+// what survives a clear). Without git, it falls back to `hubSession` in the settings.
 function sharedHubFile() {
   try {
     const dir = execFileSync('git', ['rev-parse', '--path-format=absolute', '--git-common-dir'],
@@ -32,26 +33,37 @@ function sharedHubFile() {
   } catch { return null }
 }
 
-export function hubSession(cfg) {
+// One ID on its own: an app address starts with `local_`, anything else is a session ID.
+const fromId = id => (id.startsWith('local_') ? { app: id } : { session: id })
+
+export function readHub(cfg = readConfig()) {
   const f = sharedHubFile()
   if (f && existsSync(f)) {
-    const id = readFileSync(f, 'utf8').trim()
-    if (id) return id
+    const raw = readFileSync(f, 'utf8').trim()
+    if (raw) {
+      try { const h = JSON.parse(raw); if (h && (h.session || h.app)) return { session: h.session || '', app: h.app || '' } }
+      catch { return { session: '', app: '', ...fromId(raw) } }   // older plain-text file
+    }
   }
-  return cfg?.hubSession || ''
+  return cfg?.hubSession ? { session: '', app: '', ...fromId(cfg.hubSession) } : { session: '', app: '' }
 }
 
-// Record `id` as the hub. Returns the session it replaced ('' if none).
-export function setHub(id) {
-  const old = hubSession(readConfig())
+// The ID to tell other chats to message: the app address when known.
+export const hubAddress = h => h.app || h.session
+
+// Record the hub. A new session replaces the record (keeping the app address only if given);
+// an app address alone is added to the current record. Returns the hub it replaced, or ''.
+export function setHub({ session = '', app = '' }) {
+  const old = readHub()
+  const next = session ? { session, app } : { session: old.session, app }
+  const replaced = session && hubAddress(old) && old.session !== session && !(app && app === old.app) ? hubAddress(old) : ''
   const f = sharedHubFile()
   if (f) {
     mkdirSync(f.replace(/\/hub$/, ''), { recursive: true })
-    writeFileSync(f, id + '\n')
+    writeFileSync(f, JSON.stringify(next) + '\n')
   } else {
-    const p = '.claude/chat-hub.json'
     const cfg = readConfig() || {}
-    writeFileSync(p, JSON.stringify({ ...cfg, hubSession: id }, null, 2) + '\n')
+    writeFileSync('.claude/chat-hub.json', JSON.stringify({ ...cfg, hubSession: next.app || next.session }, null, 2) + '\n')
   }
-  return old === id ? '' : old
+  return replaced
 }

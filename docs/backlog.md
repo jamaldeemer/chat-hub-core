@@ -4,14 +4,8 @@ Open work for chat-hub-core. Newest first within each section.
 
 ## Next
 
-- **The hub's recorded ID can't be messaged.** The hook records Claude
-  Code's session ID, but the desktop app's messaging uses its own session
-  addresses (`local_…`), so a work chat can't send to the ID in its brief
-  and falls back to guessing among linked chats (seen in the sandbox,
-  2026-10-25). Fix: when the hub records itself, also save its app address
-  (from the app's session tools, "self"); briefs and start notes give that
-  for messaging and keep the session ID for matching.
-- **Clearing a long hub without losing track** (goes with the item above).
+- **Clearing a long hub without losing track.** (Now possible: since 0.3.5
+  the hub is recorded by its app address, which survives a clear.)
   1. Nudge: a hook checks the hub's transcript size on each message and,
      past a limit (setting, e.g. `hubReminderKB`), has the hub suggest once
      "I'm getting long; save my notes and start fresh?".
@@ -22,11 +16,6 @@ Open work for chat-hub-core. Newest first within each section.
      file first.
   Clearing gives the chat a new session ID, so the hub must be recorded by
   its app address (which survives a clear) or it stops being the hub.
-- **A hub recorded by app address isn't recognised on restart.**
-  object_creator's hub recorded `local_…` (messageable, good), but the start
-  hook compares against the session ID, so if that chat restarts it's told
-  it's a work chat until `/chat-hub-core:hub` is typed again. Fixed by
-  storing both IDs (first item).
 - **Renaming a chat yourself triggers permission prompts.** The hub keeps
   titles "current", so after the owner renames a work chat, the hub renames
   it back and the app asks permission each time. Fix: the hub treats a
@@ -43,6 +32,43 @@ Open work for chat-hub-core. Newest first within each section.
   re-adds the marketplace once, so do it together with another release.
 - Trim the brief: it repeats "load the work-chat skill", which the start
   hook already does.
+
+## Rules that are too loose (scan, 2026-10-26)
+
+Enforce with a hook (a hard stop instead of a hope); suggested for 0.3.6:
+1. "Never commit on main" (level 1+): refuse `git commit` on `branches.main`.
+2. "Never rebase" (level 1+): refuse `git rebase`.
+3. "Never edit another chat's folder": refuse edits outside the chat's own
+   worktree.
+4. "Commit messages start with your code": check the `3F:` pattern; say
+   what a chat with no code does.
+5. The hub "makes tiny fixes" vs "every change goes to a new chat":
+   contradictory. Decide (e.g. the hub never commits) and enforce it.
+
+Automate what relies on memory:
+6. Chat codes "not used in the last few weeks": a `next-code` script with
+   a log in `.git/chat-hub/`.
+7. After a release, bump `nextRelease` and retag titles (object_creator's
+   hub forgot once): a "release finished" step that does both.
+8. Removing `! ` when CI ends: a CI-watch helper that renames the title.
+
+Make concrete:
+9. "Merged as each finishes": finished = pushed + meets `done` + (level 2)
+   CI green.
+10. "Decide flaky or real": rerun once; passes on the rerun = flaky.
+11. "A merge that needs a design choice": any conflict it can't resolve
+    without changing either side's intent; leave that branch out.
+12. "Written down where this project keeps them": a setting, e.g.
+    `followups: docs/backlog.md`.
+13. "Work that misses its release moves to the next": at each release,
+    retag every chat not included.
+
+## Title format (open, 2026-10-26)
+
+Owner wants a release-first option so an alphabetical sort groups chats by
+release, e.g. `R16~ A3 · Title` or `R16-A3 · Title`. Undecided: exact
+shape, where `! ` goes (after the code keeps sorting intact), and whether
+to pad release numbers (R09). Make it a per-project setting.
 
 ## From moving object_creator onto the plugin (2026-10-25)
 

@@ -1,7 +1,11 @@
 // At the start of every chat: tell Claude which chat-hub-core rules apply here.
 import { execFileSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
-import { hookInput, hubSession, readConfig, say } from './config.mjs'
+import { fileURLToPath } from 'node:url'
+import { dirname } from 'node:path'
+import { hookInput, hubAddress, readConfig, readHub, say } from './config.mjs'
+
+const setHubCmd = `node "${dirname(fileURLToPath(import.meta.url))}/set-hub.mjs"`
 
 // Level 1+: make git use the project's push guard. core.hooksPath lives in .git/config,
 // which isn't committed, so each clone needs it once. Hooks run outside the chat's sandbox,
@@ -22,13 +26,21 @@ if (!c) {
 } else {
   const guard = c.level >= 1 ? ensureGuard() : ''
   const me = hookInput().session_id || ''
-  const hub = hubSession(c)
+  const hub = readHub(c)
+  const to = hubAddress(hub)
   let who
-  if (hub && me && hub === me) {
-    who = 'This chat is the hub: load the chat-hub-core:hub skill now.'
-  } else if (hub) {
-    who = `This chat is a work chat: load the chat-hub-core:work-chat skill now. This project's hub is session ${hub}; ` +
-      'only ever message that session. Become the hub only if the owner runs /chat-hub-core:hub here.'
+  if (hub.session && me && hub.session === me) {
+    who = 'This chat is the hub: load the chat-hub-core:hub skill now.' +
+      (hub.app ? '' : ` Work chats can't message you yet: look up this session's own details with your session tools (its id starts with local_) and run ${setHubCmd} --app <that id>.`)
+  } else if (hub.app) {
+    who = `This project's hub is app session ${hub.app}. Look up this session's own details with your session tools: ` +
+      `if its id is ${hub.app}, this chat is the hub (it was restarted or cleared): load the chat-hub-core:hub skill now and ` +
+      `run ${setHubCmd} --session <this chat's session ID, below> --app ${hub.app}. Otherwise this is a work chat: ` +
+      `load the chat-hub-core:work-chat skill now and only ever message ${hub.app}.`
+  } else if (hub.session) {
+    who = `This chat is a work chat: load the chat-hub-core:work-chat skill now. This project's hub is session ${hub.session}; ` +
+      'only ever message that session (if the app won\'t accept that ID, ask the owner which chat is the hub). ' +
+      'Become the hub only if the owner runs /chat-hub-core:hub here.'
   } else {
     who = 'No hub is recorded yet. If this chat\'s name ends with "Hub" or "Manager" (ignore any code prefix and case), ' +
       'it is the hub: load the chat-hub-core:hub skill now. Otherwise load chat-hub-core:work-chat. Other projects have ' +

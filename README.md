@@ -29,8 +29,8 @@ You need Claude Code (terminal or the desktop app's Code tab), git and Node.
    folder if asked) and type `/chat-hub-core:setup`. It asks a few
    questions, shows what it will write, and writes it when you say yes.
 4. Make one chat the hub: type `/chat-hub-core:hub` in it, or give it a
-   name ending in "Hub" or "Manager" (e.g. `cns Hub`). It records its
-   session ID, so every other chat knows exactly which one it is. Then talk
+   name ending in "Hub" or "Manager" (e.g. `cns Hub`). It records itself,
+   so every other chat knows exactly which one it is. Then talk
    to it.
 
 Setup writes only inside your project, and only after you say yes:
@@ -107,9 +107,10 @@ LEVEL 2 · + CI and checks
 ## How it works
 
 The rules are three skills: `setup`, `hub`, `work-chat`. A start-of-chat
-hook tells each chat which to load, and which session is the hub: the hub
-records its ID in git's own folder (never committed), so every chat and
-worktree sees it at once. Your project gets a settings file,
+hook tells each chat which to load, and which chat is the hub: the hub
+records itself in git's own folder (never committed) by two IDs, Claude's
+session ID and the desktop app's address, so every chat and worktree sees
+it at once, can message it, and it stays the hub after a restart. Your project gets a settings file,
 `.claude/chat-hub.json` (level, release style, what "done" means, the CI
 command), and a three-line note in CLAUDE.md. Nothing in the plugin names
 a git host, CI service or framework.

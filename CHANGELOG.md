@@ -3,6 +3,16 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## 0.3.5
+
+- **The hub is recorded by two IDs:** Claude's session ID and the desktop
+  app's address (`local_…`). Work chats message the app address (the
+  session ID couldn't be messaged), and a hub that restarts or is cleared
+  recognises itself instead of loading the work-chat rules.
+  `set-hub.mjs --session <id> --app <local_…>`; older records still work.
+- **The chat that pushes manages its own `! `** (level 2): it adds it when
+  CI starts and removes it when the run ends. The hub only checks titles.
+
 ## 0.3.4
 
 - The hub's session ID is kept in git's shared folder (`.git/chat-hub/hub`),

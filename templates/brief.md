@@ -3,6 +3,6 @@
 
 **Read first:** <files and docs>
 
-**Your hub:** session <the hub's session ID> ("<its title>"). Report to this session only.
+**Your hub:** <its app address, local_…> (session <its session ID>, "<its title>"). Message it at that address only.
 
 **Done:** <the settings' `done`, plus anything for this task>

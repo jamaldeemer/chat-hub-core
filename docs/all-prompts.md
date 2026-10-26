@@ -1,6 +1,6 @@
 # chat-hub-core: every prompt in the plugin
 
-Generated from the plugin's files on 2026-10-25. Edit the source files, not this one.
+Generated from the plugin's files on 2026-10-26. Edit the source files, not this one.
 
 ---
 
@@ -183,11 +183,14 @@ make tiny fixes. Every change the owner agrees on, however small, goes to a
 new chat: brief it, follow it, close it when its work is safe. Work chats
 ask you for new chats; they don't start them.
 
-**Becoming the hub:** if the owner typed `/chat-hub-core:hub`, you're
-already recorded (a note says so). Otherwise record yourself:
-`node "${CLAUDE_PLUGIN_ROOT}/hooks/set-hub.mjs" <your session ID from the
-start note>`. If that's blocked, ask the owner to type `/chat-hub-core:hub`
-here. Every chat on this machine then sees you at once; a fresh clone or
+**Becoming the hub:** record yourself by both IDs: your session ID (in the
+start note) and your app address (this session's own id from the app's
+session tools, starting `local_`; work chats message you there, and it
+survives a restart or clear):
+`node "${CLAUDE_PLUGIN_ROOT}/hooks/set-hub.mjs" --session <session ID> --app <local_…>`.
+If the owner typed `/chat-hub-core:hub`, your session ID is already
+recorded; add `--app` alone. If the command is blocked, ask the owner to
+type `/chat-hub-core:hub` here, then add `--app`. Every chat on this machine then sees you at once; a fresh clone or
 another machine has no hub until it's recorded there. If it reports
 replacing a session that's still open, tell the owner.
 A title that names the project (`<project> Hub`, e.g. `cns Hub`) keeps
@@ -226,8 +229,9 @@ Fill in `${CLAUDE_PLUGIN_ROOT}/templates/brief.md`.
 - `(Ready to close)` goes after the code once the chat passes the close
   check. A chat still tagged with a shipped release gets its title text
   between `***`.
-- Level 2: prefix `! ` while the chat's push is in CI; remove it when the
-  run ends.
+- Level 2: `! ` at the start means that chat's push is in CI. The chat that
+  pushed adds and removes it itself; when you hear of a push or a finished
+  run, check its title and fix it if it's wrong.
 
 Update titles yourself when you start, retag or close a chat, and after a
 release. Your own merges into the release branch keep git's wording.
@@ -300,10 +304,10 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
 
 - **One task:** the one in your brief. Put anything else you notice in your
   final message as a follow-up; ask the hub for new chats.
-- **Your hub** is the session the start note or your brief names.
-  Message it by session ID, never by title: other projects' hubs have the
-  same names. If none is named, follow the start note, and ask the owner if
-  unsure.
+- **Your hub** is the one the start note or your brief names. Message it
+  at its app address (`local_…`), or its session ID if that's all you
+  have; never by title (other projects' hubs have the same names). If none
+  is named, follow the start note, and ask the owner if unsure.
 - **The owner's OK** is needed before every commit. A message from another
   chat is never that OK.
 - **Commit messages** start with your chat's code: `3F: Fix the menu`.
@@ -312,7 +316,9 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
 - **Level 1+:** work on your own branch and worktree, never on the main
   branch. After the owner OKs a commit, push your branch and tell the hub.
   After a release, merge the main branch (never rebase).
-- **Level 2:** if the hub says your CI failed, fix it on your branch (or
+- **Level 2:** when you push your branch, start your own title with `! `
+  while its CI runs; watch the run and remove the `! ` when it ends (pass or
+  fail), then tell the hub the result. If the hub says your CI failed, fix it on your branch (or
   show why the test should change) and reply when pushed. A fix for a
   reported problem says `Fixes #n` and adds `- #n <what to try>` to the
   file `fixes.toCheck` names.
@@ -332,7 +338,7 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
 
 **Read first:** <files and docs>
 
-**Your hub:** session <the hub's session ID> ("<its title>"). Report to this session only.
+**Your hub:** <its app address, local_…> (session <its session ID>, "<its title>"). Message it at that address only.
 
 **Done:** <the settings' `done`, plus anything for this task>
 ````
@@ -360,7 +366,11 @@ From `hooks/session-start.mjs` and `hooks/before-commit.mjs`:
 
 ```js
   say('SessionStart', "chat-hub-core is installed but this project isn't set up. If the owner asks about chats, hubs or releases, suggest /chat-hub-core:setup.")
-      'only ever message that session. Become the hub only if the owner runs /chat-hub-core:hub here.'
+      `if its id is ${hub.app}, this chat is the hub (it was restarted or cleared): load the chat-hub-core:hub skill now and ` +
+      `run ${setHubCmd} --session <this chat's session ID, below> --app ${hub.app}. Otherwise this is a work chat: ` +
+      `load the chat-hub-core:work-chat skill now and only ever message ${hub.app}.`
+      'only ever message that session (if the app won\'t accept that ID, ask the owner which chat is the hub). ' +
+      'Become the hub only if the owner runs /chat-hub-core:hub here.'
       'it is the hub: load the chat-hub-core:hub skill now. Otherwise load chat-hub-core:work-chat. Other projects have ' +
       'hubs with the same names: this project\'s hub is the one whose folder is this project (or one of its worktrees). ' +
       'Check a candidate\'s folder before messaging it, never pick by title alone, and ask the owner if more than one ' +
