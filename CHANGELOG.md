@@ -3,6 +3,13 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## 0.3.7
+
+- The hub's title shows only the soonest next release (`· R15+`), not one
+  of each kind.
+- `(Ready to close)` goes at the very start of a chat's title, so those
+  chats sort to the top.
+
 ## 0.3.6
 
 - **Hard stops for rules that used to rely on memory** (a new guard hook;

@@ -23,6 +23,21 @@ Open work for chat-hub-core. Newest first within each section.
   wording and only adds or updates the code and release tag (and asks
   first if even that would change it). Plus: setup offers to pre-approve
   the rename tool so the remaining prompts go away (see "Earlier ideas").
+- **A chat that isn't in any release** (a plain "talk" chat): for
+  questions, research or planning that won't ship code. No release tag in
+  its title (e.g. `A4 · Compare slicers`, or release-first with a fixed
+  prefix like `R-- A4 · …` so it sorts apart), no branch or worktree, and
+  the hub doesn't retag it at releases or count it when deciding what's
+  ready. Decide: does it get a code, can it become a work chat later, and
+  does the close check still apply.
+- **Match title conventions to how chats get sorted.** Look into which
+  lists the owner actually uses (the desktop app's sidebar and its sort
+  options: recent activity, alphabetical, groups or sections; the terminal's
+  session list) and which title formats work with each. E.g. "(Ready to
+  close)" first and release-first titles only help an alphabetical sort;
+  recent-activity sorting ignores titles entirely. The app's sidebar can
+  also group sessions, so the hub could put chats into a group per release
+  (or a "Ready to close" group) instead of encoding it all in titles.
 - **Less confusing marketplace name.** The marketplace is `chat-hub` and
   the plugin `chat-hub-core`, so commands mix both
   (`marketplace update chat-hub`, `plugin update chat-hub-core@chat-hub`)
@@ -127,6 +142,15 @@ Findings 1–3 shipped in 0.3.4. Still open:
   `claude plugin update` is run there; confirm this and say so in setup and
   the README (setup's "pin" step may not be needed at all).
 - Show the running version in each chat's start note.
+
+## Settings (2026-10-26)
+
+- **Settings changes reach worktrees only after a release:** each worktree
+  reads its own copy of `.claude/chat-hub.json`. Option: hooks and skills
+  read the main checkout's copy, so a change applies to every chat at once.
+- **Personal preferences in a tracked file:** add an untracked
+  `.claude/chat-hub.local.json` that overrides the shared settings for
+  things like `titles`, so they don't go into the repo.
 
 ## Earlier ideas
 

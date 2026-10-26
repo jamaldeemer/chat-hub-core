@@ -29,9 +29,10 @@ names, and add `--replace` only if they say to. Every chat on this machine then 
 another machine has no hub until it's recorded there. If it reports
 replacing a session that's still open, tell the owner.
 **Your own title** is the owner's name for you plus the next release:
-`<owner's name> · R<next>`, e.g. `Object Creator Hub · R15`, or with
-tick-tock the next of each kind, `Session Manager · R15+ R16~` (padded to
-two digits if `titles` is release-first). Only ever change that suffix,
+`<owner's name> · R<next>`: `nextRelease`, the soonest release, e.g.
+`Object Creator Hub · R15`, or with tick-tock its kind too,
+`Session Manager · R15+` (padded to two digits if `titles` is
+release-first). Only ever change that suffix,
 when it's missing or after a release; never change or suggest changing
 the rest. You're found by your recorded IDs, not your name.
 
@@ -71,9 +72,10 @@ Two styles, set by `titles` in the settings:
   "none". With "tick-tock", even releases are fixes (`R10~`) and odd ones
   features (`R11+`); a chat takes the next release of its kind. Work that
   misses its release moves to the next.
-- `(Ready to close)` goes right after the code once the chat passes the
-  close check. A chat still tagged with a shipped release gets its title
-  text between `***`.
+- `(Ready to close) ` goes at the very start of the title once the chat
+  passes the close check, so those chats sort to the top, e.g.
+  `(Ready to close) R16~ A3 · Fix menu spacing`. A chat still tagged with a
+  shipped release gets its title text between `***`.
 - Level 2: the in-CI mark means that chat's push is in CI: `! ` at the very
   start (code-first) or `(!)` right after the code (release-first, e.g.
   `R16~ A3 (!) · Fix menu spacing`). The chat that pushed adds and removes

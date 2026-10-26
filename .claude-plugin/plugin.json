@@ -1,6 +1,6 @@
 {
   "name": "chat-hub-core",
-  "version": "0.3.6",
+  "version": "0.3.7",
   "description": "My hub-worker system for Claude Code chats: one chat runs the rest. Optionally, releases gated on CI.",
   "author": {
     "name": "Jamal Deemer"
