@@ -11,6 +11,13 @@ Open work for chat-hub-core. Newest first within each section.
   2026-10-25). Fix: when the hub records itself, also save its app address
   (from the app's session tools, "self"); briefs and start notes give that
   for messaging and keep the session ID for matching.
+- **Less confusing marketplace name.** The marketplace is `chat-hub` and
+  the plugin `chat-hub-core`, so commands mix both
+  (`marketplace update chat-hub`, `plugin update chat-hub-core@chat-hub`)
+  and it's easy to type the wrong one. Pick names that read clearly
+  (e.g. marketplace `jamaldeemer` or `chat-hub-plugins`), keeping room for
+  a later `chat-hub-local`. Renaming means every project removes and
+  re-adds the marketplace once, so do it together with another release.
 - Trim the brief: it repeats "load the work-chat skill", which the start
   hook already does.
 
