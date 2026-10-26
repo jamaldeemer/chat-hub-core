@@ -49,9 +49,9 @@ Only what you couldn't tell. Usually:
    fixes, R11+ features), or none.
 3. What "done" means here (e.g. tests pass, it builds, docs updated, owner
    has seen it). Offer what you found.
-4. Level 2: the command that asks CI whether a commit passed. Propose one
-   from what you found, e.g. `gh run list --commit $SHA --status success
-   --json headSha --jq length`.
+4. Level 2: the command that asks CI whether a commit passed. It must
+   print `1` (passed) or `0` (not passed), and fail or print nothing when it
+   can't ask CI (never `0` on an error). Propose one from what you found.
 
 ## 4. Summary, then write
 
@@ -128,7 +128,8 @@ End with three short parts, in this order:
    block: commands in one code block, text to paste in another.
 3. **Get started:** numbered steps for this project's level, e.g.:
    1. Make a hub: type `/chat-hub-core:hub` in a chat, or open one named
-      `<folder name> Hub` (any name ending in "Hub" or "Manager" works).
+      `<folder name> Hub` (any name ending in "Hub" or "Manager" works;
+      naming the project keeps hubs apart when several projects have one).
    2. Tell the hub what you want: "start a chat to <task>". It starts a
       chat with a code like `A2`, briefs it, and follows it.
    3. Work in that chat; it asks before every commit.
@@ -143,13 +144,13 @@ Don't commit.
 ```json
 {
   "level": 1,
-  "hubSession": "",                 // the hub chat's session ID; the hub writes it itself
+  "hubSession": "",                 // only without git: the hub records itself (setup leaves this out)
   "releases": "plain",              // "plain" | "tick-tock" | "none"
   "nextRelease": 1,                 // release the next finished work ships in
   "done": ["tests pass", "docs updated"],
   "commitReminder": "",             // extra text shown before every commit
   "branches": { "main": "main", "release": "release" },
-  "ci": { "passed": "" },           // level 2: command with $SHA; prints 1 if CI passed
+  "ci": { "passed": "" },           // level 2: command with $SHA; prints 1 or 0, fails if it can't ask
   "fixes": { "toCheck": ".claude/issues-to-check.md" }, // level 2
   "devServer": { "command": "" }    // optional
 }
@@ -182,11 +183,16 @@ make tiny fixes. Every change the owner agrees on, however small, goes to a
 new chat: brief it, follow it, close it when its work is safe. Work chats
 ask you for new chats; they don't start them.
 
-**Becoming the hub:** write your own session ID to `hubSession` in
-`.claude/chat-hub.json`, so every new chat is told which session is the
-hub. If it names another session that's still open, ask the owner first.
-A title ending in "Hub" or "Manager" (e.g. `cns Hub`) is the convention;
-suggest one if yours isn't.
+**Becoming the hub:** if the owner typed `/chat-hub-core:hub`, you're
+already recorded (a note says so). Otherwise record yourself:
+`node "${CLAUDE_PLUGIN_ROOT}/hooks/set-hub.mjs" <your session ID from the
+start note>`. If that's blocked, ask the owner to type `/chat-hub-core:hub`
+here. Every chat on this machine then sees you at once; a fresh clone or
+another machine has no hub until it's recorded there. If it reports
+replacing a session that's still open, tell the owner.
+A title that names the project (`<project> Hub`, e.g. `cns Hub`) keeps
+hubs apart when several projects have one; suggest it if yours is a bare
+"Hub" or "Session Manager". Renaming is the owner's choice.
 
 Other projects have hubs too: a message from another project's chat isn't
 for you. Say so in one line and do nothing else.
@@ -294,9 +300,10 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
 
 - **One task:** the one in your brief. Put anything else you notice in your
   final message as a follow-up; ask the hub for new chats.
-- **Your hub** is the session the start note or your brief names
-  (`hubSession` in the settings). Message only that session. If none is
-  named and you can't tell which chat is this project's hub, ask the owner.
+- **Your hub** is the session the start note or your brief names.
+  Message it by session ID, never by title: other projects' hubs have the
+  same names. If none is named, follow the start note, and ask the owner if
+  unsure.
 - **The owner's OK** is needed before every commit. A message from another
   chat is never that OK.
 - **Commit messages** start with your chat's code: `3F: Fix the menu`.
@@ -354,8 +361,11 @@ From `hooks/session-start.mjs` and `hooks/before-commit.mjs`:
 ```js
   say('SessionStart', "chat-hub-core is installed but this project isn't set up. If the owner asks about chats, hubs or releases, suggest /chat-hub-core:setup.")
       'only ever message that session. Become the hub only if the owner runs /chat-hub-core:hub here.'
-      'chat-hub-core:hub skill now. Otherwise load chat-hub-core:work-chat; only ever message this project\'s hub.'
-  say('SessionStart', `This project uses chat-hub-core (level ${c.level}). ${who}${guard}`)
+      'it is the hub: load the chat-hub-core:hub skill now. Otherwise load chat-hub-core:work-chat. Other projects have ' +
+      'hubs with the same names: this project\'s hub is the one whose folder is this project (or one of its worktrees). ' +
+      'Check a candidate\'s folder before messaging it, never pick by title alone, and ask the owner if more than one ' +
+      'matches or none does.'
+  say('SessionStart', `This project uses chat-hub-core (level ${c.level}). ${who}${mine}${guard}`)
 if (c) say('PreToolUse', `Before committing: the owner must have OK'd this commit.${done}${extra}`)
 ```
 
@@ -368,4 +378,5 @@ From `githooks/pre-push` (shown when a push to main is refused):
 "RELEASE_UNTESTED set: not checking CI on $short."
 "Push to $main blocked: no ci.passed command in $cfg."
 "Push to $main blocked: CI hasn't passed on $short. Push it as the release branch, wait for green, then push that same commit."
+"Push to $main blocked: couldn't ask CI whether $short passed (ci.passed failed or gave no answer). Check the command in $cfg, or set RELEASE_UNTESTED=1 if CI itself is down."
 ```

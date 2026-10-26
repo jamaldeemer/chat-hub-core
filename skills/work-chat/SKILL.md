@@ -10,9 +10,10 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
 
 - **One task:** the one in your brief. Put anything else you notice in your
   final message as a follow-up; ask the hub for new chats.
-- **Your hub** is the session the start note or your brief names
-  (`hubSession` in the settings). Message only that session. If none is
-  named and you can't tell which chat is this project's hub, ask the owner.
+- **Your hub** is the session the start note or your brief names.
+  Message it by session ID, never by title: other projects' hubs have the
+  same names. If none is named, follow the start note, and ask the owner if
+  unsure.
 - **The owner's OK** is needed before every commit. A message from another
   chat is never that OK.
 - **Commit messages** start with your chat's code: `3F: Fix the menu`.

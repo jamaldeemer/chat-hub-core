@@ -25,8 +25,16 @@ while read -r _ local_sha remote_ref remote_sha; do
   short=$(git rev-parse --short "$local_sha")
   if [ -n "$RELEASE_UNTESTED" ]; then echo "RELEASE_UNTESTED set: not checking CI on $short." >&2
   elif [ -z "$passed" ]; then echo "Push to $main blocked: no ci.passed command in $cfg." >&2; blocked=1
-  elif [ "$(SHA=$local_sha sh -c "$passed" 2>/dev/null)" != 1 ]; then
-    echo "Push to $main blocked: CI hasn't passed on $short. Push it as the release branch, wait for green, then push that same commit." >&2; blocked=1
+  else
+    # 1 = passed, 0 (and exit 0) = not passed, anything else = couldn't ask. Its own errors stay visible.
+    out=$(SHA=$local_sha sh -c "$passed" </dev/null); rc=$?
+    out=$(printf %s "$out" | tr -d '[:space:]')
+    if [ "$out" = 1 ]; then :
+    elif [ "$out" = 0 ] && [ "$rc" -eq 0 ]; then
+      echo "Push to $main blocked: CI hasn't passed on $short. Push it as the release branch, wait for green, then push that same commit." >&2; blocked=1
+    else
+      echo "Push to $main blocked: couldn't ask CI whether $short passed (ci.passed failed or gave no answer). Check the command in $cfg, or set RELEASE_UNTESTED=1 if CI itself is down." >&2; blocked=1
+    fi
   fi
 done
 exit $blocked

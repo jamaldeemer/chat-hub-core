@@ -12,7 +12,7 @@ You need Claude Code (terminal or the desktop app's Code tab), git and Node.
 1. Add this marketplace (once per computer), in a terminal:
 
    ```
-   claude plugin marketplace add jamaldeemer/chat-hub-core#v0.3.3
+   claude plugin marketplace add jamaldeemer/chat-hub-core#v0.3.4
    ```
 
 2. Turn the plugin on in your project:
@@ -108,7 +108,9 @@ LEVEL 2 · + CI and checks
 ## How it works
 
 The rules are three skills: `setup`, `hub`, `work-chat`. A start-of-chat
-hook tells each chat which to load. Your project gets a settings file,
+hook tells each chat which to load, and which session is the hub: the hub
+records its ID in git's own folder (never committed), so every chat and
+worktree sees it at once. Your project gets a settings file,
 `.claude/chat-hub.json` (level, release style, what "done" means, the CI
 command), and a three-line note in CLAUDE.md. Nothing in the plugin names
 a git host, CI service or framework.

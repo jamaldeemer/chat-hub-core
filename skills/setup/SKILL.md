@@ -40,9 +40,9 @@ Only what you couldn't tell. Usually:
    fixes, R11+ features), or none.
 3. What "done" means here (e.g. tests pass, it builds, docs updated, owner
    has seen it). Offer what you found.
-4. Level 2: the command that asks CI whether a commit passed. Propose one
-   from what you found, e.g. `gh run list --commit $SHA --status success
-   --json headSha --jq length`.
+4. Level 2: the command that asks CI whether a commit passed. It must
+   print `1` (passed) or `0` (not passed), and fail or print nothing when it
+   can't ask CI (never `0` on an error). Propose one from what you found.
 
 ## 4. Summary, then write
 
@@ -119,7 +119,8 @@ End with three short parts, in this order:
    block: commands in one code block, text to paste in another.
 3. **Get started:** numbered steps for this project's level, e.g.:
    1. Make a hub: type `/chat-hub-core:hub` in a chat, or open one named
-      `<folder name> Hub` (any name ending in "Hub" or "Manager" works).
+      `<folder name> Hub` (any name ending in "Hub" or "Manager" works;
+      naming the project keeps hubs apart when several projects have one).
    2. Tell the hub what you want: "start a chat to <task>". It starts a
       chat with a code like `A2`, briefs it, and follows it.
    3. Work in that chat; it asks before every commit.
@@ -134,13 +135,13 @@ Don't commit.
 ```json
 {
   "level": 1,
-  "hubSession": "",                 // the hub chat's session ID; the hub writes it itself
+  "hubSession": "",                 // only without git: the hub records itself (setup leaves this out)
   "releases": "plain",              // "plain" | "tick-tock" | "none"
   "nextRelease": 1,                 // release the next finished work ships in
   "done": ["tests pass", "docs updated"],
   "commitReminder": "",             // extra text shown before every commit
   "branches": { "main": "main", "release": "release" },
-  "ci": { "passed": "" },           // level 2: command with $SHA; prints 1 if CI passed
+  "ci": { "passed": "" },           // level 2: command with $SHA; prints 1 or 0, fails if it can't ask
   "fixes": { "toCheck": ".claude/issues-to-check.md" }, // level 2
   "devServer": { "command": "" }    // optional
 }

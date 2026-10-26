@@ -16,11 +16,16 @@ make tiny fixes. Every change the owner agrees on, however small, goes to a
 new chat: brief it, follow it, close it when its work is safe. Work chats
 ask you for new chats; they don't start them.
 
-**Becoming the hub:** write your own session ID to `hubSession` in
-`.claude/chat-hub.json`, so every new chat is told which session is the
-hub. If it names another session that's still open, ask the owner first.
-A title ending in "Hub" or "Manager" (e.g. `cns Hub`) is the convention;
-suggest one if yours isn't.
+**Becoming the hub:** if the owner typed `/chat-hub-core:hub`, you're
+already recorded (a note says so). Otherwise record yourself:
+`node "${CLAUDE_PLUGIN_ROOT}/hooks/set-hub.mjs" <your session ID from the
+start note>`. If that's blocked, ask the owner to type `/chat-hub-core:hub`
+here. Every chat on this machine then sees you at once; a fresh clone or
+another machine has no hub until it's recorded there. If it reports
+replacing a session that's still open, tell the owner.
+A title that names the project (`<project> Hub`, e.g. `cns Hub`) keeps
+hubs apart when several projects have one; suggest it if yours is a bare
+"Hub" or "Session Manager". Renaming is the owner's choice.
 
 Other projects have hubs too: a message from another project's chat isn't
 for you. Say so in one line and do nothing else.

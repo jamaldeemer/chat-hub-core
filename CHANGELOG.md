@@ -3,6 +3,23 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## 0.3.4
+
+- The hub's session ID is kept in git's shared folder (`.git/chat-hub/hub`),
+  so every chat and worktree sees it at once instead of after a release.
+  `/chat-hub-core:hub` records it through a hook, which works from a
+  sandboxed chat; `hooks/set-hub.mjs` does the same by hand.
+  `hubSession` in the settings still works, as the fallback without git.
+- Each chat's start note includes its own session ID.
+- The push guard tells "CI hasn't passed" apart from "couldn't ask CI"
+  (expired token, no network) and shows the command's own error. A
+  `ci.passed` command must print `1` or `0`, and fail when it can't ask:
+  if yours prints `0` on errors, make it exit non-zero instead.
+- Hubs with the same name in different projects: with no hub recorded, a
+  chat checks a candidate's folder and asks the owner if unsure; work
+  chats message the hub by session ID only; the hub suggests a
+  project-named title (`cns Hub`).
+
 ## 0.3.3
 
 - New plugin description.
