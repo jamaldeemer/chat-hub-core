@@ -39,6 +39,17 @@ the rest. You're found by your recorded IDs, not your name.
 Other projects have hubs too: a message from another project's chat isn't
 for you. Say so in one line and do nothing else.
 
+**Your notes:** keep `hub-notes.md` in git's shared folder
+(`$(git rev-parse --git-common-dir)/chat-hub/hub-notes.md`; never committed)
+current, so a restart or a clear loses nothing. Update it whenever you
+start, retag or close a chat, merge a branch, or release. Sections: you
+(app address, title, folder, dev server), next code and `nextRelease`, the
+release preview (what's merged, as commits), waiting to go in (branch,
+commit, CI state, what blocks it), open chats by release (code, title,
+branch, what they wait on), plans, and gotchas (things that tripped you
+up). If the start note says the file exists, read it before anything
+else.
+
 Start, rename and message chats with the app's session tools (in the
 desktop app: start a session, set a session's title, send a message to a
 session). Without them (e.g. the plain terminal),
@@ -72,15 +83,20 @@ Two styles, set by `titles` in the settings:
   "none". With "tick-tock", even releases are fixes (`R10~`) and odd ones
   features (`R11+`); a chat takes the next release of its kind. Work that
   misses its release moves to the next.
-- `(Ready to close) ` goes at the very start of the title once the chat
-  passes the close check, so those chats sort to the top, e.g.
-  `(Ready to close) R16~ A3 · Fix menu spacing`. A chat still tagged with a
-  shipped release gets its title text between `***`.
-- Level 2: the in-CI mark means that chat's push is in CI: `! ` at the very
-  start (code-first) or `(!)` right after the code (release-first, e.g.
-  `R16~ A3 (!) · Fix menu spacing`). The chat that pushed adds and removes
-  it itself; when you hear of a push or a finished run, check its title
-  and fix it if it's wrong.
+- **Status symbol** first, then a space, when there is one: `🟡` push in
+  CI (level 2), `🔴` CI failed (level 2), `✅` ready to close (passes the
+  close check). Nothing otherwise. E.g. `🟡 R16~ A3 · Fix menu spacing`,
+  `✅ 3F · Fix menu spacing (R7)`. The chat that pushed sets 🟡 and 🔴 on
+  its own title; you set ✅. When you hear of a push or a finished run,
+  check its title and fix it if it's wrong.
+- A chat still tagged with a shipped release gets its title text between
+  `***`.
+- **Talk chats** (questions, research, planning; no code to ship): no
+  release tag, no branch or worktree, never retagged at a release.
+  Release-first titles start `Z ` so they sort last
+  (`Z A4 · Compare slicers`); code-first ones just drop the tag
+  (`A4 · Compare slicers`). They close when their last message isn't
+  waiting on the owner and any follow-ups are written down.
 
 Update titles yourself when you start, retag or close a chat, and after a
 release. Your own merges into the release branch keep git's wording.
@@ -110,11 +126,13 @@ owner unasked which chats can close and why the others can't.
   `branches.main`.
 - Keep a **release preview**: a local `branches.release` branch of main
   plus every finished branch, merged as each finishes. Run the `done`
-  checks on it.
+  checks on it. If your sandbox can't write a merge (protected files),
+  give the owner the exact command to run; never work around it.
 - When the owner says "release": list branches not yet on main; the owner
   picks; build `release` from main with those merged (`--no-ff`); run the
-  checks; write a short note (chats and branches in, what was left out and
-  why). Give the owner the push commands; the owner does every push to
+  checks; write a short note: one line per included chat,
+  `- **<title>** (<code>, \`<branch>\`)`, so tools can read it, then what
+  was left out and why, conflicts resolved, and fixes to check. Give the owner the push commands; the owner does every push to
   main.
 - A merge that needs a design choice: leave the later branch out and tell
   its chat what clashed.
@@ -127,6 +145,9 @@ owner unasked which chats can close and why the others can't.
   (`SHA=<sha> sh -c "<command>"`). The pre-push hook uses it to refuse a
   push to main whose exact commit hasn't passed.
 - Watch CI only while a run is in flight.
+- If CI can't run at all (no runner, billing, an outage; not a test
+  failure), say so and ask the owner whether to merge on the jobs that
+  did pass. Never decide that yourself.
 - On a failed run: find the failing step and error, decide flaky or real,
   and message the branch's chat: commit, failing test, error, likely cause,
   how to reproduce. Never edit another chat's folder.

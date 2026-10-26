@@ -3,6 +3,22 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## 0.3.8
+
+Pulled in from object_creator's hub:
+- **Status symbols** first in titles: 🟡 push in CI, 🔴 CI failed, ✅ ready
+  to close (replacing `! `, `(!)` and `(Ready to close)`). The pushing chat
+  sets 🟡/🔴; the hub sets ✅.
+- **Talk chats** for questions, research and planning: no release tag, no
+  branch; `Z ` first in release-first titles so they sort last.
+- **Hub notes** in `.git/chat-hub/hub-notes.md`, kept current by the hub;
+  the start note tells a starting hub to read them first.
+- Release notes list included chats as `- **Title** (CODE, `branch`)`.
+- If CI can't run at all, the hub asks the owner whether to merge on the
+  jobs that passed. If its sandbox blocks a merge, it gives the owner the
+  command.
+- Work chats drive only their own browser tab, by its tab ID.
+
 ## 0.3.7
 
 - The hub's title shows only the soonest next release (`· R15+`), not one

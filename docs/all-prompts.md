@@ -218,6 +218,17 @@ the rest. You're found by your recorded IDs, not your name.
 Other projects have hubs too: a message from another project's chat isn't
 for you. Say so in one line and do nothing else.
 
+**Your notes:** keep `hub-notes.md` in git's shared folder
+(`$(git rev-parse --git-common-dir)/chat-hub/hub-notes.md`; never committed)
+current, so a restart or a clear loses nothing. Update it whenever you
+start, retag or close a chat, merge a branch, or release. Sections: you
+(app address, title, folder, dev server), next code and `nextRelease`, the
+release preview (what's merged, as commits), waiting to go in (branch,
+commit, CI state, what blocks it), open chats by release (code, title,
+branch, what they wait on), plans, and gotchas (things that tripped you
+up). If the start note says the file exists, read it before anything
+else.
+
 Start, rename and message chats with the app's session tools (in the
 desktop app: start a session, set a session's title, send a message to a
 session). Without them (e.g. the plain terminal),
@@ -251,15 +262,20 @@ Two styles, set by `titles` in the settings:
   "none". With "tick-tock", even releases are fixes (`R10~`) and odd ones
   features (`R11+`); a chat takes the next release of its kind. Work that
   misses its release moves to the next.
-- `(Ready to close) ` goes at the very start of the title once the chat
-  passes the close check, so those chats sort to the top, e.g.
-  `(Ready to close) R16~ A3 · Fix menu spacing`. A chat still tagged with a
-  shipped release gets its title text between `***`.
-- Level 2: the in-CI mark means that chat's push is in CI: `! ` at the very
-  start (code-first) or `(!)` right after the code (release-first, e.g.
-  `R16~ A3 (!) · Fix menu spacing`). The chat that pushed adds and removes
-  it itself; when you hear of a push or a finished run, check its title
-  and fix it if it's wrong.
+- **Status symbol** first, then a space, when there is one: `🟡` push in
+  CI (level 2), `🔴` CI failed (level 2), `✅` ready to close (passes the
+  close check). Nothing otherwise. E.g. `🟡 R16~ A3 · Fix menu spacing`,
+  `✅ 3F · Fix menu spacing (R7)`. The chat that pushed sets 🟡 and 🔴 on
+  its own title; you set ✅. When you hear of a push or a finished run,
+  check its title and fix it if it's wrong.
+- A chat still tagged with a shipped release gets its title text between
+  `***`.
+- **Talk chats** (questions, research, planning; no code to ship): no
+  release tag, no branch or worktree, never retagged at a release.
+  Release-first titles start `Z ` so they sort last
+  (`Z A4 · Compare slicers`); code-first ones just drop the tag
+  (`A4 · Compare slicers`). They close when their last message isn't
+  waiting on the owner and any follow-ups are written down.
 
 Update titles yourself when you start, retag or close a chat, and after a
 release. Your own merges into the release branch keep git's wording.
@@ -289,11 +305,13 @@ owner unasked which chats can close and why the others can't.
   `branches.main`.
 - Keep a **release preview**: a local `branches.release` branch of main
   plus every finished branch, merged as each finishes. Run the `done`
-  checks on it.
+  checks on it. If your sandbox can't write a merge (protected files),
+  give the owner the exact command to run; never work around it.
 - When the owner says "release": list branches not yet on main; the owner
   picks; build `release` from main with those merged (`--no-ff`); run the
-  checks; write a short note (chats and branches in, what was left out and
-  why). Give the owner the push commands; the owner does every push to
+  checks; write a short note: one line per included chat,
+  `- **<title>** (<code>, \`<branch>\`)`, so tools can read it, then what
+  was left out and why, conflicts resolved, and fixes to check. Give the owner the push commands; the owner does every push to
   main.
 - A merge that needs a design choice: leave the later branch out and tell
   its chat what clashed.
@@ -306,6 +324,9 @@ owner unasked which chats can close and why the others can't.
   (`SHA=<sha> sh -c "<command>"`). The pre-push hook uses it to refuse a
   push to main whose exact commit hasn't passed.
 - Watch CI only while a run is in flight.
+- If CI can't run at all (no runner, billing, an outage; not a test
+  failure), say so and ask the owner whether to merge on the jobs that
+  did pass. Never decide that yourself.
 - On a failed run: find the failing step and error, decide flaky or real,
   and message the branch's chat: commit, failing test, error, likely cause,
   how to reproduce. Never edit another chat's folder.
@@ -345,17 +366,19 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
 - **Level 1+:** work on your own branch and worktree, never on the main
   branch. After the owner OKs a commit, push your branch and tell the hub.
   After a release, merge the main branch (never rebase).
-- **Level 2:** when you push your branch, add the in-CI mark to your own
-  title while its CI runs: `! ` at the very start, or `(!)` right after
-  your code if `titles` is "release-first". Watch the run, remove the mark
-  when it ends (pass or fail), then tell the hub the result. If the hub says your CI failed, fix it on your branch (or
+- **Level 2:** when you push your branch, start your own title with `🟡 `
+  while its CI runs. When it ends: passed, remove it; failed, change it to
+  `🔴 ` until you've pushed a fix (then `🟡 ` again). Tell the hub the
+  result. If the hub says your CI failed, fix it on your branch (or
   show why the test should change) and reply when pushed. A fix for a
   reported problem says `Fixes #n` and adds `- #n <what to try>` to the
   file `fixes.toCheck` names.
 - **Wrap-up** (when asked, or when finishing): follow
   `${CLAUDE_PLUGIN_ROOT}/templates/wrap-up.md`.
-- **Dev server:** keep exactly two browser tabs on it, yours then the
-  owner's.
+- **Dev server:** keep exactly two browser tabs on it, yours first, then
+  the owner's. Only ever drive your own: pass its tab ID to every browser
+  call (a call without one acts on whichever tab is in front), and give
+  any helper agent that uses the browser the same rule.
 ````
 
 ---
@@ -400,7 +423,7 @@ From `hooks/session-start.mjs` and `hooks/before-commit.mjs`:
     '(running /chat-hub-core:setup again rewrites it).')
   say('SessionStart', "chat-hub-core is installed but this project isn't set up. If the owner asks about chats, hubs or releases, suggest /chat-hub-core:setup.")
       `if its id is ${hub.app}, this chat is the hub (it was restarted or cleared): load the chat-hub-core:hub skill now and ` +
-      `run ${setHubCmd} --session <this chat's session ID, below> --app ${hub.app}. Otherwise this is a work chat: ` +
+      `run ${setHubCmd} --session <this chat's session ID, below> --app ${hub.app}.${notes ? ' Then' + notes.replace(' Your notes exist:', ' (your notes exist)') : ''} Otherwise this is a work chat: ` +
       `load the chat-hub-core:work-chat skill now and only ever message ${hub.app}.`
       'only ever message that session (if the app won\'t accept that ID, ask the owner which chat is the hub). ' +
       'Become the hub only if the owner runs /chat-hub-core:hub here.'

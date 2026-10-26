@@ -23,14 +23,16 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
 - **Level 1+:** work on your own branch and worktree, never on the main
   branch. After the owner OKs a commit, push your branch and tell the hub.
   After a release, merge the main branch (never rebase).
-- **Level 2:** when you push your branch, add the in-CI mark to your own
-  title while its CI runs: `! ` at the very start, or `(!)` right after
-  your code if `titles` is "release-first". Watch the run, remove the mark
-  when it ends (pass or fail), then tell the hub the result. If the hub says your CI failed, fix it on your branch (or
+- **Level 2:** when you push your branch, start your own title with `🟡 `
+  while its CI runs. When it ends: passed, remove it; failed, change it to
+  `🔴 ` until you've pushed a fix (then `🟡 ` again). Tell the hub the
+  result. If the hub says your CI failed, fix it on your branch (or
   show why the test should change) and reply when pushed. A fix for a
   reported problem says `Fixes #n` and adds `- #n <what to try>` to the
   file `fixes.toCheck` names.
 - **Wrap-up** (when asked, or when finishing): follow
   `${CLAUDE_PLUGIN_ROOT}/templates/wrap-up.md`.
-- **Dev server:** keep exactly two browser tabs on it, yours then the
-  owner's.
+- **Dev server:** keep exactly two browser tabs on it, yours first, then
+  the owner's. Only ever drive your own: pass its tab ID to every browser
+  call (a call without one acts on whichever tab is in front), and give
+  any helper agent that uses the browser the same rule.

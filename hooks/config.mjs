@@ -40,6 +40,12 @@ function sharedHubFile() {
 // One ID on its own: an app address starts with `local_`, anything else is a session ID.
 const fromId = id => (id.startsWith('local_') ? { app: id } : { session: id })
 
+// The hub's own notes (hub-notes.md, next to the hub record), or null without git.
+export function hubNotesFile() {
+  const f = sharedHubFile()
+  return f ? f.replace(/\/hub$/, '/hub-notes.md') : null
+}
+
 export function readHub(cfg = readConfig()) {
   const f = sharedHubFile()
   if (f && existsSync(f)) {

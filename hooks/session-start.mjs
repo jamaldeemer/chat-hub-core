@@ -3,7 +3,7 @@ import { execFileSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname } from 'node:path'
-import { hookInput, hubAddress, loadConfig, readHub, say } from './config.mjs'
+import { hookInput, hubAddress, hubNotesFile, loadConfig, readHub, say } from './config.mjs'
 
 const setHubCmd = `node "${dirname(fileURLToPath(import.meta.url))}/set-hub.mjs"`
 
@@ -32,14 +32,16 @@ if (error) {
   const me = hookInput().session_id || ''
   const hub = readHub(c)
   const to = hubAddress(hub)
+  const notesFile = hubNotesFile()
+  const notes = notesFile && existsSync(notesFile) ? ` Your notes exist: read ${notesFile} before anything else.` : ''
   let who
   if (hub.session && me && hub.session === me) {
-    who = 'This chat is the hub: load the chat-hub-core:hub skill now.' +
+    who = 'This chat is the hub: load the chat-hub-core:hub skill now.' + notes +
       (hub.app ? '' : ` Work chats can't message you yet: look up this session's own details with your session tools (its id starts with local_) and run ${setHubCmd} --app <that id>.`)
   } else if (hub.app) {
     who = `This project's hub is app session ${hub.app}. Look up this session's own details with your session tools: ` +
       `if its id is ${hub.app}, this chat is the hub (it was restarted or cleared): load the chat-hub-core:hub skill now and ` +
-      `run ${setHubCmd} --session <this chat's session ID, below> --app ${hub.app}. Otherwise this is a work chat: ` +
+      `run ${setHubCmd} --session <this chat's session ID, below> --app ${hub.app}.${notes ? ' Then' + notes.replace(' Your notes exist:', ' (your notes exist)') : ''} Otherwise this is a work chat: ` +
       `load the chat-hub-core:work-chat skill now and only ever message ${hub.app}.`
   } else if (hub.session) {
     who = `This chat is a work chat: load the chat-hub-core:work-chat skill now. This project's hub is session ${hub.session}; ` +

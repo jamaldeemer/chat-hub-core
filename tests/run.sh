@@ -40,6 +40,11 @@ node "$root/hooks/set-hub.mjs" --session s8 --replace >/dev/null
 t "two IDs: hub without app address is told to add it" "$(echo '{"session_id":"s8"}' | node "$root/hooks/session-start.mjs" | grep -c -- '--app')" 1
 node "$root/hooks/set-hub.mjs" --app local_B >/dev/null
 t "two IDs: --app alone keeps the session" "$(echo '{"session_id":"s8"}' | node "$root/hooks/session-start.mjs" | grep -c 'This chat is the hub')" 1
+node "$root/hooks/set-hub.mjs" --session s5 --app local_A --replace >/dev/null
+echo '# notes' > .git/chat-hub/hub-notes.md
+t "hub notes: hub told to read them" "$(echo '{"session_id":"s5"}' | node "$root/hooks/session-start.mjs" | grep -c 'read .*hub-notes.md before anything else')" 1
+t "hub notes: others only if they turn out to be the hub" "$(echo '{"session_id":"s6"}' | node "$root/hooks/session-start.mjs" | grep -c 'if its id is local_A, this chat is the hub.*hub-notes.md.*Otherwise this is a work chat')" 1
+rm .git/chat-hub/hub-notes.md
 printf 'local_C\n' > .git/chat-hub/hub
 t "older file with an app address still works" "$(echo '{"session_id":"s9"}' | node "$root/hooks/session-start.mjs" | grep -c 'only ever message local_C')" 1
 git worktree remove --force ../wt2; rm -rf .git/chat-hub
