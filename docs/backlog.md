@@ -27,7 +27,14 @@ Open work for chat-hub-core. Newest first within each section.
   hook compares against the session ID, so if that chat restarts it's told
   it's a work chat until `/chat-hub-core:hub` is typed again. Fixed by
   storing both IDs (first item).
-- **Less confusing marketplace name.**- **Less confusing marketplace name.** The marketplace is `chat-hub` and
+- **Renaming a chat yourself triggers permission prompts.** The hub keeps
+  titles "current", so after the owner renames a work chat, the hub renames
+  it back and the app asks permission each time. Fix: the hub treats a
+  title that differs from the one it last set as the owner's, keeps that
+  wording and only adds or updates the code and release tag (and asks
+  first if even that would change it). Plus: setup offers to pre-approve
+  the rename tool so the remaining prompts go away (see "Earlier ideas").
+- **Less confusing marketplace name.** The marketplace is `chat-hub` and
   the plugin `chat-hub-core`, so commands mix both
   (`marketplace update chat-hub`, `plugin update chat-hub-core@chat-hub`)
   and it's easy to type the wrong one. Pick names that read clearly
@@ -87,7 +94,7 @@ Findings 1–3 shipped in 0.3.4. Still open:
   the README (setup's "pin" step may not be needed at all).
 - Show the running version in each chat's start note.
 
-## Earlier ideas## Earlier ideas
+## Earlier ideas
 
 - Setup offers to pre-approve the hub's session tools (start, rename,
   message), so the owner sees fewer permission prompts.
