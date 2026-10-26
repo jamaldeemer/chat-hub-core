@@ -11,7 +11,23 @@ Open work for chat-hub-core. Newest first within each section.
   2026-10-25). Fix: when the hub records itself, also save its app address
   (from the app's session tools, "self"); briefs and start notes give that
   for messaging and keep the session ID for matching.
-- **Less confusing marketplace name.** The marketplace is `chat-hub` and
+- **Clearing a long hub without losing track** (goes with the item above).
+  1. Nudge: a hook checks the hub's transcript size on each message and,
+     past a limit (setting, e.g. `hubReminderKB`), has the hub suggest once
+     "I'm getting long; save my notes and start fresh?".
+  2. Handoff: before clearing, the hub writes what it tracks (open chats,
+     codes, branches, release tags, what waits on the owner, the release
+     preview) to `.git/chat-hub/hub-notes.md` (shared, never committed).
+  3. Pick up: after the clear, the start note tells the hub to read that
+     file first.
+  Clearing gives the chat a new session ID, so the hub must be recorded by
+  its app address (which survives a clear) or it stops being the hub.
+- **A hub recorded by app address isn't recognised on restart.**
+  object_creator's hub recorded `local_…` (messageable, good), but the start
+  hook compares against the session ID, so if that chat restarts it's told
+  it's a work chat until `/chat-hub-core:hub` is typed again. Fixed by
+  storing both IDs (first item).
+- **Less confusing marketplace name.**- **Less confusing marketplace name.** The marketplace is `chat-hub` and
   the plugin `chat-hub-core`, so commands mix both
   (`marketplace update chat-hub`, `plugin update chat-hub-core@chat-hub`)
   and it's easy to type the wrong one. Pick names that read clearly
@@ -47,7 +63,31 @@ Findings 1–3 shipped in 0.3.4. Still open:
   owner's marketplace points at. The start note could say which version is
   running.
 
-## Earlier ideas
+## From moving coaster_graph onto the plugin (2026-10-25)
+
+- `devServer` in the settings is never read by anything; use it (work chat
+  starts its server with it) or drop it.
+- The CLAUDE.md block names the hub by title in a committed file; titles go
+  stale and repeat across projects. Point to "the recorded hub" instead.
+- A chat the hub didn't start has no code, so "commit messages start with
+  your code" can't be followed. Say what to do (e.g. no prefix, or ask the
+  hub for a code).
+- A fresh clone or another computer gets "plugin not found": settings turn
+  the plugin on but don't add the marketplace. Setup could add the
+  marketplace entry (unpinned) to the project's settings too.
+- The hub is told to "run the done checks", but `done` items are sentences
+  ("docs updated"), not commands. Allow an optional command per item.
+
+## Versions and updating
+
+- On one computer, Claude Code keeps one copy per marketplace name, so two
+  projects can't reliably be pinned to different versions by marketplace
+  `ref`. Each project's install does stay on its version until
+  `claude plugin update` is run there; confirm this and say so in setup and
+  the README (setup's "pin" step may not be needed at all).
+- Show the running version in each chat's start note.
+
+## Earlier ideas## Earlier ideas
 
 - Setup offers to pre-approve the hub's session tools (start, rename,
   message), so the owner sees fewer permission prompts.
