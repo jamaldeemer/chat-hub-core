@@ -2,6 +2,18 @@
 
 Open work for chat-hub-core. Newest first within each section.
 
+## Next
+
+- **The hub's recorded ID can't be messaged.** The hook records Claude
+  Code's session ID, but the desktop app's messaging uses its own session
+  addresses (`local_…`), so a work chat can't send to the ID in its brief
+  and falls back to guessing among linked chats (seen in the sandbox,
+  2026-10-25). Fix: when the hub records itself, also save its app address
+  (from the app's session tools, "self"); briefs and start notes give that
+  for messaging and keep the session ID for matching.
+- Trim the brief: it repeats "load the work-chat skill", which the start
+  hook already does.
+
 ## From moving object_creator onto the plugin (2026-10-25)
 
 Findings 1–3 shipped in 0.3.4. Still open:
