@@ -33,15 +33,30 @@ Open work for chat-hub-core. Newest first within each section.
 - Trim the brief: it repeats "load the work-chat skill", which the start
   hook already does.
 
+## Stop loudly instead of carrying on (2026-10-26)
+
+Checks 1–4 (broken settings, no hub, can't reach the hub, hub takeover)
+shipped in 0.3.6. Still open:
+- **A forgotten release bump:** the start hook compares `nextRelease` with
+  the latest release on main and flags it when they're out of step.
+- **A chat on the wrong rules:** if the start note said "work chat" but
+  the chat loads the hub rules (or the reverse), it stops and asks the
+  owner instead of carrying on.
+
 ## Rules that are too loose (scan, 2026-10-26)
 
-Enforce with a hook (a hard stop instead of a hope); suggested for 0.3.6:
-1. "Never commit on main" (level 1+): refuse `git commit` on `branches.main`.
-2. "Never rebase" (level 1+): refuse `git rebase`.
-3. "Never edit another chat's folder": refuse edits outside the chat's own
-   worktree.
-4. "Commit messages start with your code": check the `3F:` pattern; say
-   what a chat with no code does.
+Rules 1–4 shipped in 0.3.6 (hooks/guard.mjs). Their limits, still open:
+- Edits made through shell commands (`sed -i`, `echo >`) in another
+  worktree aren't caught; only the Edit/Write tools are.
+- Only Claude's commands are checked. The owner's own terminal can still
+  commit on main; a git pre-commit hook (setup installs it) would cover it.
+- Commit messages from `-F <file>` or an editor aren't checked.
+- Older letter+two-digit codes (`L76:`) are accepted while chats from
+  before a migration are open; drop that once they've closed.
+- The hub is exempt from "never commit on main" and the code check,
+  pending rule 5.
+
+Still open:
 5. The hub "makes tiny fixes" vs "every change goes to a new chat":
    contradictory. Decide (e.g. the hub never commits) and enforce it.
 
@@ -62,13 +77,6 @@ Make concrete:
     `followups: docs/backlog.md`.
 13. "Work that misses its release moves to the next": at each release,
     retag every chat not included.
-
-## Title format (open, 2026-10-26)
-
-Owner wants a release-first option so an alphabetical sort groups chats by
-release, e.g. `R16~ A3 · Title` or `R16-A3 · Title`. Undecided: exact
-shape, where `! ` goes (after the code keeps sorting intact), and whether
-to pad release numbers (R09). Make it a per-project setting.
 
 ## From moving object_creator onto the plugin (2026-10-25)
 

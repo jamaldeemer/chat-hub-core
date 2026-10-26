@@ -2,14 +2,18 @@
 import { execFileSync } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 
-// The project's settings (.claude/chat-hub.json). Null when setup hasn't run.
-export function readConfig(dir = process.cwd()) {
+// The project's settings (.claude/chat-hub.json): { cfg, error }. cfg is null when setup
+// hasn't run (error null) or when the file is broken (error says why).
+export function loadConfig(dir = process.cwd()) {
+  const f = `${dir}/.claude/chat-hub.json`
+  if (!existsSync(f)) return { cfg: null, error: null }
   try {
-    return JSON.parse(readFileSync(`${dir}/.claude/chat-hub.json`, 'utf8'))
-  } catch {
-    return null
-  }
+    const cfg = JSON.parse(readFileSync(f, 'utf8'))
+    if (!cfg || typeof cfg !== 'object' || Array.isArray(cfg)) return { cfg: null, error: 'it is not a JSON object' }
+    return { cfg, error: null }
+  } catch (e) { return { cfg: null, error: e.message } }
 }
+export const readConfig = (dir = process.cwd()) => loadConfig(dir).cfg
 
 export function say(event, text) {
   process.stdout.write(JSON.stringify({ hookSpecificOutput: { hookEventName: event, additionalContext: text } }))
@@ -52,11 +56,17 @@ export function readHub(cfg = readConfig()) {
 export const hubAddress = h => h.app || h.session
 
 // Record the hub. A new session replaces the record (keeping the app address only if given);
-// an app address alone is added to the current record. Returns the hub it replaced, or ''.
-export function setHub({ session = '', app = '' }) {
+// an app address alone is added to the current record. Taking over from a different hub
+// (another session, and not the same app address) is refused unless `replace` is set, so a
+// second chat can't silently become the hub. Returns the hub it replaced, or ''.
+export class HubTaken extends Error {}
+export function setHub({ session = '', app = '', replace = false }) {
   const old = readHub()
   const next = session ? { session, app } : { session: old.session, app }
   const replaced = session && hubAddress(old) && old.session !== session && !(app && app === old.app) ? hubAddress(old) : ''
+  if (replaced && !replace) {
+    throw new HubTaken(`${replaced}${old.app && old.session ? ` (session ${old.session})` : ''} is already recorded as this project's hub`)
+  }
   const f = sharedHubFile()
   if (f) {
     mkdirSync(f.replace(/\/hub$/, ''), { recursive: true })

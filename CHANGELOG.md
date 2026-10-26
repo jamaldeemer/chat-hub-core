@@ -3,6 +3,30 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## 0.3.6
+
+- **Hard stops for rules that used to rely on memory** (a new guard hook;
+  level 1+ unless noted): a work chat can't commit on the main branch;
+  nobody can rebase; a work chat can't edit files in another chat's
+  worktree; and (any level) a work chat's commit message must start with
+  its code (`3F: …`). The hub is exempt where releases need it.
+- **The hub's own title:** it no longer renames or suggests renaming
+  itself; it only adds the next release as a suffix
+  (`Object Creator Hub · R15`, or `· R15+ R16~` with tick-tock) and keeps
+  that current.
+- **Stops loudly instead of guessing:** a broken settings file is reported
+  in every chat; with no hub recorded, chats tell the owner instead of
+  guessing a hub by name; a work chat that can't reach its hub stops and
+  says so; `/chat-hub-core:hub` in a second chat refuses while another is
+  recorded (type `/chat-hub-core:hub replace` to switch; `set-hub.mjs`
+  takes `--replace`).
+- **Setup picks the hub:** its last step asks "make this chat the hub?"
+  (default yes) and records it, so a project never runs without one.
+- **Release-first titles** (setting `titles: "release-first"`):
+  `R16~ A3 · Fix menu spacing`, release padded to two digits, so an
+  alphabetical sort groups chats by release. The in-CI mark is `(!)` after
+  the code there. The default stays `3F · Title (R7)`.
+
 ## 0.3.5
 
 - **The hub is recorded by two IDs:** Claude's session ID and the desktop

@@ -37,7 +37,9 @@ Only what you couldn't tell. Usually:
 
 1. Level (your suggestion first, marked Recommended).
 2. Release tags in titles: plain (R1, R2…, default), tick-tock (R10~
-   fixes, R11+ features), or none.
+   fixes, R11+ features), or none. Unless none: code first
+   (`3F · Title (R7)`, default) or release first (`R07 3F · Title`, so an
+   alphabetical sort groups chats by release).
 3. What "done" means here (e.g. tests pass, it builds, docs updated, owner
    has seen it). Offer what you found.
 4. Level 2: the command that asks CI whether a commit passed. It must
@@ -112,15 +114,24 @@ addition), say in one line exactly what's new, and ask them to save it.
 
 ## 6. Finish
 
-End with three short parts, in this order:
+First, pick the hub (every project needs one; without it chats can only
+guess by name). Ask: "Make this chat the hub?" (Recommended), or "I'll
+pick another chat". On yes, record this chat by both IDs:
+`node "${CLAUDE_PLUGIN_ROOT}/hooks/set-hub.mjs" --session <this chat's
+session ID, from the start note> --app <this session's own id from the app's
+session tools, local_…>`, then load the chat-hub-core:hub skill. If the
+command is blocked, or the owner picks another chat, they type
+`/chat-hub-core:hub` in that chat. If a hub is already recorded, say which
+and skip the question.
+
+Then end with three short parts, in this order:
 
 1. **Done:** what's on, in one or two lines (level, release style).
 2. **Left for you** (only if anything is): what you couldn't write, in one
    block: commands in one code block, text to paste in another.
 3. **Get started:** numbered steps for this project's level, e.g.:
-   1. Make a hub: type `/chat-hub-core:hub` in a chat, or open one named
-      `<folder name> Hub` (any name ending in "Hub" or "Manager" works;
-      naming the project keeps hubs apart when several projects have one).
+   1. The hub: this chat, or the one you'll type `/chat-hub-core:hub` in.
+      It adds the next release to its title, e.g. `cns Hub · R2`.
    2. Tell the hub what you want: "start a chat to <task>". It starts a
       chat with a code like `A2`, briefs it, and follows it.
    3. Work in that chat; it asks before every commit.
@@ -137,6 +148,7 @@ Don't commit.
   "level": 1,
   "hubSession": "",                 // only without git: the hub records itself (setup leaves this out)
   "releases": "plain",              // "plain" | "tick-tock" | "none"
+  "titles": "code-first",           // "code-first" | "release-first" (R07 3F · Title)
   "nextRelease": 1,                 // release the next finished work ships in
   "done": ["tests pass", "docs updated"],
   "commitReminder": "",             // extra text shown before every commit

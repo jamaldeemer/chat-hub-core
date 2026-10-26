@@ -6,8 +6,11 @@ t() { if [ "$2" = "$3" ]; then echo "ok   $1"; else echo "FAIL $1: got [$2] want
 tmp=$(mktemp -d "${TMPDIR:-/tmp}/chat-hub-test.XXXXXX") && [ -d "$tmp" ] || { echo "no temp folder"; exit 1; }; cd "$tmp" || exit 1
 t "no config: suggests setup" "$(echo '{}' | node "$root/hooks/session-start.mjs" | grep -c 'chat-hub-core:setup')" 1
 mkdir .claude; echo '{"level":0,"done":["tests pass"]}' > .claude/chat-hub.json
-t "no hub yet: check the folder, ask if unsure" "$(echo '{}' | node "$root/hooks/session-start.mjs" | grep -c 'Check a candidate.s folder.*ask the owner')" 1
-t "no hub yet: names Hub/Manager" "$(echo '{}' | node "$root/hooks/session-start.mjs" | grep -c 'ends with .*Hub.* or .*Manager')" 1
+t "no hub: tells the owner" "$(echo '{}' | node "$root/hooks/session-start.mjs" | grep -c 'No hub is recorded.*tell the owner')" 1
+t "no hub: never guesses by name" "$(echo '{}' | node "$root/hooks/session-start.mjs" | grep -c 'guess one by its name')" 1
+echo '{"level":0,' > .claude/chat-hub.json
+t "broken settings: reported loudly" "$(echo '{}' | node "$root/hooks/session-start.mjs" | grep -c 'settings file .* is broken')" 1
+echo '{"level":0,"done":["tests pass"]}' > .claude/chat-hub.json
 echo '{"level":0,"hubSession":"s1"}' > .claude/chat-hub.json
 t "hub session: this chat is the hub" "$(echo '{"session_id":"s1"}' | node "$root/hooks/session-start.mjs" | grep -c 'This chat is the hub')" 1
 t "hub session: others message only it" "$(echo '{"session_id":"s2"}' | node "$root/hooks/session-start.mjs" | grep -c 'only ever message that session')" 1
@@ -23,19 +26,46 @@ echo '{"level":0,"hubSession":"s9"}' > .claude/chat-hub.json
 t "shared hub wins over settings" "$(echo '{"session_id":"s1"}' | node "$root/hooks/session-start.mjs" | grep -c 'This chat is the hub')" 1
 git -c user.email=a@b -c user.name=t worktree add -q ../wt2 2>/dev/null; mkdir -p ../wt2/.claude; echo '{"level":0}' > ../wt2/.claude/chat-hub.json
 t "shared hub: seen from another worktree" "$(cd ../wt2 && echo '{"session_id":"s2"}' | node "$root/hooks/session-start.mjs" | grep -c 'hub is session s1')" 1
-t "prompt hook: /hub records the chat" "$(echo '{"session_id":"s3","prompt":"/chat-hub-core:hub"}' | node "$root/hooks/on-prompt.mjs" | grep -c 'replaced s1')" 1
+t "prompt hook: /hub refuses to take over" "$(echo '{"session_id":"s3","prompt":"/chat-hub-core:hub"}' | node "$root/hooks/on-prompt.mjs" | grep -c 'NOT recorded as the hub: s1')" 1
+t "prompt hook: /hub replace takes over" "$(echo '{"session_id":"s3","prompt":"/chat-hub-core:hub replace"}' | node "$root/hooks/on-prompt.mjs" | grep -c 'replaced s1')" 1
+t "set-hub: refuses to take over" "$(node "$root/hooks/set-hub.mjs" --session s4 2>&1 | grep -c 'add --replace')" 1
 t "prompt hook: ignores other prompts" "$(echo '{"session_id":"s4","prompt":"hello"}' | node "$root/hooks/on-prompt.mjs" | wc -c | tr -d ' ')" 0
-node "$root/hooks/set-hub.mjs" --session s5 --app local_A >/dev/null
+node "$root/hooks/set-hub.mjs" --session s5 --app local_A --replace >/dev/null
 t "two IDs: hub by session ID" "$(echo '{"session_id":"s5"}' | node "$root/hooks/session-start.mjs" | grep -c 'This chat is the hub')" 1
 t "two IDs: others message the app address" "$(echo '{"session_id":"s6"}' | node "$root/hooks/session-start.mjs" | grep -c 'only ever message local_A')" 1
+t "two IDs: same app address may re-record (restart)" "$(node "$root/hooks/set-hub.mjs" --session s5b --app local_A 2>&1 | grep -c 'Hub is now local_A')" 1
+node "$root/hooks/set-hub.mjs" --session s5 --app local_A >/dev/null
 t "two IDs: restarted hub can recognise itself" "$(echo '{"session_id":"s7"}' | node "$root/hooks/session-start.mjs" | grep -c 'if its id is local_A, this chat is the hub')" 1
-node "$root/hooks/set-hub.mjs" --session s8 >/dev/null
+node "$root/hooks/set-hub.mjs" --session s8 --replace >/dev/null
 t "two IDs: hub without app address is told to add it" "$(echo '{"session_id":"s8"}' | node "$root/hooks/session-start.mjs" | grep -c -- '--app')" 1
 node "$root/hooks/set-hub.mjs" --app local_B >/dev/null
 t "two IDs: --app alone keeps the session" "$(echo '{"session_id":"s8"}' | node "$root/hooks/session-start.mjs" | grep -c 'This chat is the hub')" 1
 printf 'local_C\n' > .git/chat-hub/hub
 t "older file with an app address still works" "$(echo '{"session_id":"s9"}' | node "$root/hooks/session-start.mjs" | grep -c 'only ever message local_C')" 1
 git worktree remove --force ../wt2; rm -rf .git/chat-hub
+# guard.mjs: hard stops (level 1)
+echo '{"level":1}' > .claude/chat-hub.json; here=$(pwd)
+g() { printf '%s' "$1" | node "$root/hooks/guard.mjs" | grep -c '"deny"'; }
+bash_in() { node -e 'process.stdout.write(JSON.stringify({session_id:process.argv[1],cwd:process.argv[2],tool_name:"Bash",tool_input:{command:process.argv[3]}}))' "$1" "$here" "$2"; }
+hd=$(printf 'git commit -m "$(cat <<%sEOM%s\nA7: Fix it\n\nbody\nEOM\n)"' "'" "'")
+t "guard: commit on main refused" "$(g "$(bash_in w1 'git commit -m "3F: x"')")" 1
+t "guard: rebase refused" "$(g "$(bash_in w1 'git rebase main')")" 1
+t "guard: pull --rebase refused" "$(g "$(bash_in w1 'git pull --rebase origin main')")" 1
+git checkout -q -b feat
+t "guard: commit on own branch allowed" "$(g "$(bash_in w1 'git commit -m "3F: x"')")" 0
+t "guard: commit without code refused" "$(g "$(bash_in w1 'git commit -m "Fix it"')")" 1
+t "guard: heredoc message with code allowed" "$(g "$(bash_in w1 "$hd")")" 0
+t "guard: old-style code allowed" "$(g "$(bash_in w1 'git commit -m "L76: x"')")" 0
+node "$root/hooks/set-hub.mjs" --session hubS >/dev/null
+git checkout -q main
+t "guard: hub may commit on main" "$(g "$(bash_in hubS 'git commit -m "Release note: R2+"')")" 0
+git checkout -q feat
+git worktree add -q ../wt3 -b other 2>/dev/null
+edit_in() { node -e 'process.stdout.write(JSON.stringify({session_id:"w1",cwd:process.argv[1],tool_name:"Edit",tool_input:{file_path:process.argv[2]}}))' "$here" "$1"; }
+t "guard: edit in own worktree allowed" "$(g "$(edit_in "$here/a.txt")")" 0
+t "guard: edit in another worktree refused" "$(g "$(edit_in "$(cd ../wt3 && pwd)/a.txt")")" 1
+t "guard: edit outside the repo allowed" "$(g "$(edit_in /tmp/elsewhere.txt)")" 0
+git worktree remove --force ../wt3; git branch -q -D other; git checkout -q main; git branch -q -D feat; rm -rf .git/chat-hub
 mkdir .githooks && touch .githooks/pre-push; echo '{"level":1}' > .claude/chat-hub.json
 t "level 1: guard switched on" "$(echo '{}' | node "$root/hooks/session-start.mjs" | grep -c 'switched on')" 1
 t "level 1: hooksPath set" "$(git config core.hooksPath)" ".githooks"

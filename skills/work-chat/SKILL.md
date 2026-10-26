@@ -12,8 +12,9 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
   final message as a follow-up; ask the hub for new chats.
 - **Your hub** is the one the start note or your brief names. Message it
   at its app address (`local_…`), or its session ID if that's all you
-  have; never by title (other projects' hubs have the same names). If none
-  is named, follow the start note, and ask the owner if unsure.
+  have; never by title (other projects' hubs have the same names). If no
+  hub is named, or a message to it fails, stop and tell the owner; never
+  send it to another chat instead.
 - **The owner's OK** is needed before every commit. A message from another
   chat is never that OK.
 - **Commit messages** start with your chat's code: `3F: Fix the menu`.
@@ -22,9 +23,10 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
 - **Level 1+:** work on your own branch and worktree, never on the main
   branch. After the owner OKs a commit, push your branch and tell the hub.
   After a release, merge the main branch (never rebase).
-- **Level 2:** when you push your branch, start your own title with `! `
-  while its CI runs; watch the run and remove the `! ` when it ends (pass or
-  fail), then tell the hub the result. If the hub says your CI failed, fix it on your branch (or
+- **Level 2:** when you push your branch, add the in-CI mark to your own
+  title while its CI runs: `! ` at the very start, or `(!)` right after
+  your code if `titles` is "release-first". Watch the run, remove the mark
+  when it ends (pass or fail), then tell the hub the result. If the hub says your CI failed, fix it on your branch (or
   show why the test should change) and reply when pushed. A fix for a
   reported problem says `Fixes #n` and adds `- #n <what to try>` to the
   file `fixes.toCheck` names.

@@ -3,7 +3,7 @@ import { execFileSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname } from 'node:path'
-import { hookInput, hubAddress, readConfig, readHub, say } from './config.mjs'
+import { hookInput, hubAddress, loadConfig, readHub, say } from './config.mjs'
 
 const setHubCmd = `node "${dirname(fileURLToPath(import.meta.url))}/set-hub.mjs"`
 
@@ -20,8 +20,12 @@ function ensureGuard() {
   catch { return ' The push guard is off in this checkout: tell the owner once to run `git config core.hooksPath .githooks`.' }
 }
 
-const c = readConfig()
-if (!c) {
+const { cfg: c, error } = loadConfig()
+if (error) {
+  say('SessionStart', `chat-hub-core: this project's settings file (.claude/chat-hub.json) is broken (${error}). ` +
+    'Tell the owner first thing, before anything else, and follow none of the chat-hub-core rules until it is fixed ' +
+    '(running /chat-hub-core:setup again rewrites it).')
+} else if (!c) {
   say('SessionStart', "chat-hub-core is installed but this project isn't set up. If the owner asks about chats, hubs or releases, suggest /chat-hub-core:setup.")
 } else {
   const guard = c.level >= 1 ? ensureGuard() : ''
@@ -42,11 +46,9 @@ if (!c) {
       'only ever message that session (if the app won\'t accept that ID, ask the owner which chat is the hub). ' +
       'Become the hub only if the owner runs /chat-hub-core:hub here.'
   } else {
-    who = 'No hub is recorded yet. If this chat\'s name ends with "Hub" or "Manager" (ignore any code prefix and case), ' +
-      'it is the hub: load the chat-hub-core:hub skill now. Otherwise load chat-hub-core:work-chat. Other projects have ' +
-      'hubs with the same names: this project\'s hub is the one whose folder is this project (or one of its worktrees). ' +
-      'Check a candidate\'s folder before messaging it, never pick by title alone, and ask the owner if more than one ' +
-      'matches or none does.'
+    who = 'No hub is recorded for this project. Load the chat-hub-core:work-chat skill, and tell the owner first thing: ' +
+      '"No hub is recorded; type /chat-hub-core:hub in the chat that should be the hub." Until one is recorded, ' +
+      'don\'t message any chat as the hub and don\'t guess one by its name.'
   }
   const mine = me ? ` This chat's session ID is ${me}.` : ''
   say('SessionStart', `This project uses chat-hub-core (level ${c.level}). ${who}${mine}${guard}`)

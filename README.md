@@ -28,10 +28,11 @@ You need Claude Code (terminal or the desktop app's Code tab), git and Node.
 3. Open a new chat in the project (terminal or desktop app; trust the
    folder if asked) and type `/chat-hub-core:setup`. It asks a few
    questions, shows what it will write, and writes it when you say yes.
-4. Make one chat the hub: type `/chat-hub-core:hub` in it, or give it a
-   name ending in "Hub" or "Manager" (e.g. `cns Hub`). It records itself,
-   so every other chat knows exactly which one it is. Then talk
-   to it.
+4. Setup ends by making a hub: by default the chat you ran it in. The hub
+   records itself, so every other chat knows exactly which one it is, and
+   adds the next release to its title (`cns Hub · R2`). Then talk to it.
+   To make a different chat the hub later, type
+   `/chat-hub-core:hub replace` in it.
 
 Setup writes only inside your project, and only after you say yes:
 
@@ -64,7 +65,7 @@ has: `claude plugin list`.
 
 | Level | Adds | Needs |
 |---|---|---|
-| 0 | Hub + one chat per task, codes in titles (`3F · Title (R7)`), briefs, wrap-ups | nothing |
+| 0 | Hub + one chat per task, codes in titles (see [Titles](#titles)), briefs, wrap-ups | nothing |
 | 1 | Each chat on its own branch; releases gather finished branches | git |
 | 2 | `main` only gets releases that passed CI and whose fixes you've checked | CI you can ask "did commit X pass?" |
 
@@ -93,7 +94,7 @@ LEVEL 1 · + branches
 
 LEVEL 2 · + CI and checks
 
-  chat pushes its branch ----> CI runs     (title shows "! " meanwhile)
+  chat pushes its branch ----> CI runs     (its title shows the in-CI mark)
   you push `release` --------> CI runs on that exact commit
                                           |
                   CI passed, and you've tried every "Fixes #n" it ships
@@ -104,16 +105,41 @@ LEVEL 2 · + CI and checks
   or a fix it ships is still listed in .claude/issues-to-check.md.
 ```
 
+## Titles
+
+Each work chat gets a two-character code (one of A C E F plus a digit
+2–9, e.g. `3F`, `A7`), which also starts its commit messages (`3F: Fix the
+menu`). Setup asks which title style the project wants:
+
+| | Code first (default) | Release first |
+|---|---|---|
+| Working | `3F · Fix menu spacing (R7)` | `R07 3F · Fix menu spacing` |
+| Tick-tock releases | `3F · Fix menu spacing (R16~)` | `R16~ 3F · Fix menu spacing` |
+| Push in CI (level 2) | `! 3F · Fix menu spacing (R7)` | `R07 3F (!) · Fix menu spacing` |
+| Ready to close | `3F (Ready to close) · Fix menu spacing (R7)` | `R07 3F (Ready to close) · Fix menu spacing` |
+| The hub | `cns Hub · R7` | `cns Hub · R07` |
+
+Release first pads the number to two digits, so an alphabetical sort
+groups chats by release. With tick-tock, `~` releases are fixes and `+`
+releases features, and the hub's title shows the next of each
+(`cns Hub · R15+ R16~`).
+
 ## How it works
 
 The rules are three skills: `setup`, `hub`, `work-chat`. A start-of-chat
 hook tells each chat which to load, and which chat is the hub: the hub
 records itself in git's own folder (never committed) by two IDs, Claude's
 session ID and the desktop app's address, so every chat and worktree sees
-it at once, can message it, and it stays the hub after a restart. Your project gets a settings file,
+it at once, can message it, and it stays the hub after a restart. Your
+project gets a settings file,
 `.claude/chat-hub.json` (level, release style, what "done" means, the CI
-command), and a three-line note in CLAUDE.md. Nothing in the plugin names
-a git host, CI service or framework.
+command), and a three-line note in CLAUDE.md. At level 1+, a guard hook
+refuses a few things outright instead of trusting chats to remember:
+committing on main, rebasing, editing another chat's folder, and (any
+level) commit messages without a code. When something is wrong (a broken
+settings file, no hub, a hub it can't reach), chats stop and tell you
+rather than guess. Nothing in the plugin names a git host, CI service or
+framework.
 
 ## Working on the plugin
 

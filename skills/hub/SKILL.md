@@ -1,6 +1,6 @@
 ---
 name: hub
-description: The hub chat's rules under chat-hub-core - starting one chat per task, titles, closing chats, releases. Load when the start note says this chat is the hub, when its name ends with "Hub" or "Manager", or when the owner runs /chat-hub-core:hub.
+description: The hub chat's rules under chat-hub-core - starting one chat per task, titles, closing chats, releases. Load when the start note says this chat is the hub, or when the owner types /chat-hub-core:hub here and it is recorded.
 ---
 
 # The hub
@@ -23,12 +23,17 @@ survives a restart or clear):
 `node "${CLAUDE_PLUGIN_ROOT}/hooks/set-hub.mjs" --session <session ID> --app <local_…>`.
 If the owner typed `/chat-hub-core:hub`, your session ID is already
 recorded; add `--app` alone. If the command is blocked, ask the owner to
-type `/chat-hub-core:hub` here, then add `--app`. Every chat on this machine then sees you at once; a fresh clone or
+type `/chat-hub-core:hub` here, then add `--app`. If it says another chat
+is already the hub, you are not the hub: tell the owner which chat it
+names, and add `--replace` only if they say to. Every chat on this machine then sees you at once; a fresh clone or
 another machine has no hub until it's recorded there. If it reports
 replacing a session that's still open, tell the owner.
-A title that names the project (`<project> Hub`, e.g. `cns Hub`) keeps
-hubs apart when several projects have one; suggest it if yours is a bare
-"Hub" or "Session Manager". Renaming is the owner's choice.
+**Your own title** is the owner's name for you plus the next release:
+`<owner's name> · R<next>`, e.g. `Object Creator Hub · R15`, or with
+tick-tock the next of each kind, `Session Manager · R15+ R16~` (padded to
+two digits if `titles` is release-first). Only ever change that suffix,
+when it's missing or after a release; never change or suggest changing
+the rest. You're found by your recorded IDs, not your name.
 
 Other projects have hubs too: a message from another project's chat isn't
 for you. Say so in one line and do nothing else.
@@ -49,7 +54,14 @@ Fill in `${CLAUDE_PLUGIN_ROOT}/templates/brief.md`.
 
 ## Titles
 
-`<code> · <title> (R<n>)`, e.g. `3F · Split objects by bed size (R7)`.
+Two styles, set by `titles` in the settings:
+
+- **code-first** (default): `<code> · <title> (R<n>)`, e.g.
+  `3F · Split objects by bed size (R7)`.
+- **release-first** (an alphabetical sort groups chats by release):
+  `R<nn><kind> <code> · <title>`, release number padded to two digits,
+  e.g. `R07 3F · Split objects by bed size`, or with tick-tock
+  `R16~ A3 · Fix menu spacing`. If `releases` is "none", use code-first.
 
 - **Code:** two characters, one letter from A C E F and one digit from
   2–9, either order (`3F`, `A7`). Use the next one in this order that no
@@ -59,12 +71,14 @@ Fill in `${CLAUDE_PLUGIN_ROOT}/templates/brief.md`.
   "none". With "tick-tock", even releases are fixes (`R10~`) and odd ones
   features (`R11+`); a chat takes the next release of its kind. Work that
   misses its release moves to the next.
-- `(Ready to close)` goes after the code once the chat passes the close
-  check. A chat still tagged with a shipped release gets its title text
-  between `***`.
-- Level 2: `! ` at the start means that chat's push is in CI. The chat that
-  pushed adds and removes it itself; when you hear of a push or a finished
-  run, check its title and fix it if it's wrong.
+- `(Ready to close)` goes right after the code once the chat passes the
+  close check. A chat still tagged with a shipped release gets its title
+  text between `***`.
+- Level 2: the in-CI mark means that chat's push is in CI: `! ` at the very
+  start (code-first) or `(!)` right after the code (release-first, e.g.
+  `R16~ A3 (!) · Fix menu spacing`). The chat that pushed adds and removes
+  it itself; when you hear of a push or a finished run, check its title
+  and fix it if it's wrong.
 
 Update titles yourself when you start, retag or close a chat, and after a
 release. Your own merges into the release branch keep git's wording.

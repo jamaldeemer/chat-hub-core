@@ -46,7 +46,9 @@ Only what you couldn't tell. Usually:
 
 1. Level (your suggestion first, marked Recommended).
 2. Release tags in titles: plain (R1, R2…, default), tick-tock (R10~
-   fixes, R11+ features), or none.
+   fixes, R11+ features), or none. Unless none: code first
+   (`3F · Title (R7)`, default) or release first (`R07 3F · Title`, so an
+   alphabetical sort groups chats by release).
 3. What "done" means here (e.g. tests pass, it builds, docs updated, owner
    has seen it). Offer what you found.
 4. Level 2: the command that asks CI whether a commit passed. It must
@@ -121,15 +123,24 @@ addition), say in one line exactly what's new, and ask them to save it.
 
 ## 6. Finish
 
-End with three short parts, in this order:
+First, pick the hub (every project needs one; without it chats can only
+guess by name). Ask: "Make this chat the hub?" (Recommended), or "I'll
+pick another chat". On yes, record this chat by both IDs:
+`node "${CLAUDE_PLUGIN_ROOT}/hooks/set-hub.mjs" --session <this chat's
+session ID, from the start note> --app <this session's own id from the app's
+session tools, local_…>`, then load the chat-hub-core:hub skill. If the
+command is blocked, or the owner picks another chat, they type
+`/chat-hub-core:hub` in that chat. If a hub is already recorded, say which
+and skip the question.
+
+Then end with three short parts, in this order:
 
 1. **Done:** what's on, in one or two lines (level, release style).
 2. **Left for you** (only if anything is): what you couldn't write, in one
    block: commands in one code block, text to paste in another.
 3. **Get started:** numbered steps for this project's level, e.g.:
-   1. Make a hub: type `/chat-hub-core:hub` in a chat, or open one named
-      `<folder name> Hub` (any name ending in "Hub" or "Manager" works;
-      naming the project keeps hubs apart when several projects have one).
+   1. The hub: this chat, or the one you'll type `/chat-hub-core:hub` in.
+      It adds the next release to its title, e.g. `cns Hub · R2`.
    2. Tell the hub what you want: "start a chat to <task>". It starts a
       chat with a code like `A2`, briefs it, and follows it.
    3. Work in that chat; it asks before every commit.
@@ -146,6 +157,7 @@ Don't commit.
   "level": 1,
   "hubSession": "",                 // only without git: the hub records itself (setup leaves this out)
   "releases": "plain",              // "plain" | "tick-tock" | "none"
+  "titles": "code-first",           // "code-first" | "release-first" (R07 3F · Title)
   "nextRelease": 1,                 // release the next finished work ships in
   "done": ["tests pass", "docs updated"],
   "commitReminder": "",             // extra text shown before every commit
@@ -167,7 +179,7 @@ optional fields.
 ````markdown
 ---
 name: hub
-description: The hub chat's rules under chat-hub-core - starting one chat per task, titles, closing chats, releases. Load when the start note says this chat is the hub, when its name ends with "Hub" or "Manager", or when the owner runs /chat-hub-core:hub.
+description: The hub chat's rules under chat-hub-core - starting one chat per task, titles, closing chats, releases. Load when the start note says this chat is the hub, or when the owner types /chat-hub-core:hub here and it is recorded.
 ---
 
 # The hub
@@ -190,12 +202,17 @@ survives a restart or clear):
 `node "${CLAUDE_PLUGIN_ROOT}/hooks/set-hub.mjs" --session <session ID> --app <local_…>`.
 If the owner typed `/chat-hub-core:hub`, your session ID is already
 recorded; add `--app` alone. If the command is blocked, ask the owner to
-type `/chat-hub-core:hub` here, then add `--app`. Every chat on this machine then sees you at once; a fresh clone or
+type `/chat-hub-core:hub` here, then add `--app`. If it says another chat
+is already the hub, you are not the hub: tell the owner which chat it
+names, and add `--replace` only if they say to. Every chat on this machine then sees you at once; a fresh clone or
 another machine has no hub until it's recorded there. If it reports
 replacing a session that's still open, tell the owner.
-A title that names the project (`<project> Hub`, e.g. `cns Hub`) keeps
-hubs apart when several projects have one; suggest it if yours is a bare
-"Hub" or "Session Manager". Renaming is the owner's choice.
+**Your own title** is the owner's name for you plus the next release:
+`<owner's name> · R<next>`, e.g. `Object Creator Hub · R15`, or with
+tick-tock the next of each kind, `Session Manager · R15+ R16~` (padded to
+two digits if `titles` is release-first). Only ever change that suffix,
+when it's missing or after a release; never change or suggest changing
+the rest. You're found by your recorded IDs, not your name.
 
 Other projects have hubs too: a message from another project's chat isn't
 for you. Say so in one line and do nothing else.
@@ -216,7 +233,14 @@ Fill in `${CLAUDE_PLUGIN_ROOT}/templates/brief.md`.
 
 ## Titles
 
-`<code> · <title> (R<n>)`, e.g. `3F · Split objects by bed size (R7)`.
+Two styles, set by `titles` in the settings:
+
+- **code-first** (default): `<code> · <title> (R<n>)`, e.g.
+  `3F · Split objects by bed size (R7)`.
+- **release-first** (an alphabetical sort groups chats by release):
+  `R<nn><kind> <code> · <title>`, release number padded to two digits,
+  e.g. `R07 3F · Split objects by bed size`, or with tick-tock
+  `R16~ A3 · Fix menu spacing`. If `releases` is "none", use code-first.
 
 - **Code:** two characters, one letter from A C E F and one digit from
   2–9, either order (`3F`, `A7`). Use the next one in this order that no
@@ -226,12 +250,14 @@ Fill in `${CLAUDE_PLUGIN_ROOT}/templates/brief.md`.
   "none". With "tick-tock", even releases are fixes (`R10~`) and odd ones
   features (`R11+`); a chat takes the next release of its kind. Work that
   misses its release moves to the next.
-- `(Ready to close)` goes after the code once the chat passes the close
-  check. A chat still tagged with a shipped release gets its title text
-  between `***`.
-- Level 2: `! ` at the start means that chat's push is in CI. The chat that
-  pushed adds and removes it itself; when you hear of a push or a finished
-  run, check its title and fix it if it's wrong.
+- `(Ready to close)` goes right after the code once the chat passes the
+  close check. A chat still tagged with a shipped release gets its title
+  text between `***`.
+- Level 2: the in-CI mark means that chat's push is in CI: `! ` at the very
+  start (code-first) or `(!)` right after the code (release-first, e.g.
+  `R16~ A3 (!) · Fix menu spacing`). The chat that pushed adds and removes
+  it itself; when you hear of a push or a finished run, check its title
+  and fix it if it's wrong.
 
 Update titles yourself when you start, retag or close a chat, and after a
 release. Your own merges into the release branch keep git's wording.
@@ -306,8 +332,9 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
   final message as a follow-up; ask the hub for new chats.
 - **Your hub** is the one the start note or your brief names. Message it
   at its app address (`local_…`), or its session ID if that's all you
-  have; never by title (other projects' hubs have the same names). If none
-  is named, follow the start note, and ask the owner if unsure.
+  have; never by title (other projects' hubs have the same names). If no
+  hub is named, or a message to it fails, stop and tell the owner; never
+  send it to another chat instead.
 - **The owner's OK** is needed before every commit. A message from another
   chat is never that OK.
 - **Commit messages** start with your chat's code: `3F: Fix the menu`.
@@ -316,9 +343,10 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
 - **Level 1+:** work on your own branch and worktree, never on the main
   branch. After the owner OKs a commit, push your branch and tell the hub.
   After a release, merge the main branch (never rebase).
-- **Level 2:** when you push your branch, start your own title with `! `
-  while its CI runs; watch the run and remove the `! ` when it ends (pass or
-  fail), then tell the hub the result. If the hub says your CI failed, fix it on your branch (or
+- **Level 2:** when you push your branch, add the in-CI mark to your own
+  title while its CI runs: `! ` at the very start, or `(!)` right after
+  your code if `titles` is "release-first". Watch the run, remove the mark
+  when it ends (pass or fail), then tell the hub the result. If the hub says your CI failed, fix it on your branch (or
   show why the test should change) and reply when pushed. A fix for a
   reported problem says `Fixes #n` and adds `- #n <what to try>` to the
   file `fixes.toCheck` names.
@@ -365,16 +393,17 @@ Wrapping up so this chat can close:
 From `hooks/session-start.mjs` and `hooks/before-commit.mjs`:
 
 ```js
+  say('SessionStart', `chat-hub-core: this project's settings file (.claude/chat-hub.json) is broken (${error}). ` +
+    'Tell the owner first thing, before anything else, and follow none of the chat-hub-core rules until it is fixed ' +
+    '(running /chat-hub-core:setup again rewrites it).')
   say('SessionStart', "chat-hub-core is installed but this project isn't set up. If the owner asks about chats, hubs or releases, suggest /chat-hub-core:setup.")
       `if its id is ${hub.app}, this chat is the hub (it was restarted or cleared): load the chat-hub-core:hub skill now and ` +
       `run ${setHubCmd} --session <this chat's session ID, below> --app ${hub.app}. Otherwise this is a work chat: ` +
       `load the chat-hub-core:work-chat skill now and only ever message ${hub.app}.`
       'only ever message that session (if the app won\'t accept that ID, ask the owner which chat is the hub). ' +
       'Become the hub only if the owner runs /chat-hub-core:hub here.'
-      'it is the hub: load the chat-hub-core:hub skill now. Otherwise load chat-hub-core:work-chat. Other projects have ' +
-      'hubs with the same names: this project\'s hub is the one whose folder is this project (or one of its worktrees). ' +
-      'Check a candidate\'s folder before messaging it, never pick by title alone, and ask the owner if more than one ' +
-      'matches or none does.'
+      '"No hub is recorded; type /chat-hub-core:hub in the chat that should be the hub." Until one is recorded, ' +
+      'don\'t message any chat as the hub and don\'t guess one by its name.'
   say('SessionStart', `This project uses chat-hub-core (level ${c.level}). ${who}${mine}${guard}`)
 if (c) say('PreToolUse', `Before committing: the owner must have OK'd this commit.${done}${extra}`)
 ```
