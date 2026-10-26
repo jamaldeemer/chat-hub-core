@@ -12,7 +12,7 @@ You need Claude Code (terminal or the desktop app's Code tab), git and Node.
 1. Add this marketplace (once per computer), in a terminal:
 
    ```
-   claude plugin marketplace add jamaldeemer/chat-hub-core#v0.3.4
+   claude plugin marketplace add jamaldeemer/chat-hub-core
    ```
 
 2. Turn the plugin on in your project:
@@ -43,23 +43,22 @@ Setup writes only inside your project, and only after you say yes:
 - Level 2: one line in `.gitignore`.
 
 Commit them and anyone who clones the project gets the same setup (they
-only repeat steps 1–2). Run setup again to change level or move to a newer
-version.
+only repeat steps 1–2). Run setup again to change level or other answers.
 
 ## Updating
 
-A project uses the version your marketplace points at. To move to a new
-one (e.g. `v0.4.0`):
+When a new version is out, run this in each project you want to move:
 
 ```
-claude plugin marketplace remove chat-hub
-claude plugin marketplace add jamaldeemer/chat-hub-core#v0.4.0
+claude plugin marketplace update chat-hub
 cd path/to/your-project
-claude plugin install chat-hub-core@chat-hub --scope project
+claude plugin update chat-hub-core@chat-hub
 ```
 
-Then start a new chat (open chats keep the old version) and run setup
-again if the CHANGELOG says to.
+Then start a new chat there (open chats keep the version they started
+with), and run setup again if the CHANGELOG says to. Projects you don't
+update stay on the version they have. To see which version each project
+has: `claude plugin list`.
 
 ## Levels
 
@@ -121,7 +120,7 @@ a git host, CI service or framework.
 - Checks: `sh tests/run.sh` and `claude plugin validate .`
 - Release: bump `version` in `.claude-plugin/plugin.json`, add a
   `CHANGELOG.md` section, commit, `git tag vX.Y.Z`, push the branch and tag.
-  Projects keep their pinned version until setup moves them.
+  Projects move to it when their owner runs the Updating steps.
 
 ## License
 
