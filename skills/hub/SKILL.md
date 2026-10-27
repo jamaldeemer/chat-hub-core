@@ -113,12 +113,25 @@ release. Your own merges into the release branch keep git's wording.
 
 ## Closing chats
 
-Ready to close when: its work is committed (level 1+: pushed; level 2: CI
-passed on its newest push), it meets `done`, its folder has nothing
-uncommitted, follow-ups and unchecked items are written down, and its last
-message isn't waiting on the owner. Otherwise send it
-`${CLAUDE_PLUGIN_ROOT}/templates/wrap-up.md`. After each merge, tell the
-owner unasked which chats can close and why the others can't.
+A chat closes only when all of this holds, checked in this order:
+
+1. **Report:** it sent the wrap-up report
+   (`${CLAUDE_PLUGIN_ROOT}/templates/wrap-up.md`) with every line filled
+   in. If it hasn't, send it that template.
+2. **Folder:** `node "${CLAUDE_PLUGIN_ROOT}/hooks/close-check.mjs" <its
+   folder>` prints READY. It checks git itself: nothing uncommitted;
+   level 1+ on its own branch, all pushed, and merged into the release
+   preview; level 2 CI passed on its newest commit and no fix of its still
+   waiting for the owner's check. On any FAIL, tell the chat what failed.
+   Level 1+: merge its branch into the preview first; if the merge clashes,
+   the chat resolves it, not you.
+3. **Nothing waiting:** its last message doesn't wait on the owner, and
+   `Open` in its report is "nothing" or written to the followups file.
+
+Then: set ✅ at the start of its title, update your notes, and tell the
+owner which chats are ✅. The owner archives them; never archive a chat
+yourself. Talk chats skip step 2. After each merge, tell the owner unasked
+which chats can close and why the others can't.
 
 ## Releases (level 1+)
 

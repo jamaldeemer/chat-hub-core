@@ -3,6 +3,18 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## 0.3.9
+
+- **Closing a chat is checked, not trusted.** The chat sends a wrap-up
+  report in a fixed shape (commit, each `done` item with what it ran,
+  follow-ups, anything open) and never calls itself ready. The hub runs
+  `hooks/close-check.mjs <folder>`: nothing uncommitted; level 1+ on its
+  own branch, pushed, and merged into the release preview; level 2 CI
+  passed and no fix still waiting for the owner's check. Only then ✅. The
+  owner archives; the hub never does.
+- **`followups` setting:** the one file chats write follow-ups to (setup
+  asks; default `docs/backlog.md`).
+
 ## 0.3.8
 
 Pulled in from object_creator's hub:

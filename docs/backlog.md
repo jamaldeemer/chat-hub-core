@@ -65,16 +65,14 @@ Automate what relies on memory:
    a log in `.git/chat-hub/`.
 7. After a release, bump `nextRelease` and retag titles (object_creator's
    hub forgot once): a "release finished" step that does both.
-8. Removing `! ` when CI ends: a CI-watch helper that renames the title.
+8. Setting and clearing 🟡/🔴 when CI starts and ends: a CI-watch helper that renames the title.
 
 Make concrete:
-9. "Merged as each finishes": finished = pushed + meets `done` + (level 2)
-   CI green.
+9. "Merged as each finishes": finished = the wrap-up report is in and
+   close-check passes everything except "merged" (0.3.9 checks the rest).
 10. "Decide flaky or real": rerun once; passes on the rerun = flaky.
 11. "A merge that needs a design choice": any conflict it can't resolve
     without changing either side's intent; leave that branch out.
-12. "Written down where this project keeps them": a setting, e.g.
-    `followups: docs/backlog.md`.
 13. "Work that misses its release moves to the next": at each release,
     retag every chat not included.
 

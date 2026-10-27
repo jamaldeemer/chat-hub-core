@@ -142,7 +142,10 @@ refuses a few things outright instead of trusting chats to remember:
 committing on main, rebasing, editing another chat's folder, and (any
 level) commit messages without a code. When something is wrong (a broken
 settings file, no hub, a hub it can't reach), chats stop and tell you
-rather than guess. Nothing in the plugin names a git host, CI service or
+rather than guess. A chat is marked ✅ (ready to close) only after it sends
+a fixed wrap-up report and the hub's `close-check` confirms its folder is
+committed, pushed, merged into the release preview and (level 2) green;
+you archive it. Nothing in the plugin names a git host, CI service or
 framework.
 
 ## Working on the plugin

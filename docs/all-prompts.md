@@ -50,7 +50,8 @@ Only what you couldn't tell. Usually:
    (`3F · Title (R7)`, default) or release first (`R07 3F · Title`, so an
    alphabetical sort groups chats by release).
 3. What "done" means here (e.g. tests pass, it builds, docs updated, owner
-   has seen it). Offer what you found.
+   has seen it), and where follow-ups go (an existing backlog or to-do
+   file, else `docs/backlog.md`). Offer what you found.
 4. Level 2: the command that asks CI whether a commit passed. It must
    print `1` (passed) or `0` (not passed), and fail or print nothing when it
    can't ask CI (never `0` on an error). Propose one from what you found.
@@ -160,6 +161,7 @@ Don't commit.
   "titles": "code-first",           // "code-first" | "release-first" (R07 3F · Title)
   "nextRelease": 1,                 // release the next finished work ships in
   "done": ["tests pass", "docs updated"],
+  "followups": "docs/backlog.md",   // where chats write follow-ups
   "commitReminder": "",             // extra text shown before every commit
   "branches": { "main": "main", "release": "release" },
   "ci": { "passed": "" },           // level 2: command with $SHA; prints 1 or 0, fails if it can't ask
@@ -292,12 +294,25 @@ release. Your own merges into the release branch keep git's wording.
 
 ## Closing chats
 
-Ready to close when: its work is committed (level 1+: pushed; level 2: CI
-passed on its newest push), it meets `done`, its folder has nothing
-uncommitted, follow-ups and unchecked items are written down, and its last
-message isn't waiting on the owner. Otherwise send it
-`${CLAUDE_PLUGIN_ROOT}/templates/wrap-up.md`. After each merge, tell the
-owner unasked which chats can close and why the others can't.
+A chat closes only when all of this holds, checked in this order:
+
+1. **Report:** it sent the wrap-up report
+   (`${CLAUDE_PLUGIN_ROOT}/templates/wrap-up.md`) with every line filled
+   in. If it hasn't, send it that template.
+2. **Folder:** `node "${CLAUDE_PLUGIN_ROOT}/hooks/close-check.mjs" <its
+   folder>` prints READY. It checks git itself: nothing uncommitted;
+   level 1+ on its own branch, all pushed, and merged into the release
+   preview; level 2 CI passed on its newest commit and no fix of its still
+   waiting for the owner's check. On any FAIL, tell the chat what failed.
+   Level 1+: merge its branch into the preview first; if the merge clashes,
+   the chat resolves it, not you.
+3. **Nothing waiting:** its last message doesn't wait on the owner, and
+   `Open` in its report is "nothing" or written to the followups file.
+
+Then: set ✅ at the start of its title, update your notes, and tell the
+owner which chats are ✅. The owner archives them; never archive a chat
+yourself. Talk chats skip step 2. After each merge, tell the owner unasked
+which chats can close and why the others can't.
 
 ## Releases (level 1+)
 
@@ -351,8 +366,8 @@ description: A work chat's rules under chat-hub-core - one task, the owner's OK 
 Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
 `level` says which parts apply.
 
-- **One task:** the one in your brief. Put anything else you notice in your
-  final message as a follow-up; ask the hub for new chats.
+- **One task:** the one in your brief. Write anything else you notice to
+  the `followups` file as a follow-up; ask the hub for new chats.
 - **Your hub** is the one the start note or your brief names. Message it
   at its app address (`local_…`), or its session ID if that's all you
   have; never by title (other projects' hubs have the same names). If no
@@ -373,8 +388,11 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
   show why the test should change) and reply when pushed. A fix for a
   reported problem says `Fixes #n` and adds `- #n <what to try>` to the
   file `fixes.toCheck` names.
-- **Wrap-up** (when asked, or when finishing): follow
-  `${CLAUDE_PLUGIN_ROOT}/templates/wrap-up.md`.
+- **Wrap-up** (when asked, or when you're finished): send the hub the
+  report in `${CLAUDE_PLUGIN_ROOT}/templates/wrap-up.md`, in exactly that
+  shape. Never call yourself ready to close or set ✅; the hub checks and
+  decides. Follow-ups go in the settings' `followups` file
+  (`docs/backlog.md` if it isn't set).
 - **Dev server:** keep exactly two browser tabs on it, yours first, then
   the owner's. Only ever drive your own: pass its tab ID to every browser
   call (a call without one acts on whichever tab is in front), and give
@@ -401,14 +419,16 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
 ## `templates/wrap-up.md`
 
 ````markdown
-<!-- The hub sends this when a chat isn't ready to close. -->
-Wrapping up so this chat can close:
+<!-- The hub sends this to a chat that's finishing. The chat answers in exactly this shape; it never calls itself ready. -->
+Wrapping up. Do what's missing, then reply in exactly this shape:
 
-1. Your changes meet the project's `done` list (in .claude/chat-hub.json).
-2. Follow-ups and anything you couldn't check are written down where this project keeps them.
-3. Nothing uncommitted in your folder (ask the owner before committing).
-4. Level 1+: your branch is pushed. Level 2: its CI passed.
-5. Reply with the commit SHA and one line on anything left open.
+**Wrap-up · <code>**
+- **Commit:** <newest commit SHA> on `<branch>` (level 0: "no branch"); nothing uncommitted.
+- **Done:** one line per item in the settings' `done` list: what you ran or checked, and the result. "Not checked" with the reason if you couldn't.
+- **Follow-ups:** written to `<the settings' followups file, else docs/backlog.md>` (list them), or "none".
+- **Open:** anything unfinished, or a question for the owner; "nothing" if none.
+
+Commit only with the owner's OK. Level 1+: push your branch. Level 2: wait for CI and set your title's 🟡/🔴 as usual. Then send the report to the hub. The hub checks your folder itself before anything is marked ready.
 ````
 
 ---

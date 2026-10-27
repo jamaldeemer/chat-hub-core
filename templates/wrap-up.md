@@ -1,8 +1,10 @@
-<!-- The hub sends this when a chat isn't ready to close. -->
-Wrapping up so this chat can close:
+<!-- The hub sends this to a chat that's finishing. The chat answers in exactly this shape; it never calls itself ready. -->
+Wrapping up. Do what's missing, then reply in exactly this shape:
 
-1. Your changes meet the project's `done` list (in .claude/chat-hub.json).
-2. Follow-ups and anything you couldn't check are written down where this project keeps them.
-3. Nothing uncommitted in your folder (ask the owner before committing).
-4. Level 1+: your branch is pushed. Level 2: its CI passed.
-5. Reply with the commit SHA and one line on anything left open.
+**Wrap-up · <code>**
+- **Commit:** <newest commit SHA> on `<branch>` (level 0: "no branch"); nothing uncommitted.
+- **Done:** one line per item in the settings' `done` list: what you ran or checked, and the result. "Not checked" with the reason if you couldn't.
+- **Follow-ups:** written to `<the settings' followups file, else docs/backlog.md>` (list them), or "none".
+- **Open:** anything unfinished, or a question for the owner; "nothing" if none.
+
+Commit only with the owner's OK. Level 1+: push your branch. Level 2: wait for CI and set your title's 🟡/🔴 as usual. Then send the report to the hub. The hub checks your folder itself before anything is marked ready.

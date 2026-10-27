@@ -94,4 +94,27 @@ echo "- #7 try it" > .claude/issues-to-check.md
 t "level 2: unchecked fix blocks main" "$(push main)" 1
 rm .claude/issues-to-check.md
 t "level 2: checked fix passes" "$(push main)" 0
+# close-check.mjs: is a chat's folder safe to close?
+cc() { node "$root/hooks/close-check.mjs" "$1" >/dev/null 2>&1; echo $?; }
+ccw() { node "$root/hooks/close-check.mjs" "$1" 2>&1 | grep -c "$2"; }
+mkdir "$tmp/cc" && cd "$tmp/cc" && git init -q --bare remote.git && git init -q -b main repo && cd repo
+gc() { git -c user.email=a@b -c user.name=t commit -q "$@"; }
+mkdir .claude && echo '{"level":1}' > .claude/chat-hub.json && git add -A && gc -m init && git remote add origin ../remote.git && git push -q origin main
+git branch release; git worktree add -q ../wt -b a2-work; wt="$tmp/cc/wt"
+t "close-check: level 0 still checks uncommitted" "$(echo '{"level":0}' > "$wt/.claude/chat-hub.json"; ccw "$wt" 'FAIL uncommitted')" 1
+git -C "$wt" checkout -q -- .claude/chat-hub.json
+echo x > "$wt/f.txt"
+t "close-check: uncommitted fails" "$(ccw "$wt" 'FAIL uncommitted')" 1
+git -C "$wt" add -A; git -C "$wt" -c user.email=a@b -c user.name=t commit -q -m "A2: x"
+t "close-check: never pushed fails" "$(ccw "$wt" 'FAIL pushed: the branch has never been pushed')" 1
+git -C "$wt" push -q -u origin a2-work
+t "close-check: not in the preview fails" "$(ccw "$wt" "FAIL merged")" 1
+git checkout -q release; git -c user.email=a@b -c user.name=t merge -q --no-ff a2-work -m "Merge a2"; git checkout -q main
+t "close-check: level 1 all good is ready" "$(cc "$wt")" 0
+echo '{"level":2,"ci":{"passed":"echo 0"}}' > "$wt/.claude/chat-hub.json"
+t "close-check: level 2 CI not passed fails" "$(ccw "$wt" "FAIL CI: hasn't passed")" 1
+echo '{"level":2,"ci":{"passed":"echo 1"}}' > "$wt/.claude/chat-hub.json"
+echo '- #9 try it' > "$wt/.claude/issues-to-check.md"
+t "close-check: unchecked fix fails" "$(ccw "$wt" 'FAIL fixes: 1 still waiting')" 1
+cd "$tmp"
 rm -rf "$tmp"; exit $fail
