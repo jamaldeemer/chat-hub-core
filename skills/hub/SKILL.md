@@ -86,9 +86,9 @@ Two styles, set by `titles` in the settings:
 - **Status symbol** first, then a space, when there is one: `🟡` push in
   CI (level 2), `🔴` CI failed (level 2), `✅` ready to close (passes the
   close check). Nothing otherwise. E.g. `🟡 R16~ A3 · Fix menu spacing`,
-  `✅ 3F · Fix menu spacing (R7)`. The chat that pushed sets 🟡 and 🔴 on
-  its own title; you set ✅. When you hear of a push or a finished run,
-  check its title and fix it if it's wrong.
+  `✅ 3F · Fix menu spacing (R7)`. No symbol for "waiting on the owner".
+  You set every symbol; work chats never touch their own titles. When a
+  chat tells you it pushed, set 🟡; when the run ends, 🔴 or none.
 - A chat still tagged with a shipped release gets its title text between
   `***`.
 - **Talk chats** (questions, research, planning; no code to ship): no
@@ -149,8 +149,14 @@ which chats can close and why the others can't.
   main.
 - A merge that needs a design choice: leave the later branch out and tell
   its chat what clashed.
-- After a release, every open chat merges main (never rebases). Bump
-  `nextRelease` and retag titles.
+- After a release, every open chat merges main at once (never rebases)
+  and pushes that merge only with its next change, unless its work is
+  finished and waiting for a release; then it pushes at once and you
+  merge it on that run. (Every push runs CI; many chats pushing a bare
+  merge at once queue for an hour, and the release's own run already
+  tested them together.) If the release changed CLAUDE.md, say the new
+  rules in your "merge main" message: running chats don't re-read it on
+  their own. Bump `nextRelease` and retag titles.
 
 ## CI (level 2)
 

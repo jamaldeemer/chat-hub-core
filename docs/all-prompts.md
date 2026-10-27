@@ -1,6 +1,6 @@
 # chat-hub-core: every prompt in the plugin
 
-Generated from the plugin's files on 2026-10-26. Edit the source files, not this one.
+Generated from the plugin's files on 2026-10-27. Edit the source files, not this one.
 
 ---
 
@@ -267,9 +267,9 @@ Two styles, set by `titles` in the settings:
 - **Status symbol** first, then a space, when there is one: `🟡` push in
   CI (level 2), `🔴` CI failed (level 2), `✅` ready to close (passes the
   close check). Nothing otherwise. E.g. `🟡 R16~ A3 · Fix menu spacing`,
-  `✅ 3F · Fix menu spacing (R7)`. The chat that pushed sets 🟡 and 🔴 on
-  its own title; you set ✅. When you hear of a push or a finished run,
-  check its title and fix it if it's wrong.
+  `✅ 3F · Fix menu spacing (R7)`. No symbol for "waiting on the owner".
+  You set every symbol; work chats never touch their own titles. When a
+  chat tells you it pushed, set 🟡; when the run ends, 🔴 or none.
 - A chat still tagged with a shipped release gets its title text between
   `***`.
 - **Talk chats** (questions, research, planning; no code to ship): no
@@ -330,8 +330,14 @@ which chats can close and why the others can't.
   main.
 - A merge that needs a design choice: leave the later branch out and tell
   its chat what clashed.
-- After a release, every open chat merges main (never rebases). Bump
-  `nextRelease` and retag titles.
+- After a release, every open chat merges main at once (never rebases)
+  and pushes that merge only with its next change, unless its work is
+  finished and waiting for a release; then it pushes at once and you
+  merge it on that run. (Every push runs CI; many chats pushing a bare
+  merge at once queue for an hour, and the release's own run already
+  tested them together.) If the release changed CLAUDE.md, say the new
+  rules in your "merge main" message: running chats don't re-read it on
+  their own. Bump `nextRelease` and retag titles.
 
 ## CI (level 2)
 
@@ -380,11 +386,17 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
   pass, it builds): the answers the owner gave setup.
 - **Level 1+:** work on your own branch and worktree, never on the main
   branch. After the owner OKs a commit, push your branch and tell the hub.
-  After a release, merge the main branch (never rebase).
-- **Level 2:** when you push your branch, start your own title with `🟡 `
-  while its CI runs. When it ends: passed, remove it; failed, change it to
-  `🔴 ` until you've pushed a fix (then `🟡 ` again). Tell the hub the
-  result. If the hub says your CI failed, fix it on your branch (or
+- **After a release:** merge the main branch at once (never rebase). Use
+  the app's "sync with base branch" tool if you have it: it runs outside
+  your sandbox, so the merge can write protected files (`.claude/…`). A
+  merge of anything else, like the hub's release preview, needs the owner
+  to run the command. Then re-read CLAUDE.md, at least the parts the merge
+  changed: you only read it when you started. Push a commit that only
+  merges main with your next change, not on its own, unless your work is
+  finished and waiting for a release; then push it at once.
+- **Level 2:** after you push, tell the hub (it sets your title's CI
+  symbol; never change your own title). Watch the run and tell the hub
+  the result. If the hub says your CI failed, fix it on your branch (or
   show why the test should change) and reply when pushed. A fix for a
   reported problem says `Fixes #n` and adds `- #n <what to try>` to the
   file `fixes.toCheck` names.
@@ -428,7 +440,7 @@ Wrapping up. Do what's missing, then reply in exactly this shape:
 - **Follow-ups:** written to `<the settings' followups file, else docs/backlog.md>` (list them), or "none".
 - **Open:** anything unfinished, or a question for the owner; "nothing" if none.
 
-Commit only with the owner's OK. Level 1+: push your branch. Level 2: wait for CI and set your title's 🟡/🔴 as usual. Then send the report to the hub. The hub checks your folder itself before anything is marked ready.
+Commit only with the owner's OK. Level 1+: push your branch. Level 2: wait for CI and tell the hub the result. Then send the report to the hub. The hub checks your folder itself before anything is marked ready.
 ````
 
 ---

@@ -90,6 +90,7 @@ LEVEL 1 · + branches
                                           |  you push it to main
                                           v
                                         main --> every open chat merges main
+                                                 (pushed with its next change)
 
 
 LEVEL 2 · + CI and checks

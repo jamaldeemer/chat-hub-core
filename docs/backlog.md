@@ -65,7 +65,8 @@ Automate what relies on memory:
    a log in `.git/chat-hub/`.
 7. After a release, bump `nextRelease` and retag titles (object_creator's
    hub forgot once): a "release finished" step that does both.
-8. Setting and clearing 🟡/🔴 when CI starts and ends: a CI-watch helper that renames the title.
+8. Setting and clearing 🟡/🔴 when CI starts and ends: a CI-watch helper
+   the hub runs, which renames the chat itself.
 
 Make concrete:
 9. "Merged as each finishes": finished = the wrap-up report is in and

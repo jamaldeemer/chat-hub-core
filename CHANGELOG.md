@@ -3,6 +3,22 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## 0.3.10
+
+From object_creator, tried there by hand first:
+- **Only the hub sets status symbols** (🟡 🔴 ✅). Work chats never change
+  their own titles (they kept overwriting the hub's); they tell the hub
+  when they push and how CI ended. Reverses 0.3.5's "pushing chat sets its
+  own mark".
+- **After a release, merge main at once, push it with the next change**
+  (unless the work is finished and waiting for a release: then push at
+  once). Ten chats pushing bare merges queued CI for an hour.
+- **Re-read CLAUDE.md after merging main;** a running chat only read it at
+  the start. The hub states new rules in its "merge main" message.
+- **Merge main with the app's "sync with base branch" tool** when there is
+  one: it runs outside the sandbox, so merges touching `.claude/…` don't
+  fail half-way. Merging the release preview still needs the owner.
+
 ## 0.3.9
 
 - **Closing a chat is checked, not trusted.** The chat sends a wrap-up
