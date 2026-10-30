@@ -7,7 +7,7 @@ import { tmpdir } from 'node:os'
 
 const dir = `${tmpdir()}/chat-hub-core`
 const stateFile = session => `${dir}/${String(session).replace(/[^\w-]/g, '_')}.json`
-const fresh = () => ({ offset: 0, lastId: '', turns: 0, reads: 0, context: 0, nudged: false })
+const fresh = () => ({ offset: 0, lastId: '', turns: 0, reads: 0, context: 0, nudgedAt: 0 })
 
 export function readUsage(session) {
   try { return { ...fresh(), ...JSON.parse(readFileSync(stateFile(session), 'utf8')) } } catch { return fresh() }
@@ -54,18 +54,24 @@ export function updateUsage(session, transcript) {
 
 export const short = n => (n >= 1e6 ? `${(n / 1e6).toFixed(n >= 1e7 ? 0 : 1)}M` : n >= 1e3 ? `${Math.round(n / 1e3)}k` : String(n))
 
-// Once per crossing of the chat's trim threshold, a note telling it to hand off and get cleared.
-// The hub's threshold is `trimAt` (default 150k); work chats only if `trimAtWork` is set.
+// A note telling the chat to hand off and get cleared: first at the trim threshold, then again
+// every `trimEvery` tokens over it (default 25k: 150k, 175k, 200k…). Resets once the context drops
+// below 80% of the limit (after a clear). The hub's threshold is `trimAt` (default 150k); work
+// chats only if `trimAtWork` is set.
 export function trimNudge({ session, isHub, cfg }) {
   if (!session || !cfg) return ''
   const limit = isHub ? (cfg.trimAt ?? 150000) : (cfg.trimAtWork || 0)
   if (!limit) return ''
+  const every = cfg.trimEvery > 0 ? cfg.trimEvery : 25000
   const s = readUsage(session)
-  if (s.context < limit * 0.8 && s.nudged) { s.nudged = false; writeUsage(session, s) }
-  if (s.context < limit || s.nudged) return ''
-  s.nudged = true
+  if (s.context < limit * 0.8 && s.nudgedAt) { s.nudgedAt = 0; writeUsage(session, s) }
+  if (s.context < limit) return ''
+  const step = limit + Math.floor((s.context - limit) / every) * every   // the last mark passed
+  if (s.nudgedAt >= step) return ''
+  s.nudgedAt = step
   writeUsage(session, s)
-  const size = `This chat's context is ${short(s.context)} tokens (limit ${short(limit)}), and every turn re-reads all of it.`
+  const over = s.context - limit
+  const size = `This chat's context is ${short(s.context)} tokens (limit ${short(limit)}${over >= 1000 ? `, ${short(over)} over` : ''}), and every turn re-reads all of it.`
   return isHub
     ? `${size} At the next quiet moment (nothing waiting on you mid-step), bring your hub notes up to date with everything you track, then ask the owner to clear this chat: you'll pick up from the notes. Say it once; don't stop work in progress for it.`
     : `${size} When you reach a natural stopping point, write down where you are (in your branch's notes or a commit) and suggest the owner clear this chat or wrap it up. Say it once.`

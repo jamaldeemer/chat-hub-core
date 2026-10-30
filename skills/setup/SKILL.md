@@ -160,6 +160,7 @@ Don't commit.
   "devServer": { "command": "" },   // optional
   "trimAt": 150000,                 // optional: hub context (tokens) that prompts a notes-then-clear
   "trimAtWork": 0,                  // optional: the same for work chats (0 = off)
+  "trimEvery": 25000,               // optional: remind again every this many tokens over the limit
   "stats": true                     // optional: false hides the after-turn stats line
 }
 ```
