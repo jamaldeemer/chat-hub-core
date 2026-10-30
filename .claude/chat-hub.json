@@ -1,0 +1,9 @@
+{
+  "level": 1,
+  "releases": "plain",
+  "titles": "release-first",
+  "nextRelease": 1,
+  "done": ["tests pass (tests/run.sh)", "CHANGELOG updated", "docs updated", "owner has seen it"],
+  "followups": "docs/backlog.md",
+  "branches": { "main": "main", "release": "release" }
+}
