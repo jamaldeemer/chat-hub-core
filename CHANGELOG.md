@@ -3,7 +3,7 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
-## Unreleased
+## 0.3.12
 
 - **The trim reminder repeats:** past the limit, a chat is reminded again
   every `trimEvery` tokens (default 25k: 150k, 175k, 200k…), and each
