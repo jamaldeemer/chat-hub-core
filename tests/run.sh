@@ -89,7 +89,17 @@ echo '{"level":0,"trimAt":150000}' > .claude/chat-hub.json
 node "$root/hooks/set-hub.mjs" --session u1 --replace >/dev/null
 op() { printf '{"session_id":"%s","prompt":"hi","cwd":"%s"}' "$1" "$(pwd)" | node "$root/hooks/on-prompt.mjs"; }
 t "trim: hub past trimAt is nudged" "$(op u1 | grep -c 'hub notes up to date')" 1
-t "trim: only once per crossing" "$(op u1 | wc -c | tr -d ' ')" 0
+t "trim: not again under the next step" "$(op u1 | wc -c | tr -d ' ')" 0
+asst m4 0 226000; at u1 >/dev/null
+t "trim: again 25k over, says how far" "$(op u1 | grep -c '226k tokens (limit 150k, 76k over)')" 1
+t "trim: once per step" "$(op u1 | wc -c | tr -d ' ')" 0
+echo '{"level":0,"trimAt":150000,"trimEvery":10000}' > .claude/chat-hub.json
+asst m5 0 237000; at u1 >/dev/null
+t "trim: trimEvery sets the step" "$(op u1 | grep -c '87k over')" 1
+asst m6 0 50000; at u1 >/dev/null; op u1 >/dev/null
+asst m7 0 151000; at u1 >/dev/null
+t "trim: resets after a clear" "$(op u1 | grep -c 'hub notes up to date')" 1
+echo '{"level":0,"trimAt":150000}' > .claude/chat-hub.json
 at u2 >/dev/null
 t "trim: work chats not by default" "$(op u2 | wc -c | tr -d ' ')" 0
 echo '{"level":0,"trimAt":150000,"trimAtWork":100000}' > .claude/chat-hub.json

@@ -150,7 +150,8 @@ rather than guess.
 `"stats": false` to hide it). Every turn re-reads the whole context, so
 long chats, the hub above all, cost the most. When the hub passes
 `trimAt` (default 150k tokens) it updates its notes and asks you to clear
-it; work chats do the same past `trimAtWork`, if set.
+it, and reminds again every `trimEvery` tokens over (default 25k), saying
+how far over it is; work chats do the same past `trimAtWork`, if set.
 
 A chat is marked ✅ (ready to close) only after it sends
 a fixed wrap-up report and the hub's `close-check` confirms its folder is

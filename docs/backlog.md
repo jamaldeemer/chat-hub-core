@@ -174,3 +174,5 @@ Findings 1–3 shipped in 0.3.4. Still open:
   comments (could live in a chat-hub-local layer).
 - A `/chat-hub-core:feedback` command to send plugin changes from any
   project to the plugin's own chat.
+
+- tests/run.sh: "commit reminder: done" fails on main too (seen by A2 while adding trimEvery).
