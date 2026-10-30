@@ -4,18 +4,6 @@ Open work for chat-hub-core. Newest first within each section.
 
 ## Next
 
-- **Clearing a long hub without losing track.** Steps 2–3 (the notes file,
-  read first after a clear) shipped in 0.3.8. Still open: step 1.
-  1. Nudge: a hook checks the hub's transcript size on each message and,
-     past a limit (setting, e.g. `hubReminderKB`), has the hub suggest once
-     "I'm getting long; save my notes and start fresh?".
-  2. Handoff: before clearing, the hub writes what it tracks (open chats,
-     codes, branches, release tags, what waits on the owner, the release
-     preview) to `.git/chat-hub/hub-notes.md` (shared, never committed).
-  3. Pick up: after the clear, the start note tells the hub to read that
-     file first.
-  Clearing gives the chat a new session ID, so the hub must be recorded by
-  its app address (which survives a clear) or it stops being the hub.
 - **Renaming a chat yourself triggers permission prompts.** The hub keeps
   titles "current", so after the owner renames a work chat, the hub renames
   it back and the app asks permission each time. Fix: the hub treats a
@@ -32,6 +20,42 @@ Open work for chat-hub-core. Newest first within each section.
   re-adds the marketplace once, so do it together with another release.
 - Trim the brief: it repeats "load the work-chat skill", which the start
   hook already does.
+
+## Checks for 0.3.11 (token use)
+
+- **Does the desktop app show the stats line?** The Stop hook's
+  `systemMessage` is meant for the owner only; confirm it appears in the
+  desktop app (and the terminal). If not, find another quiet place for it.
+- **Why did `"if": "Bash(git commit*)"` let the commit reminder fire on
+  every command?** 0.3.11 filters inside the hook; find out whether the
+  `if` matcher is ignored for plugin hooks and report it upstream if so.
+- **Tune `trimAt`:** 150k is a first guess; adjust from the stats line.
+
+## From object_creator's rule list (2026-10-27)
+
+Its hub proposed 16 rules (each tried there). Take, adapt or tighten:
+- **Tighten what's there:** no FYIs to idle chats, including merge-main
+  and new-rule news; a brief's first message is a short plan, then go;
+  work chats too give the owner the exact command when the sandbox blocks
+  a push or merge (the hub already does).
+- **Take as is:** name issues by number plus exact title (any tracker);
+  read a red run's failing log before acting and tell real, flaky
+  (passes on retry) and infrastructure failures apart (infrastructure goes
+  to the owner as a rerun command); a run cancelled by a newer push isn't
+  a result, watch the newer one; CI setup changes reach a branch only when
+  it merges main; doc conflicts where both sides only added: keep both,
+  newest first, then run the checks (replaces item 11 below); a brief
+  carries project-specific test commands, since running chats don't
+  re-read CLAUDE.md; rerun a slow test alone before calling it broken.
+- **Adapt:** one command per code block for the owner (drop the "Run
+  button" reason); restart a timed-out CI watcher and treat a queue with
+  nothing started for 10+ minutes as a down runner (better done by the
+  CI-watch helper, item 8 below); restart the dev server after a release
+  and check a page is yours before trusting it (tie both to `devServer`,
+  which also gives that setting a use).
+- **Keep the hub lean:** move the CI rules (these plus today's CI section)
+  into a reference file the hub reads only at level 2 or when a run fails,
+  so level 0–1 hubs don't carry them every turn.
 
 ## Stop loudly instead of carrying on (2026-10-26)
 
@@ -66,7 +90,9 @@ Automate what relies on memory:
 7. After a release, bump `nextRelease` and retag titles (object_creator's
    hub forgot once): a "release finished" step that does both.
 8. Setting and clearing 🟡/🔴 when CI starts and ends: a CI-watch helper
-   the hub runs, which renames the chat itself.
+   the hub runs in the background, which renames the chat itself, reads
+   the failing log and says real, flaky or infrastructure (see
+   object_creator's list above). Also saves hub turns: no polling.
 
 Make concrete:
 9. "Merged as each finishes": finished = the wrap-up report is in and
@@ -123,8 +149,9 @@ Findings 1–3 shipped in 0.3.4. Still open:
 - On one computer, Claude Code keeps one copy per marketplace name, so two
   projects can't reliably be pinned to different versions by marketplace
   `ref`. Each project's install does stay on its version until
-  `claude plugin update` is run there; confirm this and say so in setup and
-  the README (setup's "pin" step may not be needed at all).
+  `claude plugin update` is run there (confirmed 2026-10-27: object_creator
+  and coaster_graph each went 0.3.6 → 0.3.10 separately). Say so in setup
+  and the README; setup's "pin" step may not be needed at all.
 - Show the running version in each chat's start note.
 
 ## Settings (2026-10-26)
@@ -142,7 +169,6 @@ Findings 1–3 shipped in 0.3.4. Still open:
   message), so the owner sees fewer permission prompts.
 - Level 1 blocks direct pushes to main, not only level 2.
 - An `overrides` setting so projects can change a core rule without a fork.
-- Rebuilding `docs/all-prompts.md`: put its script in the repo.
 - Hooks in plain sh instead of Node (undecided).
 - A `/review` helper: publish files as a commentable page, then apply the
   comments (could live in a chat-hub-local layer).

@@ -56,6 +56,20 @@ session). Without them (e.g. the plain terminal),
 give the owner the brief and title to paste into a new chat, and ask for
 its name.
 
+## Keeping turns cheap
+
+Every turn you take re-reads your whole conversation, so the hub's cost is
+turns × context size, and it's usually most of a project's usage.
+- **Titles:** change a title only when its status really changes, and
+  batch several into one turn.
+- **Never sleep-poll** (`sleep`, repeated checks in a loop). Wait for the
+  app's events (a chat finishing a turn, a CI notification), or run a
+  watcher in the background and let it wake you.
+- **Read and write little:** read parts of files (`sed -n '40,80p'`,
+  `grep -n`), not whole files; keep your replies short.
+- **When a note says you're getting long,** bring your notes up to date
+  and ask the owner to clear you at the next quiet moment.
+
 ## Briefs
 
 Fill in `${CLAUDE_PLUGIN_ROOT}/templates/brief.md`.

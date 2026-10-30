@@ -15,7 +15,9 @@ echo '{"level":0,"hubSession":"s1"}' > .claude/chat-hub.json
 t "hub session: this chat is the hub" "$(echo '{"session_id":"s1"}' | node "$root/hooks/session-start.mjs" | grep -c 'This chat is the hub')" 1
 t "hub session: others message only it" "$(echo '{"session_id":"s2"}' | node "$root/hooks/session-start.mjs" | grep -c 'only ever message that session')" 1
 echo '{"level":0,"done":["tests pass"]}' > .claude/chat-hub.json
-t "commit reminder: done" "$(node "$root/hooks/before-commit.mjs" | grep -c 'tests pass')" 1
+t "commit reminder: done" "$(echo '{"tool_input":{"command":"git commit -m \\"3F: x\\""}}' | node "$root/hooks/before-commit.mjs" | grep -c 'tests pass')" 1
+t "commit reminder: quiet on other commands" "$(echo '{"tool_input":{"command":"ls -la"}}' | node "$root/hooks/before-commit.mjs" | wc -c | tr -d ' ')" 0
+t "commit reminder: quiet on git status" "$(echo '{"tool_input":{"command":"git status"}}' | node "$root/hooks/before-commit.mjs" | wc -c | tr -d ' ')" 0
 git init -q -b main &&  git -c user.email=a@b -c user.name=t commit -q --allow-empty -m one
 echo '{"level":0}' > .claude/chat-hub.json
 t "shared hub: written" "$(node "$root/hooks/set-hub.mjs" s1)" "Hub is now s1."
@@ -71,6 +73,29 @@ t "guard: edit in own worktree allowed" "$(g "$(edit_in "$here/a.txt")")" 0
 t "guard: edit in another worktree refused" "$(g "$(edit_in "$(cd ../wt3 && pwd)/a.txt")")" 1
 t "guard: edit outside the repo allowed" "$(g "$(edit_in /tmp/elsewhere.txt)")" 0
 git worktree remove --force ../wt3; git branch -q -D other; git checkout -q main; git branch -q -D feat; rm -rf .git/chat-hub
+# usage.mjs: the stats line and the trim nudge (state kept under a throwaway TMPDIR)
+oldtmp="${TMPDIR:-}"; export TMPDIR="$tmp/state"; mkdir -p "$TMPDIR"
+tr="$tmp/transcript.jsonl"
+asst() { printf '{"type":"assistant","message":{"id":"%s","usage":{"input_tokens":%s,"cache_read_input_tokens":%s,"cache_creation_input_tokens":0,"output_tokens":5}}}\n' "$1" "$2" "$3" >> "$tr"; }
+asst m1 10 1000; asst m1 10 1000; asst m2 20 3000
+printf '{"type":"assistant","isSidechain":true,"message":{"id":"sub","usage":{"input_tokens":1,"cache_read_input_tokens":999999}}}\n' >> "$tr"
+at() { printf '{"session_id":"%s","transcript_path":"%s","cwd":"%s"}' "$1" "$tr" "$(pwd)" | node "$root/hooks/after-turn.mjs"; }
+t "stats: context, turns, reads" "$(at u1)" '{"systemMessage":"Context 3k · 2 turns · this chat ≈ 4k token-reads"}'
+asst m3 0 200000
+t "stats: reads only what's new" "$(at u1 | grep -c 'Context 200k · 3 turns')" 1
+echo '{"level":0,"stats":false}' > .claude/chat-hub.json
+t "stats: off when stats is false" "$(at u1 | wc -c | tr -d ' ')" 0
+echo '{"level":0,"trimAt":150000}' > .claude/chat-hub.json
+node "$root/hooks/set-hub.mjs" --session u1 --replace >/dev/null
+op() { printf '{"session_id":"%s","prompt":"hi","cwd":"%s"}' "$1" "$(pwd)" | node "$root/hooks/on-prompt.mjs"; }
+t "trim: hub past trimAt is nudged" "$(op u1 | grep -c 'hub notes up to date')" 1
+t "trim: only once per crossing" "$(op u1 | wc -c | tr -d ' ')" 0
+at u2 >/dev/null
+t "trim: work chats not by default" "$(op u2 | wc -c | tr -d ' ')" 0
+echo '{"level":0,"trimAt":150000,"trimAtWork":100000}' > .claude/chat-hub.json
+t "trim: work chats with trimAtWork" "$(op u2 | grep -c 'natural stopping point')" 1
+rm -rf .git/chat-hub; export TMPDIR="$oldtmp"
+echo '{"level":0,"done":["tests pass"]}' > .claude/chat-hub.json
 mkdir .githooks && touch .githooks/pre-push; echo '{"level":1}' > .claude/chat-hub.json
 t "level 1: guard switched on" "$(echo '{}' | node "$root/hooks/session-start.mjs" | grep -c 'switched on')" 1
 t "level 1: hooksPath set" "$(git config core.hooksPath)" ".githooks"

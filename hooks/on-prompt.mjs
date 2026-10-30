@@ -3,13 +3,19 @@
 // already the hub, it refuses unless the owner typed "/chat-hub-core:hub replace".
 import { fileURLToPath } from 'node:url'
 import { dirname } from 'node:path'
-import { HubTaken, hookInput, readConfig, say, setHub } from './config.mjs'
+import { HubTaken, hookInput, readConfig, readHub, say, setHub } from './config.mjs'
+import { trimNudge } from './usage.mjs'
 
 const setHubCmd = `node "${dirname(fileURLToPath(import.meta.url))}/set-hub.mjs"`
 const input = hookInput()
 const prompt = (input.prompt || '').trim()
 const m = prompt.match(/^\/chat-hub-core:hub\b(.*)$/s)
-if (m && input.session_id && readConfig(input.cwd || process.cwd())) {
+const cfg = readConfig(input.cwd || process.cwd())
+if (!m && cfg) {
+  const nudge = trimNudge({ session: input.session_id, isHub: readHub(cfg).session === input.session_id, cfg })
+  if (nudge) say('UserPromptSubmit', nudge)
+}
+if (m && input.session_id && cfg) {
   try {
     const old = setHub({ session: input.session_id, replace: /^\s*replace\b/i.test(m[1]) })
     say('UserPromptSubmit', `Recorded this chat (session ${input.session_id}) as the hub.` +

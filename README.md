@@ -143,7 +143,16 @@ refuses a few things outright instead of trusting chats to remember:
 committing on main, rebasing, editing another chat's folder, and (any
 level) commit messages without a code. When something is wrong (a broken
 settings file, no hub, a hub it can't reach), chats stop and tell you
-rather than guess. A chat is marked ✅ (ready to close) only after it sends
+rather than guess.
+
+**Token use.** After every turn you see one line, e.g. `Context 182k ·
+312 turns · this chat ≈ 41M token-reads` (Claude doesn't see it; set
+`"stats": false` to hide it). Every turn re-reads the whole context, so
+long chats, the hub above all, cost the most. When the hub passes
+`trimAt` (default 150k tokens) it updates its notes and asks you to clear
+it; work chats do the same past `trimAtWork`, if set.
+
+A chat is marked ✅ (ready to close) only after it sends
 a fixed wrap-up report and the hub's `close-check` confirms its folder is
 committed, pushed, merged into the release preview and (level 2) green;
 you archive it. Nothing in the plugin names a git host, CI service or
@@ -153,6 +162,8 @@ framework.
 
 - Try unreleased changes: `claude --plugin-dir path/to/chat-hub-core`
 - Checks: `sh tests/run.sh` and `claude plugin validate .`
+- After changing a prompt: `sh scripts/all-prompts.sh` rebuilds
+  `docs/all-prompts.md`.
 - Release: bump `version` in `.claude-plugin/plugin.json`, add a
   `CHANGELOG.md` section, commit, `git tag vX.Y.Z`, push the branch and tag.
   Projects move to it when their owner runs the Updating steps.

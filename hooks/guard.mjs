@@ -8,7 +8,8 @@ import { execFileSync } from 'node:child_process'
 import { realpathSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { basename, dirname, resolve } from 'node:path'
-import { hookInput, readConfig, readHub } from './config.mjs'
+import { hookInput, readConfig, readHub, say } from './config.mjs'
+import { trimNudge } from './usage.mjs'
 
 const input = hookInput()
 const cwd = input.cwd || process.cwd()
@@ -88,3 +89,7 @@ if (level >= 1 && !isHub && /^(Edit|Write|MultiEdit|NotebookEdit)$/.test(tool)) 
     }
   }
 }
+
+// Nothing refused: pass on a trim nudge if this chat just crossed its size limit.
+const nudge = trimNudge({ session: input.session_id, isHub, cfg: c })
+if (nudge) say('PreToolUse', nudge)

@@ -3,6 +3,22 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## 0.3.11
+
+Token use (from object_creator: the hub was about 3/4 of all spend,
+re-reading ~450k tokens every turn):
+- **The commit reminder fires only on `git commit`** (it appeared on every
+  command, adding to every turn's context).
+- **A stats line after every turn**, for the owner only: context size,
+  turns, and token-reads so far (`stats: false` hides it).
+- **Self-trim:** past `trimAt` (default 150k, hub only; `trimAtWork` for
+  work chats) a chat is told once to update its notes and ask the owner to
+  clear it.
+- **Hub rules for cheaper turns:** change titles only on real status
+  changes and batch them; never sleep-poll; read parts of files.
+- `scripts/all-prompts.sh` rebuilds `docs/all-prompts.md` (it used to live
+  outside the repo).
+
 ## 0.3.10
 
 From object_creator, tried there by hand first:

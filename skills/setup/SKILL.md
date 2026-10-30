@@ -157,7 +157,10 @@ Don't commit.
   "branches": { "main": "main", "release": "release" },
   "ci": { "passed": "" },           // level 2: command with $SHA; prints 1 or 0, fails if it can't ask
   "fixes": { "toCheck": ".claude/issues-to-check.md" }, // level 2
-  "devServer": { "command": "" }    // optional
+  "devServer": { "command": "" },   // optional
+  "trimAt": 150000,                 // optional: hub context (tokens) that prompts a notes-then-clear
+  "trimAtWork": 0,                  // optional: the same for work chats (0 = off)
+  "stats": true                     // optional: false hides the after-turn stats line
 }
 ```
 
