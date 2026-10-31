@@ -239,7 +239,7 @@ The hub sets every symbol; work chats never change their own titles.
 |---|---|---|---|
 | ⚪ | Working, nothing waiting on you (also talk chats, the hub) | it starts the chat, or you answer "more" | all |
 | 🟡 | Waiting on your OK to commit, merge or push | the chat says "asking for OK" | all |
-| ❓ | Waiting on your answer to a question (not an OK) | the app says the chat is waiting on you, or the chat says "question for owner"; the old symbol comes back once you answer | all |
+| ❓ | Waiting on your answer to a question (not an OK) | the app says the chat is waiting on you, or the chat says "question for owner"; the old symbol comes back once you answer (the chat says "answered, working again", or the hub sees it working again) | all |
 | ⏳ | OK given, committing and pushing | the chat says "OK given, committing" | all |
 | 🚀 | Push in CI | the chat says it pushed | 2 |
 | 🟢 | Pushed (level 1) or CI passed (level 2); the chat is asking "Anything more, or should I wrap up?" | the chat says it pushed / the CI run passes | 1+ |

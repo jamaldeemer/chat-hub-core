@@ -23,7 +23,8 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
   owner says no, tell it "OK declined".
 - **Questions:** when you end a turn on a question to the owner that
   isn't an OK, tell the hub in one line ("question for owner: <topic>";
-  it sets ❓ on your title).
+  it sets ❓ on your title). When the owner answers it here, first tell
+  the hub "answered, working again" (it clears ❓), then carry on.
 - **Start mode:** your brief's **Start:** line. "Plan first": look
   around, send the owner a short plan (what's there, the approach, a few
   lines), tell the hub "question for owner: plan ready", and change
