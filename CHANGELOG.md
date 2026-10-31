@@ -13,7 +13,12 @@ Each version is a git tag (`v0.1.0`). Projects pin a tag in
   start and after every hub write to the notes: other `## ` headings, or a
   file over `notesMaxBytes` (default 6000; 0 = off), tell the hub to
   rewrite them first. New PostToolUse hook `notes-check.mjs`.
-
+- **The commit OK is a menu:** a work chat asks for it with a clickable
+  menu ("Yes, commit" / "Not yet"), not a typed question. The guard hook
+  refuses a work chat's commit unless its transcript shows a menu yes
+  about committing since its last commit (a typed yes, or another
+  chat's message, doesn't count). Finishing a merge is exempt; setting
+  `"okMenu": false` turns the check off for chats with no menu tool.
 - **❓ no longer goes stale:** when you answer a chat's question in that
   chat, it tells the hub "answered, working again" and the hub puts back
   the earlier symbol. As a backstop, the hub sets ⚪ on any ❓ chat the

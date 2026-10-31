@@ -10,9 +10,10 @@ one **hub** chat in charge.
   you when it can close.
 - **Sidebar as status board.** Every title shows a code, a release and a
   status symbol, so you see who's waiting on you at a glance.
-- **You stay in control.** Nothing is committed without your OK, and
-  every push to `main` is yours. Git hooks block rebases, commits on main
-  and edits to another chat's folder.
+- **You stay in control.** Nothing is committed without your OK, which
+  you give with one click in a menu, and every push to `main` is yours.
+  Git hooks block rebases, commits on main or without your OK, and edits
+  to another chat's folder.
 - **Releases built in.** Finished work gathers on a `release` preview
   branch; a close check confirms each chat is committed, pushed, merged
   and (with CI) green.
@@ -265,9 +266,12 @@ project gets a settings file,
 command), and a three-line note in CLAUDE.md. At level 1+, a guard hook
 refuses a few things outright instead of trusting chats to remember:
 committing on main, rebasing, editing another chat's folder, and (any
-level) commit messages without a code. When something is wrong (a broken
-settings file, no hub, a hub it can't reach), chats stop and tell you
-rather than guess.
+level) commit messages without a code or without your OK: a work chat
+must ask with a menu (AskUserQuestion, "Yes, commit" / "Not yet"), and
+the hook checks the chat's transcript for a yes since its last commit
+(`"okMenu": false` turns this off where there's no menu tool). When
+something is wrong (a broken settings file, no hub, a hub it can't
+reach), chats stop and tell you rather than guess.
 
 **Token use.** After every turn you see one line, e.g. `Context 182k ·
 312 turns · this chat ≈ 41M token-reads` (Claude doesn't see it; set

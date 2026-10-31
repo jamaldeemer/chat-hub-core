@@ -79,6 +79,39 @@ t "guard: commit on own branch allowed" "$(g "$(bash_in w1 'git commit -m "3F: x
 t "guard: commit without code refused" "$(g "$(bash_in w1 'git commit -m "Fix it"')")" 1
 t "guard: heredoc message with code allowed" "$(g "$(bash_in w1 "$hd")")" 0
 t "guard: old-style code allowed" "$(g "$(bash_in w1 'git commit -m "L76: x"')")" 0
+# guard.mjs: the commit OK must come from a menu (AskUserQuestion), read from the transcript
+okt="$tmp/ok.jsonl"; : > "$okt"
+ask() { printf '{"type":"assistant","message":{"content":[{"type":"tool_use","id":"%s","name":"AskUserQuestion","input":{}}]}}\n{"type":"user","message":{"content":[{"type":"tool_result","tool_use_id":"%s","content":"answered"}]},"toolUseResult":{"answers":{"%s":"%s"}}}\n' "$1" "$1" "$2" "$3" >> "$okt"; }
+ran() { printf '{"type":"assistant","message":{"content":[{"type":"tool_use","id":"%s","name":"Bash","input":{"command":"%s"}}]}}\n{"type":"user","message":{"content":[{"type":"tool_result","tool_use_id":"%s","is_error":%s,"content":"x"}]}}\n' "$1" "$2" "$1" "$3" >> "$okt"; }
+okin=$(node -e 'process.stdout.write(JSON.stringify({session_id:"w1",cwd:process.argv[1],transcript_path:process.argv[2],tool_name:"Bash",tool_input:{command:"git commit -m \"3F: x\""}}))' "$here" "$okt")
+gk() { printf '%s' "$okin" | node "$root/hooks/guard.mjs" | grep -c "$1"; }
+t "ok menu: no answer refused" "$(gk '"deny"')" 1
+t "ok menu: says to use a menu" "$(gk 'AskUserQuestion tool')" 1
+printf '{"type":"user","message":{"content":[{"type":"text","text":"yes, commit"}]}}\n' >> "$okt"
+t "ok menu: typed yes refused" "$(gk '"deny"')" 1
+ask a1 "Add tests too?" "Yes"
+t "ok menu: yes to another question refused" "$(gk '"deny"')" 1
+ask a2 "Commit this?" "Yes, commit"
+t "ok menu: menu yes allowed" "$(gk '"deny"')" 0
+ran g1 "grep 'git commit' notes.md" false
+t "ok menu: a command that only mentions commit keeps it" "$(gk '"deny"')" 0
+ran c1 "git add -A && git commit -q" true
+t "ok menu: failed commit keeps it" "$(gk '"deny"')" 0
+ran c2 "git add -A && git commit -q" false
+t "ok menu: used up by a commit" "$(gk '"deny"')" 1
+ask a3 "Ready to go?" "Yes, commit and push"
+t "ok menu: commit in the answer counts" "$(gk '"deny"')" 0
+ask a4 "Commit this?" "Not yet"
+t "ok menu: later no takes it back" "$(gk '"deny"')" 1
+printf '{"type":"assistant","message":{"content":[{"type":"tool_use","id":"o1","name":"AskUserQuestion","input":{}}]}}\n{"type":"user","message":{"content":[{"type":"tool_result","tool_use_id":"o1","content":"The user answered: \\"Commit it?\\"=\\"Yes\\". Go on."}]}}\n' >> "$okt"
+t "ok menu: answer read from the text too" "$(gk '"deny"')" 0
+ran c3 "git commit -q" false
+git rev-parse HEAD > .git/MERGE_HEAD
+t "ok menu: finishing a merge allowed" "$(gk '"deny"')" 0
+rm .git/MERGE_HEAD
+echo '{"level":1,"okMenu":false}' > .claude/chat-hub.json
+t "ok menu: okMenu false turns it off" "$(gk '"deny"')" 0
+echo '{"level":1}' > .claude/chat-hub.json
 node "$root/hooks/set-hub.mjs" --session hubS >/dev/null
 git checkout -q main
 t "guard: hub may commit on main" "$(g "$(bash_in hubS 'git commit -m "Release note: R2+"')")" 0
@@ -225,6 +258,7 @@ nd=$(mktemp -d "$tmp/nogit.XXXXXX"); mkdir "$nd/.claude"; echo '{"level":0,"hubS
 t "update: no git, check skipped" "$(cd "$nd" && echo '{"session_id":"h1","prompt":"hi"}' | CHAT_HUB_PLUGINS_FILE="$pf" node "$root/hooks/on-prompt.mjs" | grep -c 'was updated')" 0
 
 t "skills: answered line in work chat" "$(grep -c 'answered, working again' "$root/skills/work-chat/SKILL.md")" 1
+t "skills: OK asked with a menu" "$(grep -c 'Ask for it with a menu' "$root/skills/work-chat/SKILL.md")" 1
 t "skills: answered line in hub" "$(grep -c 'answered, working again' "$root/skills/hub/SKILL.md")" 1
 
 cd "$tmp"
