@@ -3,6 +3,14 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## Unreleased
+
+- Before starting each chat, the hub asks you how it starts: **plan
+  first** (it sends a short plan and waits for your go, ❓) or **build
+  it** (straight to work, stops only for the commit OK). Optional
+  setting `startMode`: "ask" (default), "plan" or "build". The brief
+  carries a **Start:** line.
+
 ## 0.3.18
 
 - After pushing (level 2: after CI passes), a work chat asks you
