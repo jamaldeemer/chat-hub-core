@@ -3,6 +3,13 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## Unreleased
+
+- **❓ no longer goes stale:** when you answer a chat's question in that
+  chat, it tells the hub "answered, working again" and the hub puts back
+  the earlier symbol. As a backstop, the hub sets ⚪ on any ❓ chat the
+  app shows as working.
+
 ## 0.3.19
 
 - **Louder trim reminder:** it now starts "⚠️ STOP: trim reminder N",
