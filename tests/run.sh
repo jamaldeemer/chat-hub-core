@@ -85,7 +85,7 @@ asst m3 0 200000
 t "stats: reads only what's new" "$(at u1 | grep -c 'Context 200k · 3 turns')" 1
 echo '{"level":0,"stats":false}' > .claude/chat-hub.json
 t "stats: off when stats is false" "$(at u1 | wc -c | tr -d ' ')" 0
-echo '{"level":0,"trimAt":150000}' > .claude/chat-hub.json
+echo '{"level":0,"trimAt":150000,"trimHardStop":0}' > .claude/chat-hub.json
 node "$root/hooks/set-hub.mjs" --session u1 --replace >/dev/null
 op() { printf '{"session_id":"%s","prompt":"hi","cwd":"%s"}' "$1" "$(pwd)" | node "$root/hooks/on-prompt.mjs"; }
 t "trim: hub past trimAt is nudged" "$(op u1 | grep -c 'hub notes up to date')" 1
@@ -93,14 +93,45 @@ t "trim: not again under the next step" "$(op u1 | wc -c | tr -d ' ')" 0
 asst m4 0 226000; at u1 >/dev/null
 t "trim: again 25k over, says how far" "$(op u1 | grep -c '226k tokens (limit 150k, 76k over)')" 1
 t "trim: once per step" "$(op u1 | wc -c | tr -d ' ')" 0
-echo '{"level":0,"trimAt":150000,"trimEvery":10000}' > .claude/chat-hub.json
+echo '{"level":0,"trimAt":150000,"trimEvery":10000,"trimHardStop":0}' > .claude/chat-hub.json
 asst m5 0 237000; at u1 >/dev/null
 t "trim: trimEvery sets the step" "$(op u1 | grep -c '87k over')" 1
 asst m6 0 50000; at u1 >/dev/null; op u1 >/dev/null
 asst m7 0 151000; at u1 >/dev/null
 t "trim: resets after a clear" "$(op u1 | grep -c 'hub notes up to date')" 1
+pt() { j=$(node -e 'process.stdout.write(JSON.stringify({session_id:process.argv[1],cwd:process.argv[2],tool_name:process.argv[3],tool_input:JSON.parse(process.argv[4])}))' "$1" "$(pwd)" "$2" "$3"); printf "%s" "$j" | node "$root/hooks/guard.mjs" | grep -c '"deny"'; }
+# trim: louder text, the last warning (trimHardStop, default 2 → 200k) and the hard stop one step later (225k)
 echo '{"level":0,"trimAt":150000}' > .claude/chat-hub.json
-at u2 >/dev/null
+asst m7b 0 50000; at u1 >/dev/null; op u1 >/dev/null; asst m8 0 152000; at u1 >/dev/null
+t "trim: loud, counts reminders" "$(op u1 | grep -c '⚠️ STOP: trim reminder 1.*At 200k.*last warning.*at 225k.*every reply')" 1
+asst m9 0 176000; at u1 >/dev/null
+t "trim: second reminder, says what's next" "$(op u1 | grep -c 'trim reminder 2.*At 200k')" 1
+asst m10 0 201000; at u1 >/dev/null
+t "last warning: at limit + 2×trimEvery" "$(op u1 | grep -c 'LAST WARNING.*Finish only the step already in progress.*At 225k')" 1
+t "last warning: on every prompt" "$(op u1 | grep -c 'LAST WARNING')" 1
+t "last warning: tools still allowed" "$(pt u1 Bash '{"command":"npm test"}')" 0
+asst m10b 0 226000; at u1 >/dev/null
+t "hard stop: note one step later" "$(op u1 | grep -c 'HARD STOP.*Notes saved, please clear')" 1
+t "hard stop: note on every prompt" "$(op u1 | grep -c 'HARD STOP')" 1
+notes="$(pwd)/.git/chat-hub/hub-notes.md"
+t "hard stop: Bash refused" "$(pt u1 Bash '{"command":"npm test"}')" 1
+t "hard stop: chained command refused" "$(pt u1 Bash '{"command":"cat a && rm a"}')" 1
+t "hard stop: redirect refused" "$(pt u1 Bash '{"command":"cat a > b"}')" 1
+t "hard stop: read-only command allowed" "$(pt u1 Bash '{"command":"git log --oneline | head -5"}')" 0
+t "hard stop: Read allowed" "$(pt u1 Read '{"file_path":"x"}')" 0
+t "hard stop: other tools refused" "$(pt u1 mcp__x__send_message '{}')" 1
+t "hard stop: edit elsewhere refused" "$(pt u1 Edit "{\"file_path\":\"$(pwd)/a.txt\"}")" 1
+t "hard stop: edit hub notes allowed" "$(pt u1 Write "{\"file_path\":\"$notes\"}")" 0
+t "hard stop: work chats never" "$(asst m11 0 300000; at u2 >/dev/null; pt u2 Bash '{"command":"npm test"}')" 0
+echo '{"level":0,"trimAt":150000,"trimHardStop":0}' > .claude/chat-hub.json
+t "hard stop: trimHardStop 0 is off" "$(pt u1 Bash '{"command":"npm test"}')" 0
+echo '{"level":0,"trimAt":150000,"trimHardStop":3}' > .claude/chat-hub.json
+t "hard stop: trimHardStop sets the count" "$(pt u1 Bash '{"command":"npm test"}')" 0
+echo '{"level":0,"trimAt":150000}' > .claude/chat-hub.json
+asst m12 0 50000; at u1 >/dev/null; op u1 >/dev/null
+t "hard stop: lifted after a clear" "$(pt u1 Bash '{"command":"npm test"}')" 0
+echo '{"level":0,"trimAt":150000}' > .claude/chat-hub.json
+asst m13 0 151000; at u2 >/dev/null
 t "trim: work chats not by default" "$(op u2 | wc -c | tr -d ' ')" 0
 echo '{"level":0,"trimAt":150000,"trimAtWork":100000}' > .claude/chat-hub.json
 t "trim: work chats with trimAtWork" "$(op u2 | grep -c 'natural stopping point')" 1

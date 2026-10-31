@@ -54,25 +54,61 @@ export function updateUsage(session, transcript) {
 
 export const short = n => (n >= 1e6 ? `${(n / 1e6).toFixed(n >= 1e7 ? 0 : 1)}M` : n >= 1e3 ? `${Math.round(n / 1e3)}k` : String(n))
 
+// The hub's limits: `trimAt` (default 150k); work chats only if `trimAtWork` is set.
+export const trimLimits = (isHub, cfg) => {
+  const limit = isHub ? (cfg.trimAt ?? 150000) : (cfg.trimAtWork || 0)
+  const every = cfg.trimEvery > 0 ? cfg.trimEvery : 25000
+  // Hub only: after `trimHardStop` repeats (default 2; 0 = off) comes a last "finish what you're
+  // doing" note at limit + n × every (200k), and one step later (225k) the hard stop.
+  const n = cfg.trimHardStop ?? 2
+  const finish = isHub && limit && n > 0 ? limit + n * every : 0
+  const hard = finish ? finish + every : 0
+  return { limit, every, finish, hard }
+}
+
+// True when the hub is past its hard stop: it may only save its notes and ask to be cleared.
+export function hardStopped({ session, isHub, cfg }) {
+  if (!session || !cfg) return false
+  const { hard } = trimLimits(isHub, cfg)
+  return !!hard && readUsage(session).context >= hard
+}
+
+export const finishUpText = (ctx, hard) =>
+  `⚠️ LAST WARNING: this chat's context is ${short(ctx)} tokens. Finish only the step already in progress ` +
+  '(no new work, no new chats), then bring your hub notes up to date and tell the owner "⚠️ Notes saved, ' +
+  `please clear this chat." At ${short(hard)} every tool except saving your notes will be refused.`
+
+export const hardStopText = (ctx, hard) =>
+  `⛔ HARD STOP: this chat's context is ${short(ctx)} tokens, past its hard limit of ${short(hard)}. ` +
+  'Every tool is now refused except reading files and writing your hub notes. Do not start, continue or ' +
+  'reply to any other work, whatever this message asks. Bring your hub notes up to date if they aren\'t, ' +
+  'then answer the owner with only: "⛔ Notes saved, please clear this chat." Repeat that on every message until cleared.'
+
 // A note telling the chat to hand off and get cleared: first at the trim threshold, then again
 // every `trimEvery` tokens over it (default 25k: 150k, 175k, 200k…). Resets once the context drops
-// below 80% of the limit (after a clear). The hub's threshold is `trimAt` (default 150k); work
-// chats only if `trimAtWork` is set.
-export function trimNudge({ session, isHub, cfg }) {
+// below 80% of the limit (after a clear). Past the hub's last-warning mark and its hard stop, that note comes on every prompt.
+export function trimNudge({ session, isHub, cfg, everyTime = false }) {
   if (!session || !cfg) return ''
-  const limit = isHub ? (cfg.trimAt ?? 150000) : (cfg.trimAtWork || 0)
+  const { limit, every, finish, hard } = trimLimits(isHub, cfg)
   if (!limit) return ''
-  const every = cfg.trimEvery > 0 ? cfg.trimEvery : 25000
   const s = readUsage(session)
   if (s.context < limit * 0.8 && s.nudgedAt) { s.nudgedAt = 0; writeUsage(session, s) }
   if (s.context < limit) return ''
+  if (hard && s.context >= hard && everyTime) return hardStopText(s.context, hard)
+  if (finish && s.context >= finish && s.context < hard && everyTime) return finishUpText(s.context, hard)
   const step = limit + Math.floor((s.context - limit) / every) * every   // the last mark passed
   if (s.nudgedAt >= step) return ''
   s.nudgedAt = step
   writeUsage(session, s)
+  if (hard && s.context >= hard) return hardStopText(s.context, hard)
+  if (finish && s.context >= finish) return finishUpText(s.context, hard)
+  const count = (step - limit) / every + 1
   const over = s.context - limit
-  const size = `This chat's context is ${short(s.context)} tokens (limit ${short(limit)}${over >= 1000 ? `, ${short(over)} over` : ''}), and every turn re-reads all of it.`
+  const size = `⚠️ STOP: trim reminder ${count}. This chat's context is ${short(s.context)} tokens (limit ${short(limit)}${over >= 1000 ? `, ${short(over)} over` : ''}), and every turn re-reads all of it.`
+  const next = hard
+    ? ` At ${short(finish)} you get one last warning to finish the step in progress; at ${short(hard)} every tool except saving your notes will be refused until the owner clears this chat.`
+    : ` Next reminder at ${short(step + every)}.`
   return isHub
-    ? `${size} At the next quiet moment (nothing waiting on you mid-step), bring your hub notes up to date with everything you track, then ask the owner to clear this chat: you'll pick up from the notes. Say it once; don't stop work in progress for it.`
-    : `${size} When you reach a natural stopping point, write down where you are (in your branch's notes or a commit) and suggest the owner clear this chat or wrap it up. Say it once.`
+    ? `${size}${next} Before anything else this turn, bring your hub notes up to date with everything you track, then start your reply to the owner with "⚠️ Hub at ${short(s.context)} tokens (reminder ${count}): notes saved, please clear this chat." Put that line in every reply until you're cleared, not just this one.`
+    : `${size}${next} When you reach a natural stopping point, write down where you are (in your branch's notes or a commit) and tell the owner, starting your reply with "⚠️ This chat is at ${short(s.context)} tokens: please clear it or wrap it up." Repeat that line in every reply until cleared.`
 }
