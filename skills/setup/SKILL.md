@@ -165,6 +165,7 @@ Don't commit.
   "trimAt": 150000,                 // optional: hub context (tokens) that prompts a notes-then-clear
   "trimAtWork": 0,                  // optional: the same for work chats (0 = off)
   "trimEvery": 25000,               // optional: remind again every this many tokens over the limit
+  "notesMaxBytes": 6000,            // optional: hub notes size that prompts a rewrite as one snapshot (0 = off)
   "stats": true                     // optional: false hides the after-turn stats line
 }
 ```

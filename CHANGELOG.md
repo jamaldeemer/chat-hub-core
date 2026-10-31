@@ -3,6 +3,17 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## Unreleased
+
+- **Hub notes stay one snapshot, not a diary:** the hub skill now says
+  `hub-notes.md` is one current snapshot under fixed headings (`## Me`,
+  `Next`, `Shipped`, `Preview`, `Waiting`, `Open chats`, `Plans`,
+  `Gotchas`), edited in place: no dated, "Latest" or checkpoint blocks,
+  only the last 2 releases, closed chats deleted. A hook checks it at hub
+  start and after every hub write to the notes: other `## ` headings, or a
+  file over `notesMaxBytes` (default 6000; 0 = off), tell the hub to
+  rewrite them first. New PostToolUse hook `notes-check.mjs`.
+
 ## 0.3.19
 
 - **Louder trim reminder:** it now starts "⚠️ STOP: trim reminder N",
