@@ -99,21 +99,23 @@ Two styles, set by `titles` in the settings:
   misses its release moves to the next.
 - **Status symbol** first, then a space: `🟡` waiting
   on the owner's OK to commit, merge or push, `⏳` OK given, committing
-  and pushing, `🚀` push in CI (level 2),
-  `🔴` CI failed (level 2), `✅` ready to close (passes the close check).
-  `⚪` otherwise, so titles line up in a column (the app trims blanks).
+  and pushing, `🚀` push in CI (level 2), `🟢` CI passed (level 2) or
+  pushed with nothing pending (level 1), `🔴` CI failed (level 2), `✅`
+  ready to close (passes the close check). `⚪` only for a new chat that
+  hasn't pushed yet, so titles line up in a column (the app trims blanks).
   With release-first titles the sidebar then sorts by symbol first, so
   chats group by status. E.g. `🚀 R16~ A3 · Fix menu spacing`,
   `⚪ 3F · Fix menu spacing (R7)`. You set every symbol; work chats never
   touch their own titles. When a chat says it's asking for an OK, set 🟡;
-  when it says the OK was given, ⏳; when it says the owner said no, ⚪.
-  When a chat tells you it pushed, set 🚀 (level 2) or ⚪ (level 1); when
-  the run ends, 🔴 or ⚪.
+  when it says the OK was given, ⏳; when it says the owner said no, 🟢
+  if the chat has pushed before, else ⚪. When a chat tells you it pushed,
+  set 🚀 (level 2) or 🟢 (level 1); when the run ends, 🔴 or 🟢.
 - A chat still tagged with a shipped release gets its title text between
   `***`.
 - **Talk chats** (questions, research, planning; no code to ship): no
   release tag, no branch or worktree, never retagged at a release.
-  They start with `⚪` like other chats. Release-first titles then have
+  They start with `⚪` like other chats and keep it, since they never push
+  (your own title keeps ⚪ too). Release-first titles then have
   `Z ` so they sort last among ⚪ chats (`⚪ Z A4 · Compare slicers`);
   code-first ones just drop the tag (`⚪ A4 · Compare slicers`). They close when their last message isn't
   waiting on the owner and any follow-ups are written down.

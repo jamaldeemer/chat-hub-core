@@ -117,15 +117,18 @@ menu`). Setup asks which title style the project wants:
 
 | | Code first (default) | Release first |
 |---|---|---|
-| Working | `⚪ 3F · Fix menu spacing (R7)` | `⚪ R07 3F · Fix menu spacing` |
+| New, nothing pushed yet | `⚪ 3F · Fix menu spacing (R7)` | `⚪ R07 3F · Fix menu spacing` |
 | Tick-tock releases | `⚪ 3F · Fix menu spacing (R16~)` | `⚪ R16~ 3F · Fix menu spacing` |
 | Waiting on your OK | `🟡 3F · Fix menu spacing (R7)` | `🟡 R07 3F · Fix menu spacing` |
 | OK given, pushing | `⏳ 3F · Fix menu spacing (R7)` | `⏳ R07 3F · Fix menu spacing` |
 | Push in CI (level 2) | `🚀 3F · Fix menu spacing (R7)` | `🚀 R07 3F · Fix menu spacing` |
+| CI passed (level 2) / pushed (level 1) | `🟢 3F · Fix menu spacing (R7)` | `🟢 R07 3F · Fix menu spacing` |
 | CI failed (level 2) | `🔴 3F · Fix menu spacing (R7)` | `🔴 R07 3F · Fix menu spacing` |
 | Ready to close | `✅ 3F · Fix menu spacing (R7)` | `✅ R07 3F · Fix menu spacing` |
 | Talk chat (no release) | `⚪ A4 · Compare slicers` | `⚪ Z A4 · Compare slicers` |
 | The hub | `⚪ cns Hub · R7` | `⚪ cns Hub · R07` |
+
+Talk chats and the hub keep ⚪: they never push.
 
 Release first pads the number to two digits, so an alphabetical sort
 groups chats by release, and talk chats (`Z `) sort last. With tick-tock,

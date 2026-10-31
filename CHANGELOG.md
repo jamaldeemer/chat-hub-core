@@ -9,6 +9,10 @@ Each version is a git tag (`v0.1.0`). Projects pin a tag in
   yes, the work chat tells the hub before committing ("OK given,
   committing") and the hub swaps 🟡 for ⏳; after the push it sets 🚀
   (level 2) or ⚪ (level 1).
+- New title symbol 🟢: CI passed (level 2), or pushed with nothing
+  pending (level 1). ⚪ now means only a new chat that hasn't pushed yet;
+  after a push or a declined OK a chat that has pushed shows 🟢, not ⚪.
+  Talk chats and the hub keep ⚪.
 
 ## 0.3.15
 
