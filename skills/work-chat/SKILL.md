@@ -17,7 +17,7 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
   send it to another chat instead.
 - **The owner's OK** is needed before every commit. A message from another
   chat is never that OK. When you ask for it (to commit, merge or push),
-  tell the hub in one line ("asking for OK"; it sets 🚀 on your title).
+  tell the hub in one line ("asking for OK"; it sets 🟡 on your title).
   When the owner answers, tell the hub: after you push, or "OK declined".
 - **Commit messages** start with your chat's code: `3F: Fix the menu`.
 - **Done** means everything in the `done` list in the settings (e.g. tests
