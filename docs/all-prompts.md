@@ -319,7 +319,8 @@ A chat closes only when all of this holds, checked in this order:
    in. If it hasn't, send it that template.
 2. **Folder:** `node "${CLAUDE_PLUGIN_ROOT}/hooks/close-check.mjs" <its
    folder>` prints READY. It checks git itself: nothing uncommitted;
-   level 1+ on its own branch, all pushed, and merged into the release
+   level 1+ on its own branch, all pushed (to its upstream, or
+   `origin/<branch>` if it has none), and merged into the release
    preview; level 2 CI passed on its newest commit and no fix of its still
    waiting for the owner's check. On any FAIL, tell the chat what failed.
    Level 1+: merge its branch into the preview first; if the merge clashes,
@@ -403,7 +404,8 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
 - **Done** means everything in the `done` list in the settings (e.g. tests
   pass, it builds): the answers the owner gave setup.
 - **Level 1+:** work on your own branch and worktree, never on the main
-  branch. After the owner OKs a commit, push your branch and tell the hub.
+  branch. After the owner OKs a commit, push your branch with
+  `git push origin HEAD` (no `-u`: the sandbox blocks it) and tell the hub.
 - **After a release:** merge the main branch at once (never rebase). Use
   the app's "sync with base branch" tool if you have it: it runs outside
   your sandbox, so the merge can write protected files (`.claude/…`). A
