@@ -117,8 +117,8 @@ menu`). Setup asks which title style the project wants:
 
 | | Code first (default) | Release first |
 |---|---|---|
-| Working | `3F · Fix menu spacing (R7)` | `R07 3F · Fix menu spacing` |
-| Tick-tock releases | `3F · Fix menu spacing (R16~)` | `R16~ 3F · Fix menu spacing` |
+| Working | `⚪ 3F · Fix menu spacing (R7)` | `⚪ R07 3F · Fix menu spacing` |
+| Tick-tock releases | `⚪ 3F · Fix menu spacing (R16~)` | `⚪ R16~ 3F · Fix menu spacing` |
 | Waiting on your OK | `🚀 3F · Fix menu spacing (R7)` | `🚀 R07 3F · Fix menu spacing` |
 | Push in CI (level 2) | `🟡 3F · Fix menu spacing (R7)` | `🟡 R07 3F · Fix menu spacing` |
 | CI failed (level 2) | `🔴 3F · Fix menu spacing (R7)` | `🔴 R07 3F · Fix menu spacing` |
