@@ -3,6 +3,16 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## Unreleased
+
+- After pushing (level 2: after CI passes), a work chat asks you
+  "Anything more, or should I wrap up?"; 🟢 now means exactly that. "More"
+  sets ⚪, which now means "working, nothing waiting on you". It wraps up only when you say so; the hub merges it into the
+  release preview only once the report is in, then sets ✅.
+- The hub sets its own title symbol during a release: 🟡 built, 🚀 in CI,
+  🟢 passed, 🔴 failed, ❓ question, ⚪ once main has it.
+- README: flowcharts of the chat and release symbols.
+
 ## 0.3.17
 
 - New title symbol ❓: the chat stopped on a question for you that isn't

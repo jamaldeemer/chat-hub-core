@@ -95,8 +95,6 @@ Automate what relies on memory:
    object_creator's list above). Also saves hub turns: no polling.
 
 Make concrete:
-9. "Merged as each finishes": finished = the wrap-up report is in and
-   close-check passes everything except "merged" (0.3.9 checks the rest).
 10. "Decide flaky or real": rerun once; passes on the rerun = flaky.
 11. "A merge that needs a design choice": any conflict it can't resolve
     without changing either side's intent; leave that branch out.
