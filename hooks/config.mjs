@@ -131,3 +131,26 @@ export function recordVersion(v = installedVersion()) {
 export const updateNotice = ({ from, to }) =>
   `chat-hub-core was updated from ${from} to ${to}; open chats still run ${from}. Follow "After a plugin update" ` +
   `in your hub rules: message the open work chats in one batch, then run node "${new URL('./set-version.mjs', import.meta.url).pathname}".`
+
+// Hub notes are one current snapshot in fixed sections, not a diary. These are the allowed
+// `## ` headings (matched on their first word or two); anything else, or a file over
+// notesMaxBytes (default 6000, 0 = off), gets a note telling the hub to rewrite them.
+export const NOTES_SECTIONS = ['Me', 'Next', 'Shipped', 'Preview', 'Waiting', 'Open chats', 'Plans', 'Gotchas']
+export function notesProblem(cfg, file = hubNotesFile()) {
+  if (!file || !existsSync(file)) return ''
+  const text = readFileSync(file, 'utf8')
+  const max = cfg?.notesMaxBytes ?? 6000
+  const bytes = Buffer.byteLength(text)
+  const bad = text.split('\n').filter(l => /^## /.test(l)).map(l => l.slice(3).trim())
+    .filter(h => !NOTES_SECTIONS.some(s => h.toLowerCase() === s.toLowerCase() || h.toLowerCase().startsWith(s.toLowerCase() + ' ') || h.toLowerCase().startsWith(s.toLowerCase() + ':')) ||
+      /\d{4}-\d{2}-\d{2}|\blatest\b|checkpoint|before a clear/i.test(h))
+  const why = [
+    bad.length ? `headings outside the fixed sections (${bad.slice(0, 3).map(h => `"## ${h.slice(0, 60)}"`).join(', ')}${bad.length > 3 ? `, +${bad.length - 3} more` : ''})` : '',
+    max > 0 && bytes > max ? `${bytes} bytes, over the ${max}-byte limit` : '',
+  ].filter(Boolean)
+  if (!why.length) return ''
+  return `⚠️ Your hub notes (${file}) have ${why.join(' and ')}. Before anything else, rewrite them as ONE current ` +
+    `snapshot under only these headings: ${NOTES_SECTIONS.map(s => `"## ${s}"`).join(', ')}. Merge what's still true into ` +
+    'those sections, keep only the last 2 shipped releases, drop closed chats and old history (git keeps it), and add no ' +
+    'dated, "Latest" or checkpoint blocks.'
+}

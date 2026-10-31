@@ -46,12 +46,16 @@ for you. Say so in one line and do nothing else.
 **Your notes:** keep `hub-notes.md` in git's shared folder
 (`$(git rev-parse --git-common-dir)/chat-hub/hub-notes.md`; never committed)
 current, so a restart or a clear loses nothing. Update it whenever you
-start, retag or close a chat, merge a branch, or release. Sections: you
-(app address, title, folder, dev server), next code and `nextRelease`, the
-release preview (what's merged, as commits), waiting to go in (branch,
-commit, CI state, what blocks it), open chats by release (code, title,
-branch, what they wait on), plans, and gotchas (things that tripped you
-up). If the start note says the file exists, read it before anything
+start, retag or close a chat, merge a branch, or release. It's ONE current
+snapshot, edited in place under exactly these headings: `## Me` (app
+address, title, folder, dev server), `## Next` (next code, `nextRelease`),
+`## Shipped` (the last 2 releases only), `## Preview` (what's merged, as
+commits), `## Waiting` (branch, commit, CI, blocker), `## Open chats` (by
+release: code, title, branch, what they wait on), `## Plans`, `## Gotchas`.
+Never add dated, "Latest", "Checkpoint" or "before a clear" blocks, even in
+a hurry; delete closed chats; history lives in git. A hook flags other
+headings or a file over `notesMaxBytes` (6 KB): rewrite it first.
+If the start note says the file exists, read it before anything
 else.
 
 Start, rename and message chats with the app's session tools (in the

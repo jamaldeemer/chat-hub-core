@@ -284,6 +284,11 @@ answers only "Notes saved, please clear this chat" until you clear it.
 Work chats get the same reminders past `trimAtWork`, if set, but no hard
 stop: they'd lose work mid-task.
 
+**Hub notes.** The hub keeps one current snapshot of its notes under fixed
+headings, edited in place. If they gain other `## ` headings (dated or
+"checkpoint" blocks) or pass `notesMaxBytes` (default 6000; 0 = off), a
+hook tells the hub to rewrite them before anything else.
+
 A chat is marked ✅ (ready to close) only after it sends
 a fixed wrap-up report and the hub's `close-check` confirms its folder is
 committed, pushed, merged into the release preview and (level 2) green;

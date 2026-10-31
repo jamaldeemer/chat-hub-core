@@ -5,6 +5,15 @@ Each version is a git tag (`v0.1.0`). Projects pin a tag in
 
 ## Unreleased
 
+- **Hub notes stay one snapshot, not a diary:** the hub skill now says
+  `hub-notes.md` is one current snapshot under fixed headings (`## Me`,
+  `Next`, `Shipped`, `Preview`, `Waiting`, `Open chats`, `Plans`,
+  `Gotchas`), edited in place: no dated, "Latest" or checkpoint blocks,
+  only the last 2 releases, closed chats deleted. A hook checks it at hub
+  start and after every hub write to the notes: other `## ` headings, or a
+  file over `notesMaxBytes` (default 6000; 0 = off), tell the hub to
+  rewrite them first. New PostToolUse hook `notes-check.mjs`.
+
 - **❓ no longer goes stale:** when you answer a chat's question in that
   chat, it tells the hub "answered, working again" and the hub puts back
   the earlier symbol. As a backstop, the hub sets ⚪ on any ❓ chat the

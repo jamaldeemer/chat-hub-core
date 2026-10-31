@@ -3,7 +3,7 @@ import { execFileSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname } from 'node:path'
-import { hookInput, hubAddress, hubNotesFile, loadConfig, readHub, say, updateNotice, versionChange } from './config.mjs'
+import { hookInput, hubAddress, hubNotesFile, loadConfig, notesProblem, readHub, say, updateNotice, versionChange } from './config.mjs'
 
 const setHubCmd = `node "${dirname(fileURLToPath(import.meta.url))}/set-hub.mjs"`
 
@@ -33,7 +33,8 @@ if (error) {
   const hub = readHub(c)
   const to = hubAddress(hub)
   const notesFile = hubNotesFile()
-  const notes = notesFile && existsSync(notesFile) ? ` Your notes exist: read ${notesFile} before anything else.` : ''
+  const notes = notesFile && existsSync(notesFile) ? ` Your notes exist: read ${notesFile} before anything else.` +
+    ((p => p ? ' ' + p : '')(notesProblem(c, notesFile))) : ''
   let who
   if (hub.session && me && hub.session === me) {
     who = 'This chat is the hub: load the chat-hub-core:hub skill now.' + notes +

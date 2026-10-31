@@ -47,6 +47,22 @@ echo '# notes' > .git/chat-hub/hub-notes.md
 t "hub notes: hub told to read them" "$(echo '{"session_id":"s5"}' | node "$root/hooks/session-start.mjs" | grep -c 'read .*hub-notes.md before anything else')" 1
 t "hub notes: others only if they turn out to be the hub" "$(echo '{"session_id":"s6"}' | node "$root/hooks/session-start.mjs" | grep -c 'if its id is local_A, this chat is the hub.*hub-notes.md.*Otherwise this is a work chat')" 1
 rm .git/chat-hub/hub-notes.md
+printf '# Hub notes\n## Me\nx\n## Next\nC5\n## Open chats (by release)\n- C4\n' > .git/chat-hub/hub-notes.md
+t "notes check: clean small file quiet at start" "$(echo '{"session_id":"s5"}' | node "$root/hooks/session-start.mjs" | grep -c 'ONE current snapshot')" 0
+nc() { node -e 'process.stdout.write(JSON.stringify({session_id:process.argv[1],cwd:process.cwd(),tool_name:"Write",tool_input:{file_path:process.argv[2]}}))' "$1" "$(pwd)/.git/chat-hub/hub-notes.md" > "$tmp/nc.json"; node "$root/hooks/notes-check.mjs" < "$tmp/nc.json" | grep -c 'ONE current snapshot'; }
+t "notes check: clean small file quiet after a write" "$(nc s5)" 0
+printf '## Latest 2026-10-31 ~06:30, BEFORE A CLEAR (read FIRST)\nx\n## Me\nx\n' > .git/chat-hub/hub-notes.md
+t "notes check: diary headings flagged at start" "$(echo '{"session_id":"s5"}' | node "$root/hooks/session-start.mjs" | grep -c 'headings outside the fixed sections.*ONE current snapshot')" 1
+t "notes check: diary headings flagged after a write" "$(nc s5)" 1
+t "notes check: work chats not told" "$(nc s6)" 0
+printf '## CLEAR CHECKPOINT\nx\n' > .git/chat-hub/hub-notes.md
+t "notes check: checkpoint heading flagged" "$(nc s5)" 1
+{ echo '## Me'; i=0; while [ $i -lt 200 ]; do echo 'a line of notes that keeps going on'; i=$((i+1)); done; } > .git/chat-hub/hub-notes.md
+t "notes check: oversize flagged" "$(nc s5)" 1
+t "notes check: oversize says the limit" "$(echo '{"session_id":"s5"}' | node "$root/hooks/session-start.mjs" | grep -c 'over the 6000-byte limit')" 1
+echo '{"level":0,"notesMaxBytes":0}' > .claude/chat-hub.json
+t "notes check: notesMaxBytes 0 turns size off" "$(nc s5)" 0
+echo '{"level":0}' > .claude/chat-hub.json
 printf 'local_C\n' > .git/chat-hub/hub
 t "older file with an app address still works" "$(echo '{"session_id":"s9"}' | node "$root/hooks/session-start.mjs" | grep -c 'only ever message local_C')" 1
 git worktree remove --force ../wt2; rm -rf .git/chat-hub
