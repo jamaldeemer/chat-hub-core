@@ -142,10 +142,15 @@ echo x > "$wt/f.txt"
 t "close-check: uncommitted fails" "$(ccw "$wt" 'FAIL uncommitted')" 1
 git -C "$wt" add -A; git -C "$wt" -c user.email=a@b -c user.name=t commit -q -m "A2: x"
 t "close-check: never pushed fails" "$(ccw "$wt" 'FAIL pushed: the branch has never been pushed')" 1
-git -C "$wt" push -q -u origin a2-work
+git -C "$wt" push -q origin HEAD
+t "close-check: no upstream, remote branch matches passes" "$(ccw "$wt" 'PASS pushed: all of it, to origin/a2-work')" 1
+echo y > "$wt/g.txt"; git -C "$wt" add -A; git -C "$wt" -c user.email=a@b -c user.name=t commit -q -m "A2: y"
+t "close-check: no upstream, remote branch behind fails" "$(ccw "$wt" 'FAIL pushed: 1 commit(s) not pushed to origin/a2-work')" 1
+git -C "$wt" push -q origin HEAD
 t "close-check: not in the preview fails" "$(ccw "$wt" "FAIL merged")" 1
 git checkout -q release; git -c user.email=a@b -c user.name=t merge -q --no-ff a2-work -m "Merge a2"; git checkout -q main
 t "close-check: level 1 all good is ready" "$(cc "$wt")" 0
+t "close-check: with an upstream set still passes" "$(git -C "$wt" branch -q -u origin/a2-work; ccw "$wt" 'PASS pushed: all of it, to origin/a2-work')" 1
 echo '{"level":2,"ci":{"passed":"echo 0"}}' > "$wt/.claude/chat-hub.json"
 t "close-check: level 2 CI not passed fails" "$(ccw "$wt" "FAIL CI: hasn't passed")" 1
 echo '{"level":2,"ci":{"passed":"echo 1"}}' > "$wt/.claude/chat-hub.json"
