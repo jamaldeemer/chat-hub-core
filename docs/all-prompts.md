@@ -56,6 +56,9 @@ Only what you couldn't tell. Usually:
    print `1` (passed) or `0` (not passed), and fail or print nothing when it
    can't ask CI (never `0` on an error). Propose one from what you found.
 
+Don't ask how chats start: `startMode` defaults to "ask" (the hub asks
+before each chat). Set "plan" or "build" only if the owner says so.
+
 ## 4. Summary, then write
 
 First flag what won't work yet:
@@ -162,6 +165,7 @@ Don't commit.
   "nextRelease": 1,                 // release the next finished work ships in
   "done": ["tests pass", "docs updated"],
   "followups": "docs/backlog.md",   // where chats write follow-ups
+  "startMode": "ask",               // "ask" (hub asks each time) | "plan" | "build"
   "commitReminder": "",             // extra text shown before every commit
   "branches": { "main": "main", "release": "release" },
   "ci": { "passed": "" },           // level 2: command with $SHA; prints 1 or 0, fails if it can't ask
@@ -271,9 +275,17 @@ turns × context size, and it's usually most of a project's usage.
 
 Fill in `${CLAUDE_PLUGIN_ROOT}/templates/brief.md`.
 
-- Details given: the chat starts work.
-- Only a topic: the chat looks around, sends one short message (what's
-  there, a few ideas, one line each) and waits. No changes first.
+Before starting each chat, ask the owner how it should start (a menu
+with AskUserQuestion where you have it, else one line), unless the
+settings' `startMode` is "plan" or "build" (default "ask"):
+
+- **Plan first:** the chat looks around, sends a short plan (what's
+  there, the approach, a few lines) and waits for the owner's go before
+  changing anything.
+- **Build it:** the chat goes straight to work, stopping only for the
+  commit OK.
+
+Put the answer on the brief's **Start:** line.
 
 ## Titles
 
@@ -448,6 +460,10 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
 - **Questions:** when you end a turn on a question to the owner that
   isn't an OK, tell the hub in one line ("question for owner: <topic>";
   it sets ❓ on your title).
+- **Start mode:** your brief's **Start:** line. "Plan first": look
+  around, send the owner a short plan (what's there, the approach, a few
+  lines), tell the hub "question for owner: plan ready", and change
+  nothing until the owner says go. "Build it": go straight to work.
 - **Commit messages** start with your chat's code: `3F: Fix the menu`.
 - **Done** means everything in the `done` list in the settings (e.g. tests
   pass, it builds): the answers the owner gave setup.
@@ -491,7 +507,9 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
 
 ````markdown
 <!-- The hub fills this in when it starts a chat. -->
-**Task:** <the owner's words; or "Topic only: look around, send one short message (what's there, a few ideas), then wait.">
+**Task:** <the owner's words; or a topic only>
+
+**Start:** <"plan first": look around, send a short plan, wait for the owner's go before changing anything; or "build it": go straight to work, stop only for the commit OK>
 
 **Read first:** <files and docs>
 

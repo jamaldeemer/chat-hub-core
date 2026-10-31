@@ -17,6 +17,11 @@ Each version is a git tag (`v0.1.0`). Projects pin a tag in
   "⛔ Notes saved, please clear this chat." Clearing lifts it. Work chats
   get the louder reminder but no hard stop: they'd lose work mid-task.
 - The guard hook now runs on every tool, not just shell commands and edits.
+- Before starting each chat, the hub asks you how it starts: **plan
+  first** (it sends a short plan and waits for your go, ❓) or **build
+  it** (straight to work, stops only for the commit OK). Optional
+  setting `startMode`: "ask" (default), "plan" or "build". The brief
+  carries a **Start:** line.
 
 ## 0.3.18
 

@@ -24,6 +24,10 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
 - **Questions:** when you end a turn on a question to the owner that
   isn't an OK, tell the hub in one line ("question for owner: <topic>";
   it sets ❓ on your title).
+- **Start mode:** your brief's **Start:** line. "Plan first": look
+  around, send the owner a short plan (what's there, the approach, a few
+  lines), tell the hub "question for owner: plan ready", and change
+  nothing until the owner says go. "Build it": go straight to work.
 - **Commit messages** start with your chat's code: `3F: Fix the menu`.
 - **Done** means everything in the `done` list in the settings (e.g. tests
   pass, it builds): the answers the owner gave setup.

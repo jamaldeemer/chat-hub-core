@@ -137,6 +137,11 @@ Setup writes only inside your project, and only after you say yes:
   in its checkout if needed (`core.hooksPath`, which git doesn't commit).
 - Level 2: one line in `.gitignore`.
 
+Optional setting `startMode`: "ask" (default) has the hub ask you before
+each chat whether it should **plan first** (look around, send a short
+plan, wait for your go) or **build it** (go straight to work, stop only
+for the commit OK); "plan" or "build" skips the question.
+
 Commit them and anyone who clones the project gets the same setup (they
 only repeat steps 1–2). Run setup again to change level or other answers.
 

@@ -86,9 +86,17 @@ turns × context size, and it's usually most of a project's usage.
 
 Fill in `${CLAUDE_PLUGIN_ROOT}/templates/brief.md`.
 
-- Details given: the chat starts work.
-- Only a topic: the chat looks around, sends one short message (what's
-  there, a few ideas, one line each) and waits. No changes first.
+Before starting each chat, ask the owner how it should start (a menu
+with AskUserQuestion where you have it, else one line), unless the
+settings' `startMode` is "plan" or "build" (default "ask"):
+
+- **Plan first:** the chat looks around, sends a short plan (what's
+  there, the approach, a few lines) and waits for the owner's go before
+  changing anything.
+- **Build it:** the chat goes straight to work, stopping only for the
+  commit OK.
+
+Put the answer on the brief's **Start:** line.
 
 ## Titles
 
