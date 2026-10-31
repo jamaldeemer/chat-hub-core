@@ -116,8 +116,6 @@ Two styles, set by `titles` in the settings:
   or from the chat's own message ("question for owner: …"). When the
   owner answers (the chat's next note or message), put back the symbol
   it had before (⚪/🟢/🚀/🔴). For OK questions 🟡 wins over ❓.
-- A chat still tagged with a shipped release gets its title text between
-  `***`.
 - **Talk chats** (questions, research, planning; no code to ship): no
   release tag, no branch or worktree, never retagged at a release.
   They start with `⚪` like other chats and keep it (except ❓ while

@@ -11,6 +11,10 @@ Each version is a git tag (`v0.1.0`). Projects pin a tag in
   line, and puts the old symbol back once you answer. Talk chats get it too.
 - README: one table of every title symbol, what it means, when it's set
   and at which level.
+- README opens with headline features, a status-symbol legend and an
+  example sidebar, with levels up front; details follow.
+- Dropped the `***` marker for chats still tagged with a shipped release
+  (the hub retags them instead).
 
 ## 0.3.16
 
