@@ -208,5 +208,8 @@ t "update: missing plugins file is quiet" "$(hp h1 | wc -c | tr -d ' ')" 0
 nd=$(mktemp -d "$tmp/nogit.XXXXXX"); mkdir "$nd/.claude"; echo '{"level":0,"hubSession":"h1"}' > "$nd/.claude/chat-hub.json"; pj 9.9.9
 t "update: no git, check skipped" "$(cd "$nd" && echo '{"session_id":"h1","prompt":"hi"}' | CHAT_HUB_PLUGINS_FILE="$pf" node "$root/hooks/on-prompt.mjs" | grep -c 'was updated')" 0
 
+t "skills: answered line in work chat" "$(grep -c 'answered, working again' "$root/skills/work-chat/SKILL.md")" 1
+t "skills: answered line in hub" "$(grep -c 'answered, working again' "$root/skills/hub/SKILL.md")" 1
+
 cd "$tmp"
 rm -rf "$tmp"; exit $fail

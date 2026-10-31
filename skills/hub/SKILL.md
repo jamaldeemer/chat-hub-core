@@ -137,8 +137,10 @@ Two styles, set by `titles` in the settings:
   (talk chats too) stopped on a question to the owner that isn't an OK,
   from the app's note that a session you started is waiting on the user
   or from the chat's own message ("question for owner: …"). When the
-  owner answers (the chat's next note or message), put back the symbol
-  it had before (⚪/🚀/🔴). For OK questions 🟡 wins over ❓.
+  owner answers (the chat says "answered, working again", or its next
+  note or message), put back the symbol it had before (⚪/🚀/🔴). Backstop:
+  on every wake, set ⚪ on any ❓ chat that "Linked sessions now" shows as
+  working. For OK questions 🟡 wins over ❓.
 - **Talk chats** (questions, research, planning; no code to ship): no
   release tag, no branch or worktree, never retagged at a release.
   They start with `⚪` like other chats and keep it (except ❓ while
