@@ -47,6 +47,9 @@ Only what you couldn't tell. Usually:
    print `1` (passed) or `0` (not passed), and fail or print nothing when it
    can't ask CI (never `0` on an error). Propose one from what you found.
 
+Don't ask how chats start: `startMode` defaults to "ask" (the hub asks
+before each chat). Set "plan" or "build" only if the owner says so.
+
 ## 4. Summary, then write
 
 First flag what won't work yet:
@@ -153,6 +156,7 @@ Don't commit.
   "nextRelease": 1,                 // release the next finished work ships in
   "done": ["tests pass", "docs updated"],
   "followups": "docs/backlog.md",   // where chats write follow-ups
+  "startMode": "ask",               // "ask" (hub asks each time) | "plan" | "build"
   "commitReminder": "",             // extra text shown before every commit
   "branches": { "main": "main", "release": "release" },
   "ci": { "passed": "" },           // level 2: command with $SHA; prints 1 or 0, fails if it can't ask

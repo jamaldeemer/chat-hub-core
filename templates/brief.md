@@ -1,5 +1,7 @@
 <!-- The hub fills this in when it starts a chat. -->
-**Task:** <the owner's words; or "Topic only: look around, send one short message (what's there, a few ideas), then wait.">
+**Task:** <the owner's words; or a topic only>
+
+**Start:** <"plan first": look around, send a short plan, wait for the owner's go before changing anything; or "build it": go straight to work, stop only for the commit OK>
 
 **Read first:** <files and docs>
 
