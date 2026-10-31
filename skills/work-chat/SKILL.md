@@ -41,6 +41,9 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
   shape. Never call yourself ready to close or set ✅; the hub checks and
   decides. Follow-ups go in the settings' `followups` file
   (`docs/backlog.md` if it isn't set).
+- **Plugin update:** if the hub says chat-hub-core was updated, restart
+  at your next stopping point (as its message says); the start note then
+  has you reload this skill.
 - **Dev server:** keep exactly two browser tabs on it, yours first, then
   the owner's. Only ever drive your own: pass its tab ID to every browser
   call (a call without one acts on whichever tab is in front), and give

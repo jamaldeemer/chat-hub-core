@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url'
 import { dirname } from 'node:path'
 import { HubTaken, hookInput, readConfig, readHub, say, setHub } from './config.mjs'
 import { trimNudge } from './usage.mjs'
+import { updateNotice, versionChange } from './config.mjs'
 
 const setHubCmd = `node "${dirname(fileURLToPath(import.meta.url))}/set-hub.mjs"`
 const input = hookInput()
@@ -13,7 +14,9 @@ const m = prompt.match(/^\/chat-hub-core:hub\b(.*)$/s)
 const cfg = readConfig(input.cwd || process.cwd())
 if (!m && cfg) {
   const nudge = trimNudge({ session: input.session_id, isHub: readHub(cfg).session === input.session_id, cfg })
-  if (nudge) say('UserPromptSubmit', nudge)
+  const ch = readHub(cfg).session === input.session_id ? versionChange() : null
+  const out = [nudge, ch && updateNotice(ch)].filter(Boolean).join(' ')
+  if (out) say('UserPromptSubmit', out)
 }
 if (m && input.session_id && cfg) {
   try {

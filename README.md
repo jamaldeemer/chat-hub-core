@@ -56,8 +56,11 @@ cd path/to/your-project
 claude plugin update chat-hub-core@chat-hub
 ```
 
-Then start a new chat there (open chats keep the version they started
-with), and run setup again if the CHANGELOG says to. Projects you don't
+Open chats keep the version they started with. The hub notices the
+update on its next prompt and tells each open work chat to restart
+(terminal: exit, then `claude --continue`; desktop app: quit and reopen
+the app), which keeps the conversation and loads the new version.
+Restart the hub too. Run setup again if the CHANGELOG says to. Projects you don't
 update stay on the version they have. To see which version each project
 has: `claude plugin list`.
 

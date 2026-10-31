@@ -3,6 +3,16 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## Unreleased
+
+- **Running chats hear about updates:** the hub notices when the installed
+  chat-hub-core version changes (checked on each of its prompts) and
+  messages open work chats once: what changed, and how to restart
+  (terminal: exit, then `claude --continue`; desktop app: quit and reopen).
+  A restarted chat keeps its conversation and reloads its rules.
+  `hooks/set-version.mjs` records the version once they're told. Needs git;
+  skipped without it, and silent if Claude's plugin list can't be read.
+
 ## 0.3.12
 
 - **The trim reminder repeats:** past the limit, a chat is reminded again
