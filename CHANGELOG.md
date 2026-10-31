@@ -3,7 +3,7 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
-## Unreleased
+## 0.3.14
 
 - **Titles line up:** work chats with no status symbol get `⚪`, so every
   title starts with a symbol and the text forms a column (the app trims
