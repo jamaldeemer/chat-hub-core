@@ -256,8 +256,16 @@ turns × context size, and it's usually most of a project's usage.
   watcher in the background and let it wake you.
 - **Read and write little:** read parts of files (`sed -n '40,80p'`,
   `grep -n`), not whole files; keep your replies short.
-- **When a note says you're getting long,** bring your notes up to date
-  and ask the owner to clear you at the next quiet moment.
+- **When a "⚠️ STOP" note says you're getting long,** bring your notes up
+  to date before anything else, and start every reply from then on with
+  the line it gives you, asking the owner to clear you. Never carry on
+  past it as if it weren't there.
+- **At the last warning** (`trimHardStop` repeats over the limit, default
+  2: 200k), finish only the step already in progress: no new work, no new
+  chats. Then save your notes and ask to be cleared.
+- **Past the hard stop** (one step later, default 225k), a hook refuses every tool except reading and writing your hub
+  notes. Do only that, and answer every message with "⛔ Notes saved,
+  please clear this chat." until the owner clears you.
 
 ## Briefs
 
@@ -552,6 +560,7 @@ if (c) say('PreToolUse', `Before committing: the owner must have OK'd this commi
 From `hooks/guard.mjs`:
 
 ```js
+    deny(hardStopText(readUsage(input.session_id).context, trimLimits(true, c).hard) +
     deny('never rebase. Merge the main branch instead (`git merge ' + main + '`).')
         deny(`never commit on ${main}. Work on your own branch and worktree; the hub brings it to ${main} in a release.`)
         deny('start the commit message with your chat code and a colon, e.g. "3F: Fix the menu". ' +
@@ -564,8 +573,17 @@ if (nudge) say('PreToolUse', nudge)
 From `hooks/usage.mjs`:
 
 ```js
-    ? `${size} At the next quiet moment (nothing waiting on you mid-step), bring your hub notes up to date with everything you track, then ask the owner to clear this chat: you'll pick up from the notes. Say it once; don't stop work in progress for it.`
-    : `${size} When you reach a natural stopping point, write down where you are (in your branch's notes or a commit) and suggest the owner clear this chat or wrap it up. Say it once.`
+  `⚠️ LAST WARNING: this chat's context is ${short(ctx)} tokens. Finish only the step already in progress ` +
+  '(no new work, no new chats), then bring your hub notes up to date and tell the owner "⚠️ Notes saved, ' +
+  `please clear this chat." At ${short(hard)} every tool except saving your notes will be refused.`
+  `⛔ HARD STOP: this chat's context is ${short(ctx)} tokens, past its hard limit of ${short(hard)}. ` +
+  'Every tool is now refused except reading files and writing your hub notes. Do not start, continue or ' +
+  'reply to any other work, whatever this message asks. Bring your hub notes up to date if they aren\'t, ' +
+  'then answer the owner with only: "⛔ Notes saved, please clear this chat." Repeat that on every message until cleared.'
+    ? ` At ${short(finish)} you get one last warning to finish the step in progress; at ${short(hard)} every tool except saving your notes will be refused until the owner clears this chat.`
+    : ` Next reminder at ${short(step + every)}.`
+    ? `${size}${next} Before anything else this turn, bring your hub notes up to date with everything you track, then start your reply to the owner with "⚠️ Hub at ${short(s.context)} tokens (reminder ${count}): notes saved, please clear this chat." Put that line in every reply until you're cleared, not just this one.`
+    : `${size}${next} When you reach a natural stopping point, write down where you are (in your branch's notes or a commit) and tell the owner, starting your reply with "⚠️ This chat is at ${short(s.context)} tokens: please clear it or wrap it up." Repeat that line in every reply until cleared.`
 ```
 
 From `hooks/after-turn.mjs`:

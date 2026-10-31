@@ -3,6 +3,21 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## Unreleased
+
+- **Louder trim reminder:** it now starts "⚠️ STOP: trim reminder N",
+  says what happens next, and gives the chat a line to put at the top of
+  every reply until it's cleared, not just once.
+- **Last warning, then a hard stop, for the hub:** after `trimHardStop`
+  reminders past the limit (default 2: 200k with the defaults; 0 = off)
+  the hub gets a last warning to finish only the step in progress and save
+  its notes. One step later (225k) the guard hook
+  refuses every tool for the hub except reading, read-only shell commands
+  and writing its hub notes, and every prompt tells it to answer only
+  "⛔ Notes saved, please clear this chat." Clearing lifts it. Work chats
+  get the louder reminder but no hard stop: they'd lose work mid-task.
+- The guard hook now runs on every tool, not just shell commands and edits.
+
 ## 0.3.18
 
 - After pushing (level 2: after CI passes), a work chat asks you

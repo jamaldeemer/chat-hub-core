@@ -268,9 +268,16 @@ rather than guess.
 312 turns · this chat ≈ 41M token-reads` (Claude doesn't see it; set
 `"stats": false` to hide it). Every turn re-reads the whole context, so
 long chats, the hub above all, cost the most. When the hub passes
-`trimAt` (default 150k tokens) it updates its notes and asks you to clear
-it, and reminds again every `trimEvery` tokens over (default 25k), saying
-how far over it is; work chats do the same past `trimAtWork`, if set.
+`trimAt` (default 150k tokens) it gets a "⚠️ STOP" reminder: update its
+notes and ask you to clear it, with that line in every reply. It's
+reminded again every `trimEvery` tokens over (default 25k), each time
+saying which reminder it is and what comes next. After `trimHardStop`
+repeats (default 2, so at 200k; 0 turns it off) it gets a last warning:
+finish only the step in progress, then save its notes. One step later
+(225k) the hub is hard-stopped: a hook refuses every tool except reading and writing its hub notes, and it
+answers only "Notes saved, please clear this chat" until you clear it.
+Work chats get the same reminders past `trimAtWork`, if set, but no hard
+stop: they'd lose work mid-task.
 
 A chat is marked ✅ (ready to close) only after it sends
 a fixed wrap-up report and the hub's `close-check` confirms its folder is
