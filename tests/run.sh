@@ -156,5 +156,26 @@ t "close-check: level 2 CI not passed fails" "$(ccw "$wt" "FAIL CI: hasn't passe
 echo '{"level":2,"ci":{"passed":"echo 1"}}' > "$wt/.claude/chat-hub.json"
 echo '- #9 try it' > "$wt/.claude/issues-to-check.md"
 t "close-check: unchecked fix fails" "$(ccw "$wt" 'FAIL fixes: 1 still waiting')" 1
+vd=$(mktemp -d "$tmp/ver.XXXXXX"); ( cd "$vd" && git init -q -b main && mkdir .claude && echo '{"level":1}' > .claude/chat-hub.json && node "$root/hooks/set-hub.mjs" --session h1 >/dev/null )
+pf="$vd/plugins.json"; vroot=$(cd "$vd" && pwd -P)
+pj() { echo "{\"version\":2,\"plugins\":{\"chat-hub-core@chat-hub\":[{\"scope\":\"project\",\"projectPath\":\"$vroot\",\"version\":\"$1\"}]}}" > "$pf"; }
+hp() { (cd "$vd" && echo "{\"session_id\":\"$1\",\"prompt\":\"hi\"}" | CHAT_HUB_PLUGINS_FILE="$pf" node "$root/hooks/on-prompt.mjs"); }
+pj 0.3.12
+t "update: first run records quietly" "$(hp h1 | grep -c 'was updated')" 0
+t "update: version recorded" "$(cat "$vd/.git/chat-hub/plugin-version")" 0.3.12
+t "update: same version quiet" "$(hp h1 | grep -c 'was updated')" 0
+pj 0.4.0
+t "update: hub told of change" "$(hp h1 | grep -c 'updated from 0.3.12 to 0.4.0')" 1
+t "update: work chats not told" "$(hp w1 | grep -c 'was updated')" 0
+t "update: told again until recorded" "$(hp h1 | grep -c 'updated from 0.3.12 to 0.4.0')" 1
+(cd "$vd" && CHAT_HUB_PLUGINS_FILE="$pf" node "$root/hooks/set-version.mjs" >/dev/null)
+t "update: quiet after set-version" "$(hp h1 | grep -c 'was updated')" 0
+echo '[1,2' > "$pf"
+t "update: broken plugins file is quiet" "$(hp h1 | wc -c | tr -d ' ')" 0
+rm "$pf"
+t "update: missing plugins file is quiet" "$(hp h1 | wc -c | tr -d ' ')" 0
+nd=$(mktemp -d "$tmp/nogit.XXXXXX"); mkdir "$nd/.claude"; echo '{"level":0,"hubSession":"h1"}' > "$nd/.claude/chat-hub.json"; pj 9.9.9
+t "update: no git, check skipped" "$(cd "$nd" && echo '{"session_id":"h1","prompt":"hi"}' | CHAT_HUB_PLUGINS_FILE="$pf" node "$root/hooks/on-prompt.mjs" | grep -c 'was updated')" 0
+
 cd "$tmp"
 rm -rf "$tmp"; exit $fail

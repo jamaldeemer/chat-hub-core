@@ -5,6 +5,13 @@ Each version is a git tag (`v0.1.0`). Projects pin a tag in
 
 ## Unreleased
 
+- **Running chats hear about updates:** the hub notices when the installed
+  chat-hub-core version changes (checked on each of its prompts) and
+  messages open work chats once: what changed, and how to restart
+  (terminal: exit, then `claude --continue`; desktop app: quit and reopen).
+  A restarted chat keeps its conversation and reloads its rules.
+  `hooks/set-version.mjs` records the version once they're told. Needs git;
+  skipped without it, and silent if Claude's plugin list can't be read.
 - **Close check works without an upstream:** chats can't set one (the
   sandbox blocks writing `.git/config`), so "pushed" now falls back to
   `origin/<branch>`: it passes if that contains HEAD and says how many

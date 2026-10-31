@@ -83,3 +83,51 @@ export function setHub({ session = '', app = '', replace = false }) {
   }
   return replaced
 }
+
+// After a plugin update, running chats keep the old version. The hub compares the version
+// installed for this project (Claude's installed_plugins.json, read only) with the one it last
+// told the chats about (`plugin-version` in git's shared folder). Any problem (no git, file
+// missing or a different shape) returns null, so the hook says nothing.
+function projectRoot() {
+  try {
+    const d = execFileSync('git', ['rev-parse', '--path-format=absolute', '--git-common-dir'],
+      { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim()
+    return d.replace(/\/\.git$/, '')
+  } catch { return null }
+}
+export function versionFile() {
+  const f = sharedHubFile()
+  return f ? f.replace(/\/hub$/, '/plugin-version') : null
+}
+export function installedVersion() {
+  try {
+    const f = process.env.CHAT_HUB_PLUGINS_FILE || `${process.env.HOME}/.claude/plugins/installed_plugins.json`
+    const d = JSON.parse(readFileSync(f, 'utf8'))
+    const list = (d.plugins || d)['chat-hub-core@chat-hub']
+    if (!Array.isArray(list)) return null
+    const root = projectRoot()
+    const e = list.find(x => x && x.projectPath === root) || list.find(x => x && x.scope === 'user')
+    return typeof e?.version === 'string' && e.version ? e.version : null
+  } catch { return null }
+}
+// { from, to } when the installed version differs from the recorded one; records it silently
+// the first time. null otherwise.
+export function versionChange() {
+  try {
+    const f = versionFile(), now = installedVersion()
+    if (!f || !now) return null
+    if (!existsSync(f)) { recordVersion(now); return null }
+    const was = readFileSync(f, 'utf8').trim()
+    return was && was !== now ? { from: was, to: now } : null
+  } catch { return null }
+}
+export function recordVersion(v = installedVersion()) {
+  const f = versionFile()
+  if (!f || !v) return false
+  mkdirSync(f.replace(/\/plugin-version$/, ''), { recursive: true })
+  writeFileSync(f, v + '\n')
+  return true
+}
+export const updateNotice = ({ from, to }) =>
+  `chat-hub-core was updated from ${from} to ${to}; open chats still run ${from}. Follow "After a plugin update" ` +
+  `in your hub rules: message the open work chats in one batch, then run node "${new URL('./set-version.mjs', import.meta.url).pathname}".`

@@ -173,6 +173,17 @@ which chats can close and why the others can't.
   rules in your "merge main" message: running chats don't re-read it on
   their own. Bump `nextRelease` and retag titles.
 
+## After a plugin update
+
+When the prompt hook says chat-hub-core was updated, send one batch: to
+each open work chat (not ✅ ones, not idle ones with nothing left) one
+message with the new version, the CHANGELOG lines that touch its work in
+plain words, and: "Restart this chat when you're at a stopping point,
+then reload your rules skill. Terminal: exit, then `claude --continue`
+(or `claude --resume` to pick it). Desktop app: quit and reopen the
+app." Then run the `set-version.mjs` command the hook gave. Restart
+yourself the same way when convenient.
+
 ## CI (level 2)
 
 - `ci.passed` is a command that says whether CI passed on a commit

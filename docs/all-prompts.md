@@ -358,6 +358,17 @@ which chats can close and why the others can't.
   rules in your "merge main" message: running chats don't re-read it on
   their own. Bump `nextRelease` and retag titles.
 
+## After a plugin update
+
+When the prompt hook says chat-hub-core was updated, send one batch: to
+each open work chat (not ✅ ones, not idle ones with nothing left) one
+message with the new version, the CHANGELOG lines that touch its work in
+plain words, and: "Restart this chat when you're at a stopping point,
+then reload your rules skill. Terminal: exit, then `claude --continue`
+(or `claude --resume` to pick it). Desktop app: quit and reopen the
+app." Then run the `set-version.mjs` command the hook gave. Restart
+yourself the same way when convenient.
+
 ## CI (level 2)
 
 - `ci.passed` is a command that says whether CI passed on a commit
@@ -425,6 +436,9 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
   shape. Never call yourself ready to close or set ✅; the hub checks and
   decides. Follow-ups go in the settings' `followups` file
   (`docs/backlog.md` if it isn't set).
+- **Plugin update:** if the hub says chat-hub-core was updated, restart
+  at your next stopping point (as its message says); the start note then
+  has you reload this skill.
 - **Dev server:** keep exactly two browser tabs on it, yours first, then
   the owner's. Only ever drive your own: pass its tab ID to every browser
   call (a call without one acts on whichever tab is in front), and give
@@ -487,7 +501,7 @@ From `hooks/session-start.mjs`:
 From `hooks/on-prompt.mjs`:
 
 ```js
-  if (nudge) say('UserPromptSubmit', nudge)
+  if (out) say('UserPromptSubmit', out)
     say('UserPromptSubmit', `Recorded this chat (session ${input.session_id}) as the hub.` +
       ` Now add your app address so work chats can message you: look up this session's own details with your` +
       ` session tools (its id starts with local_) and run: ${setHubCmd} --app <that id>`)
