@@ -3,7 +3,7 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
-## Unreleased
+## 0.3.17
 
 - New title symbol ❓: the chat stopped on a question for you that isn't
   a commit/merge/push OK (that stays 🟡). The hub sets it from the app's
