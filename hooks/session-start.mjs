@@ -3,7 +3,7 @@ import { execFileSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname } from 'node:path'
-import { hookInput, hubAddress, hubNotesFile, loadConfig, notesProblem, readHub, say, updateNotice, versionChange } from './config.mjs'
+import { hookInput, hubAddress, hubNotesFile, loadConfig, notesProblem, pluginVersion, readHub, say } from './config.mjs'
 
 const setHubCmd = `node "${dirname(fileURLToPath(import.meta.url))}/set-hub.mjs"`
 
@@ -38,7 +38,6 @@ if (error) {
   let who
   if (hub.session && me && hub.session === me) {
     who = 'This chat is the hub: load the chat-hub-core:hub skill now.' + notes +
-      ((ch => ch ? ' ' + updateNotice(ch) : '')(versionChange())) +
       (hub.app ? '' : ` Work chats can't message you yet: look up this session's own details with your session tools (its id starts with local_) and run ${setHubCmd} --app <that id>.`)
   } else if (hub.app) {
     who = `This project's hub is app session ${hub.app}. Look up this session's own details with your session tools: ` +
@@ -55,5 +54,5 @@ if (error) {
       'don\'t message any chat as the hub and don\'t guess one by its name.'
   }
   const mine = me ? ` This chat's session ID is ${me}.` : ''
-  say('SessionStart', `This project uses chat-hub-core (level ${c.level}). ${who}${mine}${guard}`)
+  say('SessionStart', `This project uses chat-hub-core ${pluginVersion()} (level ${c.level}). ${who}${mine}${guard}`)
 }

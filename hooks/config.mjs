@@ -1,6 +1,8 @@
 // Shared helpers for chat-hub-core's hooks.
 import { execFileSync } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { basename, dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 // The project's settings (.claude/chat-hub.json): { cfg, error }. cfg is null when setup
 // hasn't run (error null) or when the file is broken (error says why).
@@ -117,53 +119,37 @@ export function setHub({ session = '', app = '', replace = false }) {
   return replaced
 }
 
-// After a plugin update, running chats keep the old version. The hub compares the version
-// installed for this project (Claude's installed_plugins.json, read only) with the one it last
-// told the chats about (`plugin-version` in git's shared folder). Any problem (no git, file
-// missing or a different shape) returns null, so the hook says nothing.
-function projectRoot() {
+// The plugin's own folder (the version this code is from) and the version in its plugin.json.
+export const PLUGIN_ROOT = dirname(dirname(fileURLToPath(import.meta.url)))
+export function pluginVersion(root = PLUGIN_ROOT) {
+  try { return JSON.parse(readFileSync(`${root}/.claude-plugin/plugin.json`, 'utf8')).version || basename(root) }
+  catch { return basename(root) }
+}
+
+// After a plugin update, the launcher (run.mjs) runs the new version's hooks, but the chat still
+// holds the rules it loaded at start. CHAT_HUB_LOADED_ROOT (set by the launcher) is the version
+// the chat started with; when it isn't this one, tell the chat once per version to read the new
+// rules file, and to restart only if the hooks list (hooks.json) changed. Each chat's last
+// notice is kept in git's shared folder (rules/<session>). No git or no launcher: quiet.
+export function rulesNotice({ session, isHub }) {
   try {
-    const d = execFileSync('git', ['rev-parse', '--path-format=absolute', '--git-common-dir'],
-      { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim()
-    return d.replace(/\/\.git$/, '')
-  } catch { return null }
+    const loaded = process.env.CHAT_HUB_LOADED_ROOT
+    const f = sharedHubFile()
+    if (!loaded || !session || !f || loaded === PLUGIN_ROOT) return ''
+    const now = pluginVersion(), dir = f.replace(/\/hub$/, '/rules'), rec = `${dir}/${session.replace(/[^\w.-]/g, '_')}`
+    if (pluginVersion(loaded) === now || (existsSync(rec) && readFileSync(rec, 'utf8').trim() === now)) return ''
+    mkdirSync(dir, { recursive: true })
+    writeFileSync(rec, now + '\n')
+    const read = p => { try { return readFileSync(p, 'utf8') } catch { return null } }
+    const restart = read(`${loaded}/hooks/hooks.json`) !== read(`${PLUGIN_ROOT}/hooks/hooks.json`)
+    const skill = isHub ? 'hub' : 'work-chat'
+    return `chat-hub-core was updated to ${now} (this chat started on ${pluginVersion(loaded)}). Before anything else, ` +
+      `read ${PLUGIN_ROOT}/skills/${skill}/SKILL.md in full with the Read tool: it replaces the ${skill} rules you loaded ` +
+      '(loading the skill again may give the old copy). Then carry on.' +
+      (restart ? ' This update also changes when hooks run, which only takes effect after a restart: restart this chat at ' +
+        'your next stopping point (terminal: exit, then `claude --continue`; desktop app: quit and reopen the app).' : '')
+  } catch { return '' }
 }
-export function versionFile() {
-  const f = sharedHubFile()
-  return f ? f.replace(/\/hub$/, '/plugin-version') : null
-}
-export function installedVersion() {
-  try {
-    const f = process.env.CHAT_HUB_PLUGINS_FILE || `${process.env.HOME}/.claude/plugins/installed_plugins.json`
-    const d = JSON.parse(readFileSync(f, 'utf8'))
-    const list = (d.plugins || d)['chat-hub-core@chat-hub']
-    if (!Array.isArray(list)) return null
-    const root = projectRoot()
-    const e = list.find(x => x && x.projectPath === root) || list.find(x => x && x.scope === 'user')
-    return typeof e?.version === 'string' && e.version ? e.version : null
-  } catch { return null }
-}
-// { from, to } when the installed version differs from the recorded one; records it silently
-// the first time. null otherwise.
-export function versionChange() {
-  try {
-    const f = versionFile(), now = installedVersion()
-    if (!f || !now) return null
-    if (!existsSync(f)) { recordVersion(now); return null }
-    const was = readFileSync(f, 'utf8').trim()
-    return was && was !== now ? { from: was, to: now } : null
-  } catch { return null }
-}
-export function recordVersion(v = installedVersion()) {
-  const f = versionFile()
-  if (!f || !v) return false
-  mkdirSync(f.replace(/\/plugin-version$/, ''), { recursive: true })
-  writeFileSync(f, v + '\n')
-  return true
-}
-export const updateNotice = ({ from, to }) =>
-  `chat-hub-core was updated from ${from} to ${to}; open chats still run ${from}. Follow "After a plugin update" ` +
-  `in your hub rules: message the open work chats in one batch, then run node "${new URL('./set-version.mjs', import.meta.url).pathname}".`
 
 // Hub notes are one current snapshot in fixed sections, not a diary. These are the allowed
 // `## ` headings (matched on their first word or two); anything else, or a file over

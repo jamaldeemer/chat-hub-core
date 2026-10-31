@@ -200,12 +200,21 @@ which chats can close and why the others can't.
   wrap-up report is in; until then don't merge it, even if pushed. Run the `done`
   checks on it. If your sandbox can't write a merge (protected files),
   give the owner the exact command to run; never work around it.
-- When the owner says "release": list branches not yet on main; the owner
+- **Offer to ship:** as soon as a merge into the preview passes the
+  checks, ask the owner with a menu: "Release now" (lists what's in it) /
+  "Wait for more". If they wait, ask again after the next merge.
+- When the owner says "release" (or picks "Release now"): list branches not yet on main; the owner
   picks; build `release` from main with those merged (`--no-ff`); run the
   checks; write a short note: one line per included chat,
   `- **<title>** (<code>, \`<branch>\`)`, so tools can read it, then what
-  was left out and why, conflicts resolved, and fixes to check. Give the owner the push commands; the owner does every push to
-  main.
+  was left out and why, conflicts resolved, and fixes to check.
+- **One push:** if the project tags versions, tag the release commit
+  (`git tag vX.Y.Z release`). Give the owner one command,
+  `git push origin release:main vX.Y.Z` (no tag: drop `vX.Y.Z`); it
+  moves main and pushes the tag together. The owner
+  does every push to main. Level 2: the push guard lets main through only
+  once CI passed on that commit, so first `git push origin release`, wait
+  for green, then that one command.
 - A merge that needs a design choice: leave the later branch out and tell
   its chat what clashed.
 - After a release, every open chat merges main at once (never rebases)
@@ -219,14 +228,12 @@ which chats can close and why the others can't.
 
 ## After a plugin update
 
-When the prompt hook says chat-hub-core was updated, send one batch: to
-each open work chat (not ✅ ones, not idle ones with nothing left) one
-message with the new version, the CHANGELOG lines that touch its work in
-plain words, and: "Restart this chat when you're at a stopping point,
-then reload your rules skill. Terminal: exit, then `claude --continue`
-(or `claude --resume` to pick it). Desktop app: quit and reopen the
-app." Then run the `set-version.mjs` command the hook gave. Restart
-yourself the same way when convenient.
+Open chats pick up a new version on their own: their hooks run the
+newly installed version, and on its next prompt each chat (you too) is
+told to read its new rules file, and to restart only if the update
+needs it. Don't message the chats about it. When the owner asks how to
+update, give them `sh ~/.claude/plugins/marketplaces/chat-hub/scripts/update-all.sh`
+(every project at once; they run it, your sandbox can't).
 
 ## CI (level 2)
 

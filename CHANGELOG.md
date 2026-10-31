@@ -3,6 +3,30 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## Unreleased
+
+- **Updates reach open chats without a restart:** every hook now runs
+  through a small launcher (`hooks/run.mjs`) that runs the version this
+  project has installed now, not the one the chat started with (a chat
+  started with `--plugin-dir` keeps its own copy). Moving to this version
+  still needs one last restart of each open chat.
+- **Chats reload their own rules:** after an update, on its next prompt
+  each chat (hub included) is told once to read its new rules file, and
+  to restart only if the update changes `hooks.json`. The hub no longer
+  messages every chat to restart; `set-version.mjs` and the hub's update
+  notice are gone.
+- **`scripts/update-all.sh`:** updates the marketplace, then the plugin
+  in every project that has it, and prints old and new versions
+  (`--dry-run` to preview). Run it from the marketplace copy:
+  `sh ~/.claude/plugins/marketplaces/chat-hub/scripts/update-all.sh`.
+- **Releases ship with one push:** the hub tags the release and gives the
+  owner `git push origin release:main vX.Y.Z` (level 2: push `release`
+  first and wait for CI).
+- **Ship sooner:** as soon as a finished chat is merged into the release
+  preview, the hub offers "Release now" / "Wait for more".
+- **Version shown:** each chat's start note and stats line now name the
+  chat-hub-core version its hooks are running.
+
 ## 0.3.20
 
 - **Hub notes stay one snapshot, not a diary:** the hub skill now says
