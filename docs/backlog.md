@@ -2,6 +2,14 @@
 
 Open work for chat-hub-core. Newest first within each section.
 
+## How we fix the hub breaking a rule
+
+When the hub breaks one of its rules, fix it in this order: first design
+the mistake out (remove the state or step it trips on), then add a hook
+plus a test that catches it, and reword the rule only last. Stronger
+wording alone has not stuck (e.g. C9: the hub kept listing deleted ✅
+chats from its notes, though the notes said to check first).
+
 ## Next
 
 - **Renaming a chat yourself triggers permission prompts.** The hub keeps

@@ -243,8 +243,11 @@ address, title, folder, dev server), `## Next` (next code, `nextRelease`),
 commits), `## Waiting` (branch, commit, CI, blocker), `## Open chats` (by
 release: code, title, branch, what they wait on), `## Plans`, `## Gotchas`.
 Never add dated, "Latest", "Checkpoint" or "before a clear" blocks, even in
-a hurry; delete closed chats; history lives in git. A hook flags other
-headings or a file over `notesMaxBytes` (6 KB): rewrite it first.
+a hurry; history lives in git. A closed (✅) chat leaves the notes the
+moment you set ✅: no list of ✅ chats, and no ✅ anywhere in the file. A
+hook flags other headings or a file over `notesMaxBytes` (6 KB): rewrite
+it first; it also flags any ✅ line: name those chats to the owner once if
+you haven't, then delete the lines.
 If the start note says the file exists, read it before anything
 else.
 
@@ -376,10 +379,12 @@ A chat closes only when all of this holds, checked in this order:
 3. **Nothing waiting:** its last message doesn't wait on the owner, and
    `Open` in its report is "nothing" or written to the followups file.
 
-Then: set ✅ at the start of its title, update your notes, and tell the
-owner which chats are ✅. The owner archives them; never archive a chat
+Then, in one step: set ✅ at the start of its title, tell the owner once
+that it can be deleted, and delete it from your notes. Don't mention it
+again: you keep no list of ✅ chats, so you can't remind the owner of one
+they already deleted. The owner deletes them; never archive a chat
 yourself. Talk chats skip step 2. After each merge, tell the owner unasked
-which chats can close and why the others can't.
+which chats just became ✅ and why the others can't close yet.
 
 ## Releases (level 1+)
 
@@ -566,7 +571,10 @@ export function say(event, text) {
         'your next stopping point (terminal: exit, then `claude --continue`; desktop app: quit and reopen the app).' : '')
     `snapshot under only these headings: ${NOTES_SECTIONS.map(s => `"## ${s}"`).join(', ')}. Merge what's still true into ` +
     'those sections, keep only the last 2 shipped releases, drop closed chats and old history (git keeps it), and add no ' +
-    'dated, "Latest" or checkpoint blocks.'
+    'dated, "Latest" or checkpoint blocks.' : ''
+    `${done.slice(0, 3).map(l => `"${l.slice(0, 60)}"`).join(', ')}${done.length > 3 ? `, +${done.length - 3} more` : ''}. ` +
+    'If you haven\'t told the owner yet, name them once, in one line, as ready to delete; then delete those lines from the ' +
+    'notes now. Never keep ✅ chats (or the ✅ symbol) in the notes, and never list them to the owner again.' : ''
 ```
 
 From `hooks/session-start.mjs`:

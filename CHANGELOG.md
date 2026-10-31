@@ -3,6 +3,15 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## Unreleased
+
+- **No reminders about deleted ✅ chats:** when a chat passes the close
+  check, the hub sets ✅, tells the owner once, and deletes that chat from
+  `hub-notes.md` in the same step; it keeps no list of ✅ chats. The
+  notes check hook now also flags any ✅ line in the notes (at hub start
+  and after each hub write) and tells the hub to name it once, then delete
+  it.
+
 ## 0.3.21
 
 - **Updates reach open chats without a restart:** every hook now runs

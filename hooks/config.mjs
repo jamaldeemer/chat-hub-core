@@ -167,9 +167,15 @@ export function notesProblem(cfg, file = hubNotesFile()) {
     bad.length ? `headings outside the fixed sections (${bad.slice(0, 3).map(h => `"## ${h.slice(0, 60)}"`).join(', ')}${bad.length > 3 ? `, +${bad.length - 3} more` : ''})` : '',
     max > 0 && bytes > max ? `${bytes} bytes, over the ${max}-byte limit` : '',
   ].filter(Boolean)
-  if (!why.length) return ''
-  return `⚠️ Your hub notes (${file}) have ${why.join(' and ')}. Before anything else, rewrite them as ONE current ` +
+  const done = text.split('\n').filter(l => l.includes('✅')).map(l => l.replace(/^[-*\s]+/, '').trim())
+  const rewrite = why.length ? `⚠️ Your hub notes (${file}) have ${why.join(' and ')}. Before anything else, rewrite them as ONE current ` +
     `snapshot under only these headings: ${NOTES_SECTIONS.map(s => `"## ${s}"`).join(', ')}. Merge what's still true into ` +
     'those sections, keep only the last 2 shipped releases, drop closed chats and old history (git keeps it), and add no ' +
-    'dated, "Latest" or checkpoint blocks.'
+    'dated, "Latest" or checkpoint blocks.' : ''
+  // A ✅ chat in the notes gets listed to the owner again long after they deleted it, so none may stay there.
+  const closed = done.length ? `⚠️ Your hub notes (${file}) still list ✅ (closed) chats: ` +
+    `${done.slice(0, 3).map(l => `"${l.slice(0, 60)}"`).join(', ')}${done.length > 3 ? `, +${done.length - 3} more` : ''}. ` +
+    'If you haven\'t told the owner yet, name them once, in one line, as ready to delete; then delete those lines from the ' +
+    'notes now. Never keep ✅ chats (or the ✅ symbol) in the notes, and never list them to the owner again.' : ''
+  return [rewrite, closed].filter(Boolean).join(' ')
 }

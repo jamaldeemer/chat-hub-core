@@ -62,6 +62,17 @@ t "notes check: oversize flagged" "$(nc s5)" 1
 t "notes check: oversize says the limit" "$(echo '{"session_id":"s5"}' | node "$root/hooks/session-start.mjs" | grep -c 'over the 6000-byte limit')" 1
 echo '{"level":0,"notesMaxBytes":0}' > .claude/chat-hub.json
 t "notes check: notesMaxBytes 0 turns size off" "$(nc s5)" 0
+printf '## Me\nx\n## Open chats\n- ✅ R10 C8 · Newest version\n- C9 · Stop reminders\n' > .git/chat-hub/hub-notes.md
+nd() { node "$root/hooks/notes-check.mjs" < "$tmp/nc.json" | grep -c "$1"; }
+nc s5 >/dev/null
+t "notes check: ✅ chat flagged after a write" "$(nd 'still list ✅ (closed) chats: \\"✅ R10 C8')" 1
+t "notes check: ✅ chat, told once then deleted" "$(nd 'name them once.*delete those lines')" 1
+t "notes check: ✅ alone is not a rewrite" "$(nd 'ONE current snapshot')" 0
+t "notes check: ✅ chat flagged at start" "$(echo '{"session_id":"s5"}' | node "$root/hooks/session-start.mjs" | grep -c 'still list ✅')" 1
+nc s6 >/dev/null
+t "notes check: ✅ work chats not told" "$(nd 'still list ✅')" 0
+printf '## Me\nx\n## Open chats\n- C9 · Stop reminders\n' > .git/chat-hub/hub-notes.md; nc s5 >/dev/null
+t "notes check: no ✅ quiet" "$(nd 'still list ✅')" 0
 echo '{"level":0}' > .claude/chat-hub.json
 printf 'local_C\n' > .git/chat-hub/hub
 t "older file with an app address still works" "$(echo '{"session_id":"s9"}' | node "$root/hooks/session-start.mjs" | grep -c 'only ever message local_C')" 1
