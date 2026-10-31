@@ -53,8 +53,11 @@ address, title, folder, dev server), `## Next` (next code, `nextRelease`),
 commits), `## Waiting` (branch, commit, CI, blocker), `## Open chats` (by
 release: code, title, branch, what they wait on), `## Plans`, `## Gotchas`.
 Never add dated, "Latest", "Checkpoint" or "before a clear" blocks, even in
-a hurry; delete closed chats; history lives in git. A hook flags other
-headings or a file over `notesMaxBytes` (6 KB): rewrite it first.
+a hurry; history lives in git. A closed (✅) chat leaves the notes the
+moment you set ✅: no list of ✅ chats, and no ✅ anywhere in the file. A
+hook flags other headings or a file over `notesMaxBytes` (6 KB): rewrite
+it first; it also flags any ✅ line: name those chats to the owner once if
+you haven't, then delete the lines.
 If the start note says the file exists, read it before anything
 else.
 
@@ -186,10 +189,12 @@ A chat closes only when all of this holds, checked in this order:
 3. **Nothing waiting:** its last message doesn't wait on the owner, and
    `Open` in its report is "nothing" or written to the followups file.
 
-Then: set ✅ at the start of its title, update your notes, and tell the
-owner which chats are ✅. The owner archives them; never archive a chat
+Then, in one step: set ✅ at the start of its title, tell the owner once
+that it can be deleted, and delete it from your notes. Don't mention it
+again: you keep no list of ✅ chats, so you can't remind the owner of one
+they already deleted. The owner deletes them; never archive a chat
 yourself. Talk chats skip step 2. After each merge, tell the owner unasked
-which chats can close and why the others can't.
+which chats just became ✅ and why the others can't close yet.
 
 ## Releases (level 1+)
 

@@ -1,5 +1,6 @@
 // After the hub writes its notes (Edit/Write, or a shell command naming hub-notes.md):
-// if they've turned into a diary or grown too big, tell it to rewrite them as one snapshot.
+// if they've turned into a diary or grown too big, tell it to rewrite them as one snapshot;
+// if they still list ✅ (closed) chats, tell it to name them once and delete them.
 import { realpathSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { resolve } from 'node:path'

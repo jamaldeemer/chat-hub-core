@@ -302,7 +302,10 @@ stop: they'd lose work mid-task.
 **Hub notes.** The hub keeps one current snapshot of its notes under fixed
 headings, edited in place. If they gain other `## ` headings (dated or
 "checkpoint" blocks) or pass `notesMaxBytes` (default 6000; 0 = off), a
-hook tells the hub to rewrite them before anything else.
+hook tells the hub to rewrite them before anything else. A closed (✅)
+chat is dropped from the notes as soon as the hub tells you about it, so
+the hub never reminds you of chats you've already deleted; the same hook
+flags any ✅ line left in the notes.
 
 A chat is marked ✅ (ready to close) only after it sends
 a fixed wrap-up report and the hub's `close-check` confirms its folder is
