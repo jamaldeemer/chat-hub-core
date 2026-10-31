@@ -129,7 +129,7 @@ asst() { printf '{"type":"assistant","message":{"id":"%s","usage":{"input_tokens
 asst m1 10 1000; asst m1 10 1000; asst m2 20 3000
 printf '{"type":"assistant","isSidechain":true,"message":{"id":"sub","usage":{"input_tokens":1,"cache_read_input_tokens":999999}}}\n' >> "$tr"
 at() { printf '{"session_id":"%s","transcript_path":"%s","cwd":"%s"}' "$1" "$tr" "$(pwd)" | node "$root/hooks/after-turn.mjs"; }
-t "stats: context, turns, reads" "$(at u1)" '{"systemMessage":"Context 3k · 2 turns · this chat ≈ 4k token-reads"}'
+t "stats: context, turns, reads" "$(at u1)" "{\"systemMessage\":\"chat-hub-core $(node -p 'require(process.argv[1]).version' "$root/.claude-plugin/plugin.json") · Context 3k · 2 turns · this chat ≈ 4k token-reads\"}"
 asst m3 0 200000
 t "stats: reads only what's new" "$(at u1 | grep -c 'Context 200k · 3 turns')" 1
 echo '{"level":0,"stats":false}' > .claude/chat-hub.json
@@ -236,26 +236,57 @@ t "close-check: level 2 CI not passed fails" "$(ccw "$wt" "FAIL CI: hasn't passe
 echo '{"level":2,"ci":{"passed":"echo 1"}}' > "$wt/.claude/chat-hub.json"
 echo '- #9 try it' > "$wt/.claude/issues-to-check.md"
 t "close-check: unchecked fix fails" "$(ccw "$wt" 'FAIL fixes: 1 still waiting')" 1
-vd=$(mktemp -d "$tmp/ver.XXXXXX"); ( cd "$vd" && git init -q -b main && mkdir .claude && echo '{"level":1}' > .claude/chat-hub.json && node "$root/hooks/set-hub.mjs" --session h1 >/dev/null )
+# run.mjs (the launcher) and the reload notice: two versions installed side by side
+cache="$tmp/cache/chat-hub-core"; mkdir -p "$cache"
+for v in 1.0.0 2.0.0; do
+  mkdir "$cache/$v" && cp -R "$root/hooks" "$root/skills" "$root/.claude-plugin" "$cache/$v/"
+  node -e 'const f=process.argv[1],j=JSON.parse(require("fs").readFileSync(f,"utf8"));j.version=process.argv[2];require("fs").writeFileSync(f,JSON.stringify(j))' "$cache/$v/.claude-plugin/plugin.json" "$v"
+done
+vd=$(mktemp -d "$tmp/ver.XXXXXX"); ( cd "$vd" && git init -q -b main && mkdir .claude && echo '{"level":0}' > .claude/chat-hub.json && node "$root/hooks/set-hub.mjs" --session h1 >/dev/null )
 pf="$vd/plugins.json"; vroot=$(cd "$vd" && pwd -P)
-pj() { echo "{\"version\":2,\"plugins\":{\"chat-hub-core@chat-hub\":[{\"scope\":\"project\",\"projectPath\":\"$vroot\",\"version\":\"$1\"}]}}" > "$pf"; }
-hp() { (cd "$vd" && echo "{\"session_id\":\"$1\",\"prompt\":\"hi\"}" | CHAT_HUB_PLUGINS_FILE="$pf" node "$root/hooks/on-prompt.mjs"); }
-pj 0.3.12
-t "update: first run records quietly" "$(hp h1 | grep -c 'was updated')" 0
-t "update: version recorded" "$(cat "$vd/.git/chat-hub/plugin-version")" 0.3.12
-t "update: same version quiet" "$(hp h1 | grep -c 'was updated')" 0
-pj 0.4.0
-t "update: hub told of change" "$(hp h1 | grep -c 'updated from 0.3.12 to 0.4.0')" 1
-t "update: work chats not told" "$(hp w1 | grep -c 'was updated')" 0
-t "update: told again until recorded" "$(hp h1 | grep -c 'updated from 0.3.12 to 0.4.0')" 1
-(cd "$vd" && CHAT_HUB_PLUGINS_FILE="$pf" node "$root/hooks/set-version.mjs" >/dev/null)
-t "update: quiet after set-version" "$(hp h1 | grep -c 'was updated')" 0
+pj() { echo "{\"version\":2,\"plugins\":{\"chat-hub-core@chat-hub\":[{\"scope\":\"project\",\"projectPath\":\"$vroot\",\"installPath\":\"$1\",\"version\":\"x\"}]}}" > "$pf"; }
+# lr <launcher's plugin folder> <hook> <session>: run a hook through that launcher, input from a file
+lr() { node -e 'process.stdout.write(JSON.stringify({session_id:process.argv[1],prompt:"hi",cwd:process.argv[2]}))' "$3" "$vd" > "$tmp/lr.json"
+  (cd "$vd" && CHAT_HUB_PLUGINS_FILE="$pf" node "$1/hooks/run.mjs" "$2" < "$tmp/lr.json"); }
+pj "$cache/2.0.0"
+t "launcher: runs the installed version" "$(lr "$cache/1.0.0" session-start s1 | grep -c 'chat-hub-core 2.0.0 (level 0)')" 1
+pj "$cache/9.9.9"
+t "launcher: installed folder missing, runs its own" "$(lr "$cache/1.0.0" session-start s1 | grep -c 'chat-hub-core 1.0.0 (level 0)')" 1
 echo '[1,2' > "$pf"
-t "update: broken plugins file is quiet" "$(hp h1 | wc -c | tr -d ' ')" 0
-rm "$pf"
-t "update: missing plugins file is quiet" "$(hp h1 | wc -c | tr -d ' ')" 0
-nd=$(mktemp -d "$tmp/nogit.XXXXXX"); mkdir "$nd/.claude"; echo '{"level":0,"hubSession":"h1"}' > "$nd/.claude/chat-hub.json"; pj 9.9.9
-t "update: no git, check skipped" "$(cd "$nd" && echo '{"session_id":"h1","prompt":"hi"}' | CHAT_HUB_PLUGINS_FILE="$pf" node "$root/hooks/on-prompt.mjs" | grep -c 'was updated')" 0
+t "launcher: broken plugins file, runs its own" "$(lr "$cache/1.0.0" session-start s1 | grep -c 'chat-hub-core 1.0.0 (level 0)')" 1
+pj "$cache/2.0.0"; mv "$cache/2.0.0/hooks/notes-check.mjs" "$tmp/nc.mjs"
+t "launcher: hook missing there, runs its own" "$(lr "$cache/1.0.0" notes-check s1; echo "rc $?")" "rc 0"
+mv "$tmp/nc.mjs" "$cache/2.0.0/hooks/notes-check.mjs"
+rootv=$(node -p 'require(process.argv[1]).version' "$root/.claude-plugin/plugin.json")
+t "launcher: --plugin-dir copy keeps its own" "$(lr "$root" session-start s1 | grep -c "chat-hub-core $rootv (level 0)")" 1
+t "launcher: unknown hook name is quiet" "$(lr "$cache/1.0.0" '../x' s1 | wc -c | tr -d ' ')" 0
+t "reload: hub told to read the new hub rules" "$(lr "$cache/1.0.0" on-prompt h1 | grep -c "updated to 2.0.0 (this chat started on 1.0.0).*read .*/2.0.0/skills/hub/SKILL.md")" 1
+t "reload: work chat told to read work-chat rules" "$(lr "$cache/1.0.0" on-prompt w1 | grep -c "read .*/2.0.0/skills/work-chat/SKILL.md")" 1
+t "reload: told once" "$(lr "$cache/1.0.0" on-prompt w1 | wc -c | tr -d ' ')" 0
+t "reload: no restart when hooks.json is the same" "$(lr "$cache/1.0.0" on-prompt w2 | grep -c 'restart')" 0
+t "reload: chat on the installed version not told" "$(lr "$cache/2.0.0" on-prompt w3 | wc -c | tr -d ' ')" 0
+echo '{"hooks":{}}' > "$cache/2.0.0/hooks/hooks.json"
+t "reload: restart when hooks.json changed" "$(lr "$cache/1.0.0" on-prompt w4 | grep -c 'restart this chat at your next stopping point')" 1
+t "reload: hooks run directly are quiet" "$(cd "$vd" && CHAT_HUB_PLUGINS_FILE="$pf" node "$cache/2.0.0/hooks/on-prompt.mjs" < "$tmp/lr.json" | wc -c | tr -d ' ')" 0
+nd=$(mktemp -d "${TMPDIR:-/tmp}/chat-hub-nogit.XXXXXX"); mkdir "$nd/.claude"; echo '{"level":0,"hubSession":"h1"}' > "$nd/.claude/chat-hub.json"
+t "reload: no git, quiet" "$(cd "$nd" && CHAT_HUB_PLUGINS_FILE="$pf" CHAT_HUB_LOADED_ROOT="$cache/1.0.0" node "$cache/2.0.0/hooks/on-prompt.mjs" < "$tmp/lr.json" | wc -c | tr -d ' ')" 0
+rm -rf "$nd"
+# scripts/update-all.sh, with a fake claude that logs what it was asked
+fb="$tmp/fakebin"; mkdir "$fb"; clog="$tmp/claude.log"; : > "$clog"
+printf '#!/bin/sh\necho "$PWD | $*" >> "%s"\n[ -f "$PWD/fail-update" ] && [ "$2" = update ] && exit 1\nexit 0\n' "$clog" > "$fb/claude"; chmod +x "$fb/claude"
+p1=$(cd "$vd" && pwd -P)
+echo "{\"plugins\":{\"chat-hub-core@chat-hub\":[{\"scope\":\"project\",\"projectPath\":\"$p1\",\"version\":\"0.3.20\"},{\"scope\":\"project\",\"projectPath\":\"$tmp/gone\",\"version\":\"0.3.19\"}]}}" > "$pf"
+ua() { PATH="$fb:$PATH" CHAT_HUB_PLUGINS_FILE="$pf" sh "$root/scripts/update-all.sh" "$@" 2>&1; }
+uo=$(ua)
+t "update-all: marketplace updated once" "$(grep -c 'marketplace update chat-hub' "$clog")" 1
+t "update-all: plugin updated in the project" "$(grep -c "^$p1 | plugin update chat-hub-core@chat-hub --scope project" "$clog")" 1
+t "update-all: missing project skipped" "$(echo "$uo" | grep -c "skip $tmp/gone: folder is gone")" 1
+t "update-all: prints old and new" "$(echo "$uo" | grep -c "$p1: 0.3.20 -> 0.3.20")" 1
+: > "$clog"; ua --dry-run >/dev/null
+t "update-all: dry run runs nothing" "$(wc -c < "$clog" | tr -d ' ')" 0
+touch "$vd/fail-update"
+t "update-all: a failed update fails the run" "$(ua >/dev/null; echo $?)" 1
+rm "$vd/fail-update"
 
 t "skills: answered line in work chat" "$(grep -c 'answered, working again' "$root/skills/work-chat/SKILL.md")" 1
 t "skills: OK asked with a menu" "$(grep -c 'Ask for it with a menu' "$root/skills/work-chat/SKILL.md")" 1

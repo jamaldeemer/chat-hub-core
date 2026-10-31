@@ -150,7 +150,9 @@ Findings 1–3 shipped in 0.3.4. Still open:
   `claude plugin update` is run there (confirmed 2026-10-27: object_creator
   and coaster_graph each went 0.3.6 → 0.3.10 separately). Say so in setup
   and the README; setup's "pin" step may not be needed at all.
-- Show the running version in each chat's start note.
+- **The reload notice is said once:** a chat that skips reading its new rules
+  isn't told again. If that happens, repeat it until the chat reads the file
+  (the PostToolUse hook could see the Read) (C8).
 
 ## Settings (2026-10-26)
 

@@ -390,12 +390,21 @@ which chats can close and why the others can't.
   wrap-up report is in; until then don't merge it, even if pushed. Run the `done`
   checks on it. If your sandbox can't write a merge (protected files),
   give the owner the exact command to run; never work around it.
-- When the owner says "release": list branches not yet on main; the owner
+- **Offer to ship:** as soon as a merge into the preview passes the
+  checks, ask the owner with a menu: "Release now" (lists what's in it) /
+  "Wait for more". If they wait, ask again after the next merge.
+- When the owner says "release" (or picks "Release now"): list branches not yet on main; the owner
   picks; build `release` from main with those merged (`--no-ff`); run the
   checks; write a short note: one line per included chat,
   `- **<title>** (<code>, \`<branch>\`)`, so tools can read it, then what
-  was left out and why, conflicts resolved, and fixes to check. Give the owner the push commands; the owner does every push to
-  main.
+  was left out and why, conflicts resolved, and fixes to check.
+- **One push:** if the project tags versions, tag the release commit
+  (`git tag vX.Y.Z release`). Give the owner one command,
+  `git push origin release:main vX.Y.Z` (no tag: drop `vX.Y.Z`); it
+  moves main and pushes the tag together. The owner
+  does every push to main. Level 2: the push guard lets main through only
+  once CI passed on that commit, so first `git push origin release`, wait
+  for green, then that one command.
 - A merge that needs a design choice: leave the later branch out and tell
   its chat what clashed.
 - After a release, every open chat merges main at once (never rebases)
@@ -409,14 +418,12 @@ which chats can close and why the others can't.
 
 ## After a plugin update
 
-When the prompt hook says chat-hub-core was updated, send one batch: to
-each open work chat (not ✅ ones, not idle ones with nothing left) one
-message with the new version, the CHANGELOG lines that touch its work in
-plain words, and: "Restart this chat when you're at a stopping point,
-then reload your rules skill. Terminal: exit, then `claude --continue`
-(or `claude --resume` to pick it). Desktop app: quit and reopen the
-app." Then run the `set-version.mjs` command the hook gave. Restart
-yourself the same way when convenient.
+Open chats pick up a new version on their own: their hooks run the
+newly installed version, and on its next prompt each chat (you too) is
+told to read its new rules file, and to restart only if the update
+needs it. Don't message the chats about it. When the owner asks how to
+update, give them `sh ~/.claude/plugins/marketplaces/chat-hub/scripts/update-all.sh`
+(every project at once; they run it, your sandbox can't).
 
 ## CI (level 2)
 
@@ -503,9 +510,9 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
   shape. Never call yourself ready to close or set ✅; the hub checks and
   decides. Follow-ups go in the settings' `followups` file
   (`docs/backlog.md` if it isn't set).
-- **Plugin update:** if the hub says chat-hub-core was updated, restart
-  at your next stopping point (as its message says); the start note then
-  has you reload this skill.
+- **Plugin update:** when a note says chat-hub-core was updated, read
+  the rules file it names before anything else; it replaces these rules.
+  Restart only if the note says to.
 - **Dev server:** keep exactly two browser tabs on it, yours first, then
   the owner's. Only ever drive your own: pass its tab ID to every browser
   call (a call without one acts on whichever tab is in front), and give
@@ -550,6 +557,18 @@ Commit only with the owner's OK. Level 1+: push your branch. Level 2: wait for C
 
 ## Hook messages (text the hooks add to a chat)
 
+From `hooks/config.mjs`:
+
+```js
+export function say(event, text) {
+      `read ${PLUGIN_ROOT}/skills/${skill}/SKILL.md in full with the Read tool: it replaces the ${skill} rules you loaded ` +
+      '(loading the skill again may give the old copy). Then carry on.' +
+        'your next stopping point (terminal: exit, then `claude --continue`; desktop app: quit and reopen the app).' : '')
+    `snapshot under only these headings: ${NOTES_SECTIONS.map(s => `"## ${s}"`).join(', ')}. Merge what's still true into ` +
+    'those sections, keep only the last 2 shipped releases, drop closed chats and old history (git keeps it), and add no ' +
+    'dated, "Latest" or checkpoint blocks.'
+```
+
 From `hooks/session-start.mjs`:
 
 ```js
@@ -564,7 +583,7 @@ From `hooks/session-start.mjs`:
       'Become the hub only if the owner runs /chat-hub-core:hub here.'
       '"No hub is recorded; type /chat-hub-core:hub in the chat that should be the hub." Until one is recorded, ' +
       'don\'t message any chat as the hub and don\'t guess one by its name.'
-  say('SessionStart', `This project uses chat-hub-core (level ${c.level}). ${who}${mine}${guard}`)
+  say('SessionStart', `This project uses chat-hub-core ${pluginVersion()} (level ${c.level}). ${who}${mine}${guard}`)
 ```
 
 From `hooks/on-prompt.mjs`:
@@ -621,7 +640,7 @@ From `hooks/usage.mjs`:
 From `hooks/after-turn.mjs`:
 
 ```js
-  systemMessage: `Context ${short(s.context)} · ${s.turns} turns · this chat ≈ ${short(s.reads)} token-reads`,
+  systemMessage: `chat-hub-core ${pluginVersion()} · Context ${short(s.context)} · ${s.turns} turns · this chat ≈ ${short(s.reads)} token-reads`,
 ```
 
 From `githooks/pre-push` (shown when a push to main is refused):

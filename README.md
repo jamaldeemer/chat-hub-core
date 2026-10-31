@@ -148,7 +148,16 @@ only repeat steps 1–2). Run setup again to change level or other answers.
 
 ## Updating
 
-When a new version is out, run this in each project you want to move:
+When a new version is out, update every project that has the plugin at
+once:
+
+```
+sh ~/.claude/plugins/marketplaces/chat-hub/scripts/update-all.sh
+```
+
+It updates the marketplace, then the plugin in each project, and prints
+each project's old and new version (`--dry-run` shows the commands
+without running them). To move just one project instead:
 
 ```
 claude plugin marketplace update chat-hub
@@ -156,13 +165,15 @@ cd path/to/your-project
 claude plugin update chat-hub-core@chat-hub
 ```
 
-Open chats keep the version they started with. The hub notices the
-update on its next prompt and tells each open work chat to restart
-(terminal: exit, then `claude --continue`; desktop app: quit and reopen
-the app), which keeps the conversation and loads the new version.
-Restart the hub too. Run setup again if the CHANGELOG says to. Projects you don't
-update stay on the version they have. To see which version each project
-has: `claude plugin list`.
+Open chats don't need a restart. Their hooks run through a small
+launcher (`hooks/run.mjs`) that always runs the version the project has
+installed now, and on its next prompt each chat is told to read its new
+rules. It's told to restart only when the update changes which hooks run.
+(Chats started on 0.3.20 or earlier don't have the launcher yet: restart
+those once after moving to 0.3.21.) Run setup again if the CHANGELOG says
+to. Projects you don't update stay on the version they have. Each chat's
+stats line starts with the version its hooks are running; `claude plugin
+list` shows each project's.
 
 ## Levels in detail
 
@@ -306,7 +317,8 @@ framework.
 - After changing a prompt: `sh scripts/all-prompts.sh` rebuilds
   `docs/all-prompts.md`.
 - Release: bump `version` in `.claude-plugin/plugin.json`, add a
-  `CHANGELOG.md` section, commit, `git tag vX.Y.Z`, push the branch and tag.
+  `CHANGELOG.md` section, commit on `release`, `git tag vX.Y.Z release`,
+  then one push: `git push origin release:main vX.Y.Z`.
   Projects move to it when their owner runs the Updating steps.
 
 ## License
