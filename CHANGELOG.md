@@ -3,6 +3,14 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## Unreleased
+
+- **Close check works without an upstream:** chats can't set one (the
+  sandbox blocks writing `.git/config`), so "pushed" now falls back to
+  `origin/<branch>`: it passes if that contains HEAD and says how many
+  commits aren't pushed if not. Work chats push with a plain
+  `git push origin HEAD` (no `-u`).
+
 ## 0.3.12
 
 - **The trim reminder repeats:** past the limit, a chat is reminded again
