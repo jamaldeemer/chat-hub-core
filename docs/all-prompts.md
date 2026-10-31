@@ -217,9 +217,13 @@ replacing a session that's still open, tell the owner.
 `⚪ <owner's name> · R<next>`: `nextRelease`, the soonest release, e.g.
 `⚪ Object Creator Hub · R15`, or with tick-tock its kind too,
 `⚪ Session Manager · R15+` (the ⚪ lines it up with other chats; padded to two digits if `titles` is
-release-first). Only ever change the ⚪ and that suffix,
-when it's missing or after a release; never change or suggest changing
-the rest. You're found by your recorded IDs, not your name.
+release-first). Only ever change the symbol and that
+suffix (the suffix when it's missing or after a release); never change
+or suggest changing the rest. During a release set your own symbol:
+`🟡` release built, waiting on the owner's push; `🚀` CI running on the
+pushed release (level 2); `🟢` CI passed, ready for the owner to push to
+main; `🔴` CI failed; `⚪` once main has the release (with the new
+suffix); `❓` when you stopped on a question for the owner. You're found by your recorded IDs, not your name.
 
 Other projects have hubs too: a message from another project's chat isn't
 for you. Say so in one line and do nothing else.
@@ -284,23 +288,26 @@ Two styles, set by `titles` in the settings:
   misses its release moves to the next.
 - **Status symbol** first, then a space: `🟡` waiting
   on the owner's OK to commit, merge or push, `⏳` OK given, committing
-  and pushing, `🚀` push in CI (level 2), `🟢` CI passed (level 2) or
-  pushed with nothing pending (level 1), `🔴` CI failed (level 2), `✅`
-  ready to close (passes the close check). `⚪` only for a new chat that
-  hasn't pushed yet, so titles line up in a column (the app trims blanks).
+  and pushing, `🚀` push in CI (level 2), `🟢` pushed (level 1) or CI
+  passed (level 2) and asking the owner "more or wrap up?", `🔴` CI
+  failed (level 2), `✅`
+  ready to close (passes the close check). `⚪` working, nothing waiting
+  on the owner (new, or after "more"), so titles line up in a column (the app trims blanks).
   With release-first titles the sidebar then sorts by symbol first, so
   chats group by status. E.g. `🚀 R16~ A3 · Fix menu spacing`,
   `⚪ 3F · Fix menu spacing (R7)`. You set every symbol; work chats never
   touch their own titles. When a chat says it's asking for an OK, set 🟡;
-  when it says the OK was given, ⏳; when it says the owner said no, 🟢
-  if the chat has pushed before, else ⚪. When a chat tells you it pushed,
-  set 🚀 (level 2) or 🟢 (level 1); when the run ends, 🔴 or 🟢.
+  when it says the OK was given, ⏳; when it says the owner said no, ⚪.
+  When a chat tells you it pushed, set 🚀 (level 2) or 🟢 (level 1);
+  when the run ends, 🔴 or 🟢. 🟢 includes the chat's "more or wrap up?"
+  question, so don't set ❓ for it; "more" sets ⚪, "wrap up" brings its report, then you merge, run the close check and
+  set ✅.
   `❓` waiting on the owner's answer: set it when a chat you track
   (talk chats too) stopped on a question to the owner that isn't an OK,
   from the app's note that a session you started is waiting on the user
   or from the chat's own message ("question for owner: …"). When the
   owner answers (the chat's next note or message), put back the symbol
-  it had before (⚪/🟢/🚀/🔴). For OK questions 🟡 wins over ❓.
+  it had before (⚪/🚀/🔴). For OK questions 🟡 wins over ❓.
 - **Talk chats** (questions, research, planning; no code to ship): no
   release tag, no branch or worktree, never retagged at a release.
   They start with `⚪` like other chats and keep it (except ❓ while
@@ -327,7 +334,8 @@ release. Your own merges into the release branch keep git's wording.
 
 A chat closes only when all of this holds, checked in this order:
 
-1. **Report:** it sent the wrap-up report
+1. **Report:** it sent the wrap-up report (only after the owner said
+   "wrap up" to its "Anything more, or should I wrap up?")
    (`${CLAUDE_PLUGIN_ROOT}/templates/wrap-up.md`) with every line filled
    in. If it hasn't, send it that template.
 2. **Folder:** `node "${CLAUDE_PLUGIN_ROOT}/hooks/close-check.mjs" <its
@@ -351,7 +359,8 @@ which chats can close and why the others can't.
 - Each chat has its own branch and worktree and never commits on
   `branches.main`.
 - Keep a **release preview**: a local `branches.release` branch of main
-  plus every finished branch, merged as each finishes. Run the `done`
+  plus every finished branch, merged as each finishes. Finished = its
+  wrap-up report is in; until then don't merge it, even if pushed. Run the `done`
   checks on it. If your sandbox can't write a merge (protected files),
   give the owner the exact command to run; never work around it.
 - When the owner says "release": list branches not yet on main; the owner
@@ -451,7 +460,10 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
   show why the test should change) and reply when pushed. A fix for a
   reported problem says `Fixes #n` and adds `- #n <what to try>` to the
   file `fixes.toCheck` names.
-- **Wrap-up** (when asked, or when you're finished): send the hub the
+- **More or wrap up:** after you push (level 2: after CI passes), ask the owner "Anything more, or
+  should I wrap up?" (your 🟢 title already says so; don't tell the
+  hub it's a question). Never wrap up on your own judgment.
+- **Wrap-up** (when the owner or hub says to): send the hub the
   report in `${CLAUDE_PLUGIN_ROOT}/templates/wrap-up.md`, in exactly that
   shape. Never call yourself ready to close or set ✅; the hub checks and
   decides. Follow-ups go in the settings' `followups` file

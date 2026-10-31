@@ -35,14 +35,50 @@ More: [Levels in detail](#levels-in-detail).
 
 | | Meaning | Level |
 |---|---|---|
-| ⚪ | New, nothing pushed yet (also talk chats and the hub) | all |
+| ⚪ | Working, nothing waiting on you (also talk chats and the hub) | all |
 | 🟡 | Waiting on your OK | all |
 | ❓ | Waiting on your answer | all |
 | ⏳ | OK given, committing | all |
 | 🚀 | Push in CI | 2 |
-| 🟢 | Pushed (1), or CI passed (2) | 1+ |
+| 🟢 | Pushed (1) or CI passed (2): more, or wrap up? | 1+ |
 | 🔴 | CI failed | 2 |
 | ✅ | Ready to close | all |
+
+The hub's own title uses ⚪ normally, and during a release 🟡 (built,
+waiting on your push), 🚀 (release in CI), 🟢 (CI passed, push to main),
+🔴 (CI failed), ❓ (question for you); ⚪ again once main has it.
+
+## Flow
+
+```mermaid
+flowchart LR
+  N["⚪ new"] --> W[working]
+  W --> Y["🟡 asks OK"]
+  Y -- yes --> C["⏳ committing"]
+  Y -- no --> W
+  C --> P[push]
+  P -- L2 --> R["🚀 CI"]
+  R -- fail --> F["🔴"]
+  F --> W
+  R -- pass --> Q["🟢 more or wrap up?"]
+  P -- L1 --> Q
+  Q -- more --> W
+  Q -- wrap up --> WR[report]
+  WR --> M[hub merges + close check]
+  M --> D["✅"]
+```
+
+The hub during a release:
+
+```mermaid
+flowchart LR
+  H["⚪ hub"] --> B["🟡 release built"]
+  B -- owner pushes --> RC["🚀 CI (L2)"]
+  RC -- fail --> RF["🔴"]
+  RC -- pass --> RG["🟢 push to main"]
+  B -- L1 --> RG
+  RG -- main has it --> H2["⚪ next release"]
+```
 
 Who sets each one and when: [Title symbols](#title-symbols).
 
@@ -175,13 +211,13 @@ menu`). Setup asks which title style the project wants:
 
 | | Code first (default) | Release first |
 |---|---|---|
-| New, nothing pushed yet | `⚪ 3F · Fix menu spacing (R7)` | `⚪ R07 3F · Fix menu spacing` |
+| New, or working after "more" | `⚪ 3F · Fix menu spacing (R7)` | `⚪ R07 3F · Fix menu spacing` |
 | Tick-tock releases | `⚪ 3F · Fix menu spacing (R16~)` | `⚪ R16~ 3F · Fix menu spacing` |
 | Waiting on your OK | `🟡 3F · Fix menu spacing (R7)` | `🟡 R07 3F · Fix menu spacing` |
 | Waiting on your answer | `❓ 3F · Fix menu spacing (R7)` | `❓ R07 3F · Fix menu spacing` |
 | OK given, committing | `⏳ 3F · Fix menu spacing (R7)` | `⏳ R07 3F · Fix menu spacing` |
 | Push in CI (level 2) | `🚀 3F · Fix menu spacing (R7)` | `🚀 R07 3F · Fix menu spacing` |
-| CI passed (level 2) / pushed (level 1) | `🟢 3F · Fix menu spacing (R7)` | `🟢 R07 3F · Fix menu spacing` |
+| Pushed / CI passed: more or wrap up? | `🟢 3F · Fix menu spacing (R7)` | `🟢 R07 3F · Fix menu spacing` |
 | CI failed (level 2) | `🔴 3F · Fix menu spacing (R7)` | `🔴 R07 3F · Fix menu spacing` |
 | Ready to close | `✅ 3F · Fix menu spacing (R7)` | `✅ R07 3F · Fix menu spacing` |
 | Talk chat (no release) | `⚪ A4 · Compare libraries` | `⚪ Z A4 · Compare libraries` |
@@ -196,12 +232,12 @@ The hub sets every symbol; work chats never change their own titles.
 
 | Symbol | Meaning | Set by the hub when | Level |
 |---|---|---|---|
-| ⚪ | New, nothing pushed yet (also talk chats, the hub) | it starts the chat | all |
+| ⚪ | Working, nothing waiting on you (also talk chats, the hub) | it starts the chat, or you answer "more" | all |
 | 🟡 | Waiting on your OK to commit, merge or push | the chat says "asking for OK" | all |
 | ❓ | Waiting on your answer to a question (not an OK) | the app says the chat is waiting on you, or the chat says "question for owner"; the old symbol comes back once you answer | all |
 | ⏳ | OK given, committing and pushing | the chat says "OK given, committing" | all |
 | 🚀 | Push in CI | the chat says it pushed | 2 |
-| 🟢 | CI passed (level 2) or pushed, nothing pending (level 1) | the CI run passes / the chat says it pushed | 1+ |
+| 🟢 | Pushed (level 1) or CI passed (level 2); the chat is asking "Anything more, or should I wrap up?" | the chat says it pushed / the CI run passes | 1+ |
 | 🔴 | CI failed | the CI run fails | 2 |
 | ✅ | Ready to close | the chat's wrap-up passes the close check | all |
 
