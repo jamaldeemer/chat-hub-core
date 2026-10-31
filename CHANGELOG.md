@@ -3,6 +3,13 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## Unreleased
+
+- New title symbol ⏳ between your OK and the push landing: when you say
+  yes, the work chat tells the hub before committing ("OK given,
+  committing") and the hub swaps 🟡 for ⏳; after the push it sets 🚀
+  (level 2) or ⚪ (level 1).
+
 ## 0.3.15
 
 - Title symbols swapped: 🟡 now means waiting on the owner's OK (was 🚀,
