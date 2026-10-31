@@ -3,7 +3,7 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
-## Unreleased
+## 0.3.18
 
 - After pushing (level 2: after CI passes), a work chat asks you
   "Anything more, or should I wrap up?"; 🟢 now means exactly that. "More"
