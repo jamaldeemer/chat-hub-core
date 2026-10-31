@@ -3,6 +3,15 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## Unreleased
+
+- New title symbol ❓: the chat stopped on a question for you that isn't
+  a commit/merge/push OK (that stays 🟡). The hub sets it from the app's
+  "waiting on the user" note or from the chat's "question for owner: …"
+  line, and puts the old symbol back once you answer. Talk chats get it too.
+- README: one table of every title symbol, what it means, when it's set
+  and at which level.
+
 ## 0.3.16
 
 - New title symbol ⏳ between your OK and the push landing: when you say

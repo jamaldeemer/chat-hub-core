@@ -120,7 +120,8 @@ menu`). Setup asks which title style the project wants:
 | New, nothing pushed yet | `⚪ 3F · Fix menu spacing (R7)` | `⚪ R07 3F · Fix menu spacing` |
 | Tick-tock releases | `⚪ 3F · Fix menu spacing (R16~)` | `⚪ R16~ 3F · Fix menu spacing` |
 | Waiting on your OK | `🟡 3F · Fix menu spacing (R7)` | `🟡 R07 3F · Fix menu spacing` |
-| OK given, pushing | `⏳ 3F · Fix menu spacing (R7)` | `⏳ R07 3F · Fix menu spacing` |
+| Waiting on your answer | `❓ 3F · Fix menu spacing (R7)` | `❓ R07 3F · Fix menu spacing` |
+| OK given, committing | `⏳ 3F · Fix menu spacing (R7)` | `⏳ R07 3F · Fix menu spacing` |
 | Push in CI (level 2) | `🚀 3F · Fix menu spacing (R7)` | `🚀 R07 3F · Fix menu spacing` |
 | CI passed (level 2) / pushed (level 1) | `🟢 3F · Fix menu spacing (R7)` | `🟢 R07 3F · Fix menu spacing` |
 | CI failed (level 2) | `🔴 3F · Fix menu spacing (R7)` | `🔴 R07 3F · Fix menu spacing` |
@@ -128,7 +129,24 @@ menu`). Setup asks which title style the project wants:
 | Talk chat (no release) | `⚪ A4 · Compare slicers` | `⚪ Z A4 · Compare slicers` |
 | The hub | `⚪ cns Hub · R7` | `⚪ cns Hub · R07` |
 
-Talk chats and the hub keep ⚪: they never push.
+Talk chats and the hub keep ⚪ (talk chats show ❓ while waiting on your
+answer): they never push.
+
+### Title symbols
+
+The hub sets every symbol; work chats never change their own titles.
+
+| Symbol | Meaning | Set by the hub when | Level |
+|---|---|---|---|
+| ⚪ | New, nothing pushed yet (also talk chats, the hub) | it starts the chat | all |
+| 🟡 | Waiting on your OK to commit, merge or push | the chat says "asking for OK" | all |
+| ❓ | Waiting on your answer to a question (not an OK) | the app says the chat is waiting on you, or the chat says "question for owner"; the old symbol comes back once you answer | all |
+| ⏳ | OK given, committing and pushing | the chat says "OK given, committing" | all |
+| 🚀 | Push in CI | the chat says it pushed | 2 |
+| 🟢 | CI passed (level 2) or pushed, nothing pending (level 1) | the CI run passes / the chat says it pushed | 1+ |
+| 🔴 | CI failed | the CI run fails | 2 |
+| ✅ | Ready to close | the chat's wrap-up passes the close check | all |
+| `***title***` | Still tagged with a release that already shipped | after a release | 1+ |
 
 Release first pads the number to two digits, so an alphabetical sort
 groups chats by release, and talk chats (`Z `) sort last. With tick-tock,
