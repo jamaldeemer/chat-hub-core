@@ -12,6 +12,11 @@ Each version is a git tag (`v0.1.0`). Projects pin a tag in
   A restarted chat keeps its conversation and reloads its rules.
   `hooks/set-version.mjs` records the version once they're told. Needs git;
   skipped without it, and silent if Claude's plugin list can't be read.
+- **Close check works without an upstream:** chats can't set one (the
+  sandbox blocks writing `.git/config`), so "pushed" now falls back to
+  `origin/<branch>`: it passes if that contains HEAD and says how many
+  commits aren't pushed if not. Work chats push with a plain
+  `git push origin HEAD` (no `-u`).
 
 ## 0.3.12
 

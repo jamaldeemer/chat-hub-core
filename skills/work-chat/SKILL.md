@@ -21,7 +21,8 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
 - **Done** means everything in the `done` list in the settings (e.g. tests
   pass, it builds): the answers the owner gave setup.
 - **Level 1+:** work on your own branch and worktree, never on the main
-  branch. After the owner OKs a commit, push your branch and tell the hub.
+  branch. After the owner OKs a commit, push your branch with
+  `git push origin HEAD` (no `-u`: the sandbox blocks it) and tell the hub.
 - **After a release:** merge the main branch at once (never rebase). Use
   the app's "sync with base branch" tool if you have it: it runs outside
   your sandbox, so the merge can write protected files (`.claude/…`). A

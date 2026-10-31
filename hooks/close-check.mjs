@@ -4,7 +4,7 @@
 //   all levels: nothing uncommitted.
 //   level 1+:   on its own branch (not main); every commit pushed; merged into the release preview.
 //   level 2:    CI passed on its newest commit; no fix of its still waiting for the owner's check.
-// "Pushed" uses the remote branch as last fetched; the hub fetches first if in doubt.
+// "Pushed" uses the upstream, or origin/<branch> if none, as last fetched; the hub fetches first if in doubt.
 import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
@@ -42,8 +42,15 @@ if (tryGit('rev-parse', '--is-inside-work-tree') !== 'true') {
     else {
       pass(`branch: ${branch}`)
       const upstream = tryGit('rev-parse', '--abbrev-ref', '@{u}')
-      if (!upstream) fail('pushed: the branch has never been pushed')
-      else {
+      // Chats can't set an upstream (the sandbox blocks writing .git/config), so fall back to origin/<branch>.
+      const tracking = `origin/${branch}`
+      if (!upstream) {
+        if (tryGit('rev-parse', '--verify', '-q', `refs/remotes/${tracking}`) === null) fail('pushed: the branch has never been pushed')
+        else {
+          const ahead = Number(tryGit('rev-list', '--count', `refs/remotes/${tracking}..HEAD`) || 0)
+          ahead ? fail(`pushed: ${ahead} commit(s) not pushed to ${tracking}`) : pass(`pushed: all of it, to ${tracking}`)
+        }
+      } else {
         const ahead = Number(tryGit('rev-list', '--count', '@{u}..HEAD') || 0)
         ahead ? fail(`pushed: ${ahead} commit(s) not pushed to ${upstream}`) : pass(`pushed: all of it, to ${upstream}`)
       }

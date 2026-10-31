@@ -134,7 +134,8 @@ A chat closes only when all of this holds, checked in this order:
    in. If it hasn't, send it that template.
 2. **Folder:** `node "${CLAUDE_PLUGIN_ROOT}/hooks/close-check.mjs" <its
    folder>` prints READY. It checks git itself: nothing uncommitted;
-   level 1+ on its own branch, all pushed, and merged into the release
+   level 1+ on its own branch, all pushed (to its upstream, or
+   `origin/<branch>` if it has none), and merged into the release
    preview; level 2 CI passed on its newest commit and no fix of its still
    waiting for the owner's check. On any FAIL, tell the chat what failed.
    Level 1+: merge its branch into the preview first; if the merge clashes,
