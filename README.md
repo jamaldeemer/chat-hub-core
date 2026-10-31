@@ -119,8 +119,8 @@ menu`). Setup asks which title style the project wants:
 |---|---|---|
 | Working | `⚪ 3F · Fix menu spacing (R7)` | `⚪ R07 3F · Fix menu spacing` |
 | Tick-tock releases | `⚪ 3F · Fix menu spacing (R16~)` | `⚪ R16~ 3F · Fix menu spacing` |
-| Waiting on your OK | `🚀 3F · Fix menu spacing (R7)` | `🚀 R07 3F · Fix menu spacing` |
-| Push in CI (level 2) | `🟡 3F · Fix menu spacing (R7)` | `🟡 R07 3F · Fix menu spacing` |
+| Waiting on your OK | `🟡 3F · Fix menu spacing (R7)` | `🟡 R07 3F · Fix menu spacing` |
+| Push in CI (level 2) | `🚀 3F · Fix menu spacing (R7)` | `🚀 R07 3F · Fix menu spacing` |
 | CI failed (level 2) | `🔴 3F · Fix menu spacing (R7)` | `🔴 R07 3F · Fix menu spacing` |
 | Ready to close | `✅ 3F · Fix menu spacing (R7)` | `✅ R07 3F · Fix menu spacing` |
 | Talk chat (no release) | `⚪ A4 · Compare slicers` | `⚪ Z A4 · Compare slicers` |

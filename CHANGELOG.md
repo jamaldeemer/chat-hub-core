@@ -3,6 +3,12 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## Unreleased
+
+- Title symbols swapped: 🟡 now means waiting on the owner's OK (was 🚀,
+  like a yellow light) and 🚀 means a push is in CI, "in flight" (was 🟡).
+  🔴, ✅ and ⚪ are unchanged.
+
 ## 0.3.14
 
 - **Titles line up:** work chats with no status symbol get `⚪`, so every

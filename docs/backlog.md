@@ -89,7 +89,7 @@ Automate what relies on memory:
    a log in `.git/chat-hub/`.
 7. After a release, bump `nextRelease` and retag titles (object_creator's
    hub forgot once): a "release finished" step that does both.
-8. Setting and clearing 🟡/🔴 when CI starts and ends: a CI-watch helper
+8. Setting and clearing 🚀/🔴 when CI starts and ends: a CI-watch helper
    the hub runs in the background, which renames the chat itself, reads
    the failing log and says real, flaky or infrastructure (see
    object_creator's list above). Also saves hub turns: no polling.
