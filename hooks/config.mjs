@@ -37,6 +37,39 @@ function sharedHubFile() {
   } catch { return null }
 }
 
+// The commit OK, read from a chat's transcript: true when the owner picked a menu answer
+// (AskUserQuestion) that starts "Yes" and is about committing (the answer or its question says
+// "commit"), after the chat's last commit that went through and with no later "no" to a commit
+// question. null when there's no transcript.
+// Only a menu counts: a typed message can come from another chat.
+const committed = cmd => /(^|[;&|(]\s*)git\s+(?:-C\s+\S+\s+)?commit\b/.test(cmd)
+export function menuOk(transcript) {
+  if (!transcript || !existsSync(transcript)) return null
+  const commits = new Set(), asks = new Set()
+  let ok = false
+  for (const line of readFileSync(transcript, 'utf8').split('\n')) {
+    if (!line.includes('tool_')) continue
+    let e
+    try { e = JSON.parse(line) } catch { continue }
+    if (e.isSidechain || !Array.isArray(e.message?.content)) continue
+    for (const b of e.message.content) {
+      if (b.type === 'tool_use' && b.name === 'Bash' && committed(String(b.input?.command || ''))) commits.add(b.id)
+      if (b.type === 'tool_use' && b.name === 'AskUserQuestion') asks.add(b.id)
+      if (b.type !== 'tool_result' || b.is_error) continue
+      if (commits.has(b.tool_use_id)) ok = false
+      if (asks.has(b.tool_use_id)) {
+        const pairs = Object.entries(e.toolUseResult?.answers || {})
+        if (!pairs.length) for (const m of String(JSON.stringify(b.content)).matchAll(/\\"(.*?)\\"=\\"(.*?)\\"/g)) pairs.push([m[1], m[2]])
+        for (const [q, a] of pairs) {
+          // A later "Not yet" to a commit question takes an earlier yes back.
+          for (const v of [].concat(a)) if (/commit/i.test(`${q} ${v}`)) ok = /^yes\b/i.test(String(v).trim())
+        }
+      }
+    }
+  }
+  return ok
+}
+
 // One ID on its own: an app address starts with `local_`, anything else is a session ID.
 const fromId = id => (id.startsWith('local_') ? { app: id } : { session: id })
 

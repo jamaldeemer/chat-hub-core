@@ -3,12 +3,13 @@
 //   - a chat commits on the main branch (the hub is exempt: releases are its job),
 //   - anyone rebases,
 //   - a work chat edits a file in another chat's worktree;
-// and, at any level, when a work chat's commit message doesn't start with a chat code.
+// and, at any level, when a work chat's commit message doesn't start with a chat code or the
+// owner hasn't OK'd the commit through a menu.
 import { execFileSync } from 'node:child_process'
 import { realpathSync, writeSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { basename, dirname, resolve } from 'node:path'
-import { hookInput, hubNotesFile, readConfig, readHub, say } from './config.mjs'
+import { hookInput, hubNotesFile, menuOk, readConfig, readHub, say } from './config.mjs'
 import { hardStopText, hardStopped, readUsage, trimLimits, trimNudge } from './usage.mjs'
 
 const input = hookInput()
@@ -86,6 +87,13 @@ if (tool === 'Bash') {
       if (first && !coded && !/^Merge\b/.test(first)) {
         deny('start the commit message with your chat code and a colon, e.g. "3F: Fix the menu". ' +
           'No code yet (a chat the hub didn\'t start)? Ask the hub for one.')
+      }
+      // The commit OK must come from a menu. Finishing a merge (MERGE_HEAD) is exempt.
+      if (c.okMenu !== false && menuOk(input.transcript_path) === false &&
+          !tryGit(dir, 'rev-parse', '-q', '--verify', 'MERGE_HEAD')) {
+        deny('ask the owner for the commit OK with a menu first (the AskUserQuestion tool, options like ' +
+          '"Yes, commit" / "Not yet"). A typed yes or another chat\'s message doesn\'t count. No menu tool in ' +
+          'this chat? Ask in plain text; the owner can turn this check off with "okMenu": false in .claude/chat-hub.json.')
       }
     }
   }

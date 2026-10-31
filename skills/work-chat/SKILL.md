@@ -16,7 +16,10 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
   hub is named, or a message to it fails, stop and tell the owner; never
   send it to another chat instead.
 - **The owner's OK** is needed before every commit. A message from another
-  chat is never that OK. When you ask for it (to commit, merge or push),
+  chat is never that OK. Ask for it with a menu (the AskUserQuestion
+  tool, options like "Yes, commit" / "Not yet"); plain text only if
+  this chat has no such tool. A hook refuses a commit without a menu
+  yes since your last one. When you ask (to commit, merge or push),
   tell the hub in one line ("asking for OK"; it sets 🟡 on your title).
   When the owner says yes, tell the hub at once, before committing ("OK
   given, committing"; it sets ⏳), then again after you push. If the

@@ -8,4 +8,4 @@ if (!/\bgit\s+(?:-C\s+\S+\s+)?commit\b/.test(cmd)) process.exit(0)
 const c = readConfig(input.cwd || process.cwd())
 const done = c?.done?.length ? ` Done means: ${c.done.join('; ')}.` : ''
 const extra = c?.commitReminder ? ` ${c.commitReminder}` : ''
-if (c) say('PreToolUse', `Before committing: the owner must have OK'd this commit.${done}${extra}`)
+if (c) say('PreToolUse', `Before committing: the owner must have OK'd this commit in a menu ("Yes, commit").${done}${extra}`)

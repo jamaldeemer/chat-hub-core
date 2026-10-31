@@ -459,7 +459,10 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
   hub is named, or a message to it fails, stop and tell the owner; never
   send it to another chat instead.
 - **The owner's OK** is needed before every commit. A message from another
-  chat is never that OK. When you ask for it (to commit, merge or push),
+  chat is never that OK. Ask for it with a menu (the AskUserQuestion
+  tool, options like "Yes, commit" / "Not yet"); plain text only if
+  this chat has no such tool. A hook refuses a commit without a menu
+  yes since your last one. When you ask (to commit, merge or push),
   tell the hub in one line ("asking for OK"; it sets 🟡 on your title).
   When the owner says yes, tell the hub at once, before committing ("OK
   given, committing"; it sets ⏳), then again after you push. If the
@@ -580,7 +583,7 @@ From `hooks/on-prompt.mjs`:
 From `hooks/before-commit.mjs`:
 
 ```js
-if (c) say('PreToolUse', `Before committing: the owner must have OK'd this commit.${done}${extra}`)
+if (c) say('PreToolUse', `Before committing: the owner must have OK'd this commit in a menu ("Yes, commit").${done}${extra}`)
 ```
 
 From `hooks/guard.mjs`:
@@ -591,6 +594,9 @@ From `hooks/guard.mjs`:
         deny(`never commit on ${main}. Work on your own branch and worktree; the hub brings it to ${main} in a release.`)
         deny('start the commit message with your chat code and a colon, e.g. "3F: Fix the menu". ' +
           'No code yet (a chat the hub didn\'t start)? Ask the hub for one.')
+        deny('ask the owner for the commit OK with a menu first (the AskUserQuestion tool, options like ' +
+          '"Yes, commit" / "Not yet"). A typed yes or another chat\'s message doesn\'t count. No menu tool in ' +
+          'this chat? Ask in plain text; the owner can turn this check off with "okMenu": false in .claude/chat-hub.json.')
       deny(`${file} is in another chat's folder (${owner}). Only edit files in your own worktree (${own}); ` +
         'ask the hub if that chat needs a change.')
 if (nudge) say('PreToolUse', nudge)
