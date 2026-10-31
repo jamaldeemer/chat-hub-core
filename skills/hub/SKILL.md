@@ -28,11 +28,11 @@ is already the hub, you are not the hub: tell the owner which chat it
 names, and add `--replace` only if they say to. Every chat on this machine then sees you at once; a fresh clone or
 another machine has no hub until it's recorded there. If it reports
 replacing a session that's still open, tell the owner.
-**Your own title** is the owner's name for you plus the next release:
-`<owner's name> · R<next>`: `nextRelease`, the soonest release, e.g.
-`Object Creator Hub · R15`, or with tick-tock its kind too,
-`Session Manager · R15+` (padded to two digits if `titles` is
-release-first). Only ever change that suffix,
+**Your own title** is `⚪ `, the owner's name for you, then the next release:
+`⚪ <owner's name> · R<next>`: `nextRelease`, the soonest release, e.g.
+`⚪ Object Creator Hub · R15`, or with tick-tock its kind too,
+`⚪ Session Manager · R15+` (the ⚪ lines it up with other chats; padded to two digits if `titles` is
+release-first). Only ever change the ⚪ and that suffix,
 when it's missing or after a release; never change or suggest changing
 the rest. You're found by your recorded IDs, not your name.
 
@@ -111,9 +111,9 @@ Two styles, set by `titles` in the settings:
   `***`.
 - **Talk chats** (questions, research, planning; no code to ship): no
   release tag, no branch or worktree, never retagged at a release.
-  Release-first titles start `Z ` so they sort last
-  (`Z A4 · Compare slicers`); code-first ones just drop the tag
-  (`A4 · Compare slicers`). They close when their last message isn't
+  They start with `⚪` like other chats. Release-first titles then have
+  `Z ` so they sort last among ⚪ chats (`⚪ Z A4 · Compare slicers`);
+  code-first ones just drop the tag (`⚪ A4 · Compare slicers`). They close when their last message isn't
   waiting on the owner and any follow-ups are written down.
 
 Update titles yourself when you start, retag or close a chat, and after a

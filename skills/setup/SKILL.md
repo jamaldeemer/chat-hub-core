@@ -132,7 +132,7 @@ Then end with three short parts, in this order:
    block: commands in one code block, text to paste in another.
 3. **Get started:** numbered steps for this project's level, e.g.:
    1. The hub: this chat, or the one you'll type `/chat-hub-core:hub` in.
-      It adds the next release to its title, e.g. `cns Hub · R2`.
+      It adds the next release to its title, e.g. `⚪ cns Hub · R2`.
    2. Tell the hub what you want: "start a chat to <task>". It starts a
       chat with a code like `A2`, briefs it, and follows it.
    3. Work in that chat; it asks before every commit.

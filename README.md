@@ -30,7 +30,7 @@ You need Claude Code (terminal or the desktop app's Code tab), git and Node.
    questions, shows what it will write, and writes it when you say yes.
 4. Setup ends by making a hub: by default the chat you ran it in. The hub
    records itself, so every other chat knows exactly which one it is, and
-   adds the next release to its title (`cns Hub · R2`). Then talk to it.
+   adds the next release to its title (`⚪ cns Hub · R2`). Then talk to it.
    To make a different chat the hub later, type
    `/chat-hub-core:hub replace` in it.
 
@@ -123,13 +123,13 @@ menu`). Setup asks which title style the project wants:
 | Push in CI (level 2) | `🟡 3F · Fix menu spacing (R7)` | `🟡 R07 3F · Fix menu spacing` |
 | CI failed (level 2) | `🔴 3F · Fix menu spacing (R7)` | `🔴 R07 3F · Fix menu spacing` |
 | Ready to close | `✅ 3F · Fix menu spacing (R7)` | `✅ R07 3F · Fix menu spacing` |
-| Talk chat (no release) | `A4 · Compare slicers` | `Z A4 · Compare slicers` |
-| The hub | `cns Hub · R7` | `cns Hub · R07` |
+| Talk chat (no release) | `⚪ A4 · Compare slicers` | `⚪ Z A4 · Compare slicers` |
+| The hub | `⚪ cns Hub · R7` | `⚪ cns Hub · R07` |
 
 Release first pads the number to two digits, so an alphabetical sort
 groups chats by release, and talk chats (`Z `) sort last. With tick-tock,
 `~` releases are fixes and `+` releases features; the hub's title shows
-the soonest next release (`cns Hub · R15+`). The hub also keeps notes in
+the soonest next release (`⚪ cns Hub · R15+`). The hub also keeps notes in
 git's own folder (`.git/chat-hub/hub-notes.md`), so a restart or a clear
 loses nothing.
 
