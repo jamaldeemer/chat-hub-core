@@ -21,6 +21,9 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
   When the owner says yes, tell the hub at once, before committing ("OK
   given, committing"; it sets ⏳), then again after you push. If the
   owner says no, tell it "OK declined".
+- **Questions:** when you end a turn on a question to the owner that
+  isn't an OK, tell the hub in one line ("question for owner: <topic>";
+  it sets ❓ on your title).
 - **Commit messages** start with your chat's code: `3F: Fix the menu`.
 - **Done** means everything in the `done` list in the settings (e.g. tests
   pass, it builds): the answers the owner gave setup.
