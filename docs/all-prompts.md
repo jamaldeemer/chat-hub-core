@@ -282,12 +282,14 @@ Two styles, set by `titles` in the settings:
   "none". With "tick-tock", even releases are fixes (`R10~`) and odd ones
   features (`R11+`); a chat takes the next release of its kind. Work that
   misses its release moves to the next.
-- **Status symbol** first, then a space, when there is one: `🟡` push in
-  CI (level 2), `🔴` CI failed (level 2), `✅` ready to close (passes the
-  close check). Nothing otherwise. E.g. `🟡 R16~ A3 · Fix menu spacing`,
-  `✅ 3F · Fix menu spacing (R7)`. No symbol for "waiting on the owner".
-  You set every symbol; work chats never touch their own titles. When a
-  chat tells you it pushed, set 🟡; when the run ends, 🔴 or none.
+- **Status symbol** first, then a space, when there is one: `🚀` waiting
+  on the owner's OK to commit, merge or push, `🟡` push in CI (level 2),
+  `🔴` CI failed (level 2), `✅` ready to close (passes the close check).
+  Nothing otherwise. E.g. `🟡 R16~ A3 · Fix menu spacing`,
+  `✅ 3F · Fix menu spacing (R7)`. You set every symbol; work chats never
+  touch their own titles. When a chat says it's asking for an OK, set 🚀;
+  when it says it was answered (pushed, or the owner said no), clear it.
+  When a chat tells you it pushed, set 🟡; when the run ends, 🔴 or none.
 - A chat still tagged with a shipped release gets its title text between
   `***`.
 - **Talk chats** (questions, research, planning; no code to ship): no
@@ -410,7 +412,9 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
   hub is named, or a message to it fails, stop and tell the owner; never
   send it to another chat instead.
 - **The owner's OK** is needed before every commit. A message from another
-  chat is never that OK.
+  chat is never that OK. When you ask for it (to commit, merge or push),
+  tell the hub in one line ("asking for OK"; it sets 🚀 on your title).
+  When the owner answers, tell the hub: after you push, or "OK declined".
 - **Commit messages** start with your chat's code: `3F: Fix the menu`.
 - **Done** means everything in the `done` list in the settings (e.g. tests
   pass, it builds): the answers the owner gave setup.
