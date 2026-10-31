@@ -3,6 +3,16 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## Unreleased
+
+- **Titles line up:** work chats with no status symbol get `⚪`, so every
+  title starts with a symbol and the text forms a column (the app trims
+  blank stand-ins). Talk chats and the hub get it too. Release-first
+  titles now group by symbol first.
+- **🚀 marks chats waiting on your OK:** when a work chat asks to commit,
+  merge or push, it tells the hub, which puts 🚀 at the start of its
+  title; the hub clears it once the chat pushes or you say no.
+
 ## 0.3.13
 
 - **Running chats hear about updates:** the hub notices when the installed

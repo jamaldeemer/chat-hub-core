@@ -28,11 +28,11 @@ is already the hub, you are not the hub: tell the owner which chat it
 names, and add `--replace` only if they say to. Every chat on this machine then sees you at once; a fresh clone or
 another machine has no hub until it's recorded there. If it reports
 replacing a session that's still open, tell the owner.
-**Your own title** is the owner's name for you plus the next release:
-`<owner's name> · R<next>`: `nextRelease`, the soonest release, e.g.
-`Object Creator Hub · R15`, or with tick-tock its kind too,
-`Session Manager · R15+` (padded to two digits if `titles` is
-release-first). Only ever change that suffix,
+**Your own title** is `⚪ `, the owner's name for you, then the next release:
+`⚪ <owner's name> · R<next>`: `nextRelease`, the soonest release, e.g.
+`⚪ Object Creator Hub · R15`, or with tick-tock its kind too,
+`⚪ Session Manager · R15+` (the ⚪ lines it up with other chats; padded to two digits if `titles` is
+release-first). Only ever change the ⚪ and that suffix,
 when it's missing or after a release; never change or suggest changing
 the rest. You're found by your recorded IDs, not your name.
 
@@ -97,19 +97,23 @@ Two styles, set by `titles` in the settings:
   "none". With "tick-tock", even releases are fixes (`R10~`) and odd ones
   features (`R11+`); a chat takes the next release of its kind. Work that
   misses its release moves to the next.
-- **Status symbol** first, then a space, when there is one: `🟡` push in
-  CI (level 2), `🔴` CI failed (level 2), `✅` ready to close (passes the
-  close check). Nothing otherwise. E.g. `🟡 R16~ A3 · Fix menu spacing`,
-  `✅ 3F · Fix menu spacing (R7)`. No symbol for "waiting on the owner".
-  You set every symbol; work chats never touch their own titles. When a
-  chat tells you it pushed, set 🟡; when the run ends, 🔴 or none.
+- **Status symbol** first, then a space: `🚀` waiting
+  on the owner's OK to commit, merge or push, `🟡` push in CI (level 2),
+  `🔴` CI failed (level 2), `✅` ready to close (passes the close check).
+  `⚪` otherwise, so titles line up in a column (the app trims blanks).
+  With release-first titles the sidebar then sorts by symbol first, so
+  chats group by status. E.g. `🟡 R16~ A3 · Fix menu spacing`,
+  `⚪ 3F · Fix menu spacing (R7)`. You set every symbol; work chats never
+  touch their own titles. When a chat says it's asking for an OK, set 🚀;
+  when it says it was answered (pushed, or the owner said no), back to ⚪.
+  When a chat tells you it pushed, set 🟡; when the run ends, 🔴 or ⚪.
 - A chat still tagged with a shipped release gets its title text between
   `***`.
 - **Talk chats** (questions, research, planning; no code to ship): no
   release tag, no branch or worktree, never retagged at a release.
-  Release-first titles start `Z ` so they sort last
-  (`Z A4 · Compare slicers`); code-first ones just drop the tag
-  (`A4 · Compare slicers`). They close when their last message isn't
+  They start with `⚪` like other chats. Release-first titles then have
+  `Z ` so they sort last among ⚪ chats (`⚪ Z A4 · Compare slicers`);
+  code-first ones just drop the tag (`⚪ A4 · Compare slicers`). They close when their last message isn't
   waiting on the owner and any follow-ups are written down.
 
 Update titles yourself when you start, retag or close a chat, and after a
