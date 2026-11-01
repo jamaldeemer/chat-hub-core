@@ -3,6 +3,18 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## Unreleased (R18)
+
+- **🙋 for "waiting on your OK", 🤔 for "waiting on your answer":** two
+  symbols renamed, same rules. 🟡 (OK to commit, merge or push, and the
+  hub's own "release built, waiting on your push") is now 🙋; ❓
+  (a question that isn't an OK) is now 🤔. Both are wide emoji like the
+  others, so titles still line up. In release-first titles (symbol
+  first) the sort order is now ⏳ ⚪ ✅ 🔨 🔴 🙋 🚀 🟢 🤔: 🙋 moves up
+  from between 🚀 and 🟢 to between 🔴 and 🚀, and 🤔 moves from
+  between ✅ and 🔨 to last. Tests check that no 🟡 or ❓ is left in the
+  rules, README or hooks.
+
 ## 0.3.28
 
 - **🔨 for a chat under way; ⚪ only for a new one:** ⚪ now means the
