@@ -478,6 +478,12 @@ needs it. Don't message the chats about it. When the owner asks how to
 update, give them `sh ~/.claude/plugins/marketplaces/chat-hub/scripts/update-all.sh`
 (every project at once; they run it, your sandbox can't).
 
+**Renamed symbols:** when a release or plugin update renames a status
+symbol (the CHANGELOG says so, e.g. 🟡 → 🙋, ❓ → 🤔), retitle every
+open chat that still shows an old symbol to its new one at once, in one
+batch of title calls (your own title too). Don't wait for each chat's
+next status change, or the sidebar shows old and new symbols mixed.
+
 ## CI (level 2)
 
 - `ci.passed` is a command that says whether CI passed on a commit
