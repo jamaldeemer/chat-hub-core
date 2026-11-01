@@ -3,7 +3,7 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
-## Unreleased (R15)
+## 0.3.26
 
 - **The 🟢 "Anything more, or should I wrap up?" is a menu:** a work
   chat asks it with the AskUserQuestion tool (options "Wrap up" / "More
