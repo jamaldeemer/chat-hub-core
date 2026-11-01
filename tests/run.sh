@@ -205,6 +205,23 @@ asst m13 0 151000; at u2 >/dev/null
 t "trim: work chats not by default" "$(op u2 | wc -c | tr -d ' ')" 0
 echo '{"level":0,"trimAt":150000,"trimAtWork":100000}' > .claude/chat-hub.json
 t "trim: work chats with trimAtWork" "$(op u2 | grep -c 'natural stopping point')" 1
+# /chat-hub-core:limit: changes the limits from the next prompt, for every worktree, never in the settings
+lp() { printf '{"session_id":"%s","prompt":"/chat-hub-core:limit %s","cwd":"%s"}' "$1" "$2" "$(pwd)" | node "$root/hooks/on-prompt.mjs"; }
+t "limit: shows both limits" "$(node "$root/hooks/limit.mjs" | grep -c 'hub wraps up at 150k (from .claude/chat-hub.json); work chats are asked to stop at 100k')" 1
+t "limit: hub limit set from the prompt" "$(lp u1 200k | grep -c 'Saved.*hub wraps up at 200k (set with /chat-hub-core:limit).*already done')" 1
+t "limit: hub under the new limit is told to stop wrapping up" "$(lp u1 200k | grep -c 'stop and carry on as normal')" 1
+t "limit: no WRAP UP under the new limit" "$(op u1 | grep -c 'WRAP UP')" 0
+t "limit: settings file untouched" "$(grep -c '"trimAt":150000' .claude/chat-hub.json)" 1
+t "limit: seen from another worktree" "$(git -c user.email=a@b -c user.name=t worktree add -q ../wt4 2>/dev/null; cd ../wt4 && node "$root/hooks/limit.mjs" | grep -c "hub wraps up at 200k (set with"; cd - >/dev/null; git worktree remove --force ../wt4)" 1
+lp u1 130k >/dev/null
+t "limit: lowered below the context, WRAP UP comes" "$(op u1 | grep -c 'past its limit of 130k')" 1
+t "limit: a new limit nudges once more on a tool call" "$(node "$root/hooks/limit.mjs" 132k >/dev/null; pt u1 Read '{"file_path":"x"}' | grep -c 'past its limit of 132k')" 1
+t "limit: work chats" "$(lp u2 'work 160k' >/dev/null; op u2 | wc -c | tr -d ' ')" 0
+t "limit: work off" "$(lp u2 'work off' | grep -c 'work chats have no limit (set with')" 1
+t "limit: 200 means 200k" "$(node "$root/hooks/limit.mjs" hub 200 | grep -c 'wraps up at 200k')" 1
+t "limit: too small refused" "$(node "$root/hooks/limit.mjs" 5k | grep -c 'Not changed.*outside')" 1
+t "limit: nonsense refused" "$(node "$root/hooks/limit.mjs" lots | grep -c 'Not changed.*isn.t a size')" 1
+t "limit: default goes back to the settings" "$(node "$root/hooks/limit.mjs" default | grep -c 'hub wraps up at 150k (from .claude/chat-hub.json); work chats are asked to stop at 100k (from')" 1
 rm -rf .git/chat-hub; export TMPDIR="$oldtmp"
 echo '{"level":0,"done":["tests pass"]}' > .claude/chat-hub.json
 mkdir .githooks && touch .githooks/pre-push; echo '{"level":1}' > .claude/chat-hub.json

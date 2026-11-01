@@ -96,7 +96,8 @@ turns × context size, and it's usually most of a project's usage.
 - **Read and write little:** read parts of files (`sed -n '40,80p'`,
   `grep -n`), not whole files; keep your replies short.
 - **When a "⚠️ WRAP UP" note says you're past your limit** (`trimAt`,
-  default 135k), wrap up, so a clear never lands in the middle of a step:
+  default 135k, or what the owner set with `/chat-hub-core:limit`; if a
+  new limit puts you back under it, stop wrapping up), wrap up, so a clear never lands in the middle of a step:
   - **No new work:** no new chats or releases. Anything new the
     owner or a chat asks for goes under "## Next" in your notes as a
     line starting `- After clear:` (the start note quotes those lines

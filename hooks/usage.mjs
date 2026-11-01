@@ -4,6 +4,7 @@
 // transcript since the last one, so this stays fast on long chats.
 import { closeSync, existsSync, fstatSync, mkdirSync, openSync, readFileSync, readSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
+import { readLimits } from './config.mjs'
 
 const dir = `${tmpdir()}/chat-hub-core`
 const stateFile = session => `${dir}/${String(session).replace(/[^\w-]/g, '_')}.json`
@@ -55,7 +56,12 @@ export function updateUsage(session, transcript) {
 export const short = n => (n >= 1e6 ? `${(n / 1e6).toFixed(n >= 1e7 ? 0 : 1)}M` : n >= 1e3 ? `${Math.round(n / 1e3)}k` : String(n))
 
 // The size limit: `trimAt` for the hub (default 135k); work chats only if `trimAtWork` is set.
-export const trimLimit = (isHub, cfg) => (isHub ? (cfg.trimAt ?? 135000) : (cfg.trimAtWork || 0))
+// A limit set with /chat-hub-core:limit (limits.json) wins over the settings.
+export const DEFAULT_TRIM_AT = 135000
+export function trimLimit(isHub, cfg, limits = readLimits()) {
+  const c = { ...cfg, ...limits }
+  return isHub ? (c.trimAt ?? DEFAULT_TRIM_AT) : (c.trimAtWork || 0)
+}
 
 // One level: past the limit the hub wraps up. It takes on no new work, finishes what it already
 // has in flight, brings its notes up to date and only then asks to be cleared, so a clear never
@@ -87,7 +93,8 @@ export function trimNudge({ session, isHub, cfg, everyTime = false }) {
   const limit = trimLimit(isHub, cfg)
   if (!limit) return ''
   const s = readUsage(session)
-  if (s.context < limit * 0.8 && s.nudgedAt) { s.nudgedAt = 0; writeUsage(session, s) }
+  // A new limit (nudgedAt keeps the one it nudged at) counts as a fresh start too.
+  if (s.nudgedAt && (s.context < limit * 0.8 || s.nudgedAt !== limit)) { s.nudgedAt = 0; writeUsage(session, s) }
   if (s.context < limit) return ''
   if (!everyTime && s.nudgedAt) return ''
   if (!s.nudgedAt) { s.nudgedAt = limit; writeUsage(session, s) }

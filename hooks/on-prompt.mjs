@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url'
 import { dirname } from 'node:path'
 import { HubTaken, hookInput, isHubChat, readConfig, readHub, say, setHub } from './config.mjs'
 import { trimNudge } from './usage.mjs'
+import { limitCommand } from './limit.mjs'
 import { rulesNotice } from './config.mjs'
 
 const setHubCmd = `node "${dirname(fileURLToPath(import.meta.url))}/set-hub.mjs"`
@@ -12,10 +13,24 @@ const input = hookInput()
 const prompt = (input.prompt || '').trim()
 const m = prompt.match(/^\/chat-hub-core:hub\b(.*)$/s)
 const cfg = readConfig(input.cwd || process.cwd())
+// /chat-hub-core:limit [hub|work] [200k|off|default]: show or change the context limits. Done
+// here, outside the chat's sandbox, before the nudge below so it already uses the new limit.
+const lm = prompt.match(/^\/chat-hub-core:limit\b(.*)$/s)
+let limitNote = "", limitChanged = false
+if (lm && cfg) {
+  const r = limitCommand(lm[1], input.cwd || process.cwd())
+  limitChanged = r.changed
+  limitNote = `chat-hub-core /limit: ${r.text} This is already done: tell the owner exactly that in one short ` +
+    'reply and do nothing else for it.'
+}
 if (!m && cfg) {
   const isHub = isHubChat(readHub(cfg), input.session_id)
   const nudge = trimNudge({ session: input.session_id, isHub, cfg, everyTime: true })
-  const out = [rulesNotice({ session: input.session_id, isHub }), nudge].filter(Boolean).join(' ')
+  if (limitChanged && isHub && !nudge) {
+    limitNote += ' No WRAP UP note came with this prompt, so you are under the hub\'s limit: if you were wrapping ' +
+      'up, stop and carry on as normal.'
+  }
+  const out = [limitNote, rulesNotice({ session: input.session_id, isHub }), nudge].filter(Boolean).join(' ')
   if (out) say('UserPromptSubmit', out)
 }
 if (m && input.session_id && cfg) {
