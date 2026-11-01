@@ -3,6 +3,28 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## Unreleased (R16)
+
+- **`trimAt` defaults to 135k** (was 150k) for every project that
+  doesn't set it.
+- **A cleared hub knows it's the hub:** the desktop app gives each chat
+  its own address (`local_…`, unchanged by a clear) in
+  `CLAUDE_CODE_HOST_SESSION_ID`. The start hook compares it with the
+  recorded hub: the hub is told so outright (no "look yourself up, else
+  you're a work chat"), and its new session ID is recorded for it; a
+  work chat is told it's one. The prompt, guard and notes hooks know the
+  hub the same way, so the WRAP UP note keeps coming right after a
+  clear. The work-chat rules add: if your own address is the hub's, load
+  the hub rules instead. Without the variable (plain terminal) nothing
+  changes.
+- **Put-off work comes first after a clear:** while wrapping up, the hub
+  notes new work under `## Next` as `- After clear: …`; the start note
+  quotes those lines and tells the hub to do them first.
+- **No chat stuck at ⏳ across a clear:** closing a chat whose wrap-up
+  report is in counts as work in flight, so the hub does it before the
+  clear. A new backstop: on every wake, any ⏳/🟢 chat whose report is
+  in and isn't ✅ gets closed.
+
 ## 0.3.26
 
 - **The 🟢 "Anything more, or should I wrap up?" is a menu:** a work

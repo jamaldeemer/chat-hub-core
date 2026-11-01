@@ -3,7 +3,7 @@
 // already the hub, it refuses unless the owner typed "/chat-hub-core:hub replace".
 import { fileURLToPath } from 'node:url'
 import { dirname } from 'node:path'
-import { HubTaken, hookInput, readConfig, readHub, say, setHub } from './config.mjs'
+import { HubTaken, hookInput, isHubChat, readConfig, readHub, say, setHub } from './config.mjs'
 import { trimNudge } from './usage.mjs'
 import { rulesNotice } from './config.mjs'
 
@@ -13,7 +13,7 @@ const prompt = (input.prompt || '').trim()
 const m = prompt.match(/^\/chat-hub-core:hub\b(.*)$/s)
 const cfg = readConfig(input.cwd || process.cwd())
 if (!m && cfg) {
-  const isHub = readHub(cfg).session === input.session_id
+  const isHub = isHubChat(readHub(cfg), input.session_id)
   const nudge = trimNudge({ session: input.session_id, isHub, cfg, everyTime: true })
   const out = [rulesNotice({ session: input.session_id, isHub }), nudge].filter(Boolean).join(' ')
   if (out) say('UserPromptSubmit', out)

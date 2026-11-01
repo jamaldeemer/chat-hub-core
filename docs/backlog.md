@@ -40,7 +40,7 @@ chats from its notes, though the notes said to check first).
 - **Why did `"if": "Bash(git commit*)"` let the commit reminder fire on
   every command?** 0.3.11 filters inside the hook; find out whether the
   `if` matcher is ignored for plugin hooks and report it upstream if so.
-- **Tune `trimAt`:** 150k is a first guess; adjust from the stats line.
+- **Tune `trimAt`:** 135k since R16 (was 150k); adjust from the stats line.
 
 ## From object_creator's rule list (2026-10-27)
 
