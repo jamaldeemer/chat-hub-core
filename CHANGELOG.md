@@ -5,6 +5,11 @@ Each version is a git tag (`v0.1.0`). Projects pin a tag in
 
 ## Unreleased (R12)
 
+- **A third way to start a chat, "Just open":** the hub's start menu now
+  offers it next to "Plan first" and "Build it". The chat reads its brief
+  and rules, starts the dev server if `devServer.command` is set, says in
+  one line it's ready, and waits for the owner's instructions.
+  `startMode: "wait"` makes every chat start this way.
 - **The hub wraps up at its limit:** past `trimAt` (default 150k) the
   hub takes on no new work (new requests go under "## Next" in
   its notes), finishes everything already in flight (a merge or release

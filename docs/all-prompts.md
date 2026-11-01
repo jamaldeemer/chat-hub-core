@@ -57,7 +57,8 @@ Only what you couldn't tell. Usually:
    can't ask CI (never `0` on an error). Propose one from what you found.
 
 Don't ask how chats start: `startMode` defaults to "ask" (the hub asks
-before each chat). Set "plan" or "build" only if the owner says so.
+before each chat). Set "plan", "build" or "wait" (just open the chat
+and wait) only if the owner says so.
 
 ## 4. Summary, then write
 
@@ -165,12 +166,12 @@ Don't commit.
   "nextRelease": 1,                 // release the next finished work ships in
   "done": ["tests pass", "docs updated"],
   "followups": "docs/backlog.md",   // where chats write follow-ups
-  "startMode": "ask",               // "ask" (hub asks each time) | "plan" | "build"
+  "startMode": "ask",               // "ask" (hub asks each time) | "plan" | "build" | "wait"
   "commitReminder": "",             // extra text shown before every commit
   "branches": { "main": "main", "release": "release" },
   "ci": { "passed": "" },           // level 2: command with $SHA; prints 1 or 0, fails if it can't ask
   "fixes": { "toCheck": ".claude/issues-to-check.md" }, // level 2
-  "devServer": { "command": "" },   // optional
+  "devServer": { "command": "" },   // optional: chats started with "Just open" run it
   "trimAt": 150000,                 // optional: hub context (tokens) at which it wraps up, then asks to be cleared
   "trimAtWork": 0,                  // optional: the same for work chats (0 = off)
   "notesMaxBytes": 6000,            // optional: hub notes size that prompts a rewrite as one snapshot (0 = off)
@@ -285,13 +286,16 @@ Fill in `${CLAUDE_PLUGIN_ROOT}/templates/brief.md`.
 
 Before starting each chat, ask the owner how it should start (a menu
 with AskUserQuestion where you have it, else one line), unless the
-settings' `startMode` is "plan" or "build" (default "ask"):
+settings' `startMode` is "plan", "build" or "wait" (default "ask"):
 
 - **Plan first:** the chat looks around, sends a short plan (what's
   there, the approach, a few lines) and waits for the owner's go before
   changing anything.
 - **Build it:** the chat goes straight to work, stopping only for the
   commit OK.
+- **Just open:** the chat reads its brief and rules, starts the dev
+  server if the settings have one, says in one line it's ready, then
+  waits for the owner's instructions.
 
 Put the answer on the brief's **Start:** line.
 
@@ -487,6 +491,11 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
   around, send the owner a short plan (what's there, the approach, a few
   lines), tell the hub "question for owner: plan ready", and change
   nothing until the owner says go. "Build it": go straight to work.
+  "Just open": read your brief and these rules, start the dev server if
+  the settings' `devServer.command` is set, say in one line you're ready
+  (with its address if you started it), tell the hub "question for
+  owner: waiting for instructions", and look at or change nothing else
+  until the owner says what to do.
 - **Commit messages** start with your chat's code: `3F: Fix the menu`.
 - **Done** means everything in the `done` list in the settings (e.g. tests
   pass, it builds): the answers the owner gave setup.
@@ -518,7 +527,9 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
 - **Plugin update:** when a note says chat-hub-core was updated, read
   the rules file it names before anything else; it replaces these rules.
   Restart only if the note says to.
-- **Dev server:** keep exactly two browser tabs on it, yours first, then
+- **Dev server:** start it with the settings' `devServer.command` (in
+  the background, or the browser pane's dev-server tool where you have
+  it). Keep exactly two browser tabs on it, yours first, then
   the owner's. Only ever drive your own: pass its tab ID to every browser
   call (a call without one acts on whichever tab is in front), and give
   any helper agent that uses the browser the same rule.
@@ -532,7 +543,7 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
 <!-- The hub fills this in when it starts a chat. -->
 **Task:** <the owner's words; or a topic only>
 
-**Start:** <"plan first": look around, send a short plan, wait for the owner's go before changing anything; or "build it": go straight to work, stop only for the commit OK>
+**Start:** <"plan first": look around, send a short plan, wait for the owner's go before changing anything; "build it": go straight to work, stop only for the commit OK; or "just open": start the dev server if there is one, say you're ready, wait for the owner's instructions>
 
 **Read first:** <files and docs>
 

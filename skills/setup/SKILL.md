@@ -48,7 +48,8 @@ Only what you couldn't tell. Usually:
    can't ask CI (never `0` on an error). Propose one from what you found.
 
 Don't ask how chats start: `startMode` defaults to "ask" (the hub asks
-before each chat). Set "plan" or "build" only if the owner says so.
+before each chat). Set "plan", "build" or "wait" (just open the chat
+and wait) only if the owner says so.
 
 ## 4. Summary, then write
 
@@ -156,12 +157,12 @@ Don't commit.
   "nextRelease": 1,                 // release the next finished work ships in
   "done": ["tests pass", "docs updated"],
   "followups": "docs/backlog.md",   // where chats write follow-ups
-  "startMode": "ask",               // "ask" (hub asks each time) | "plan" | "build"
+  "startMode": "ask",               // "ask" (hub asks each time) | "plan" | "build" | "wait"
   "commitReminder": "",             // extra text shown before every commit
   "branches": { "main": "main", "release": "release" },
   "ci": { "passed": "" },           // level 2: command with $SHA; prints 1 or 0, fails if it can't ask
   "fixes": { "toCheck": ".claude/issues-to-check.md" }, // level 2
-  "devServer": { "command": "" },   // optional
+  "devServer": { "command": "" },   // optional: chats started with "Just open" run it
   "trimAt": 150000,                 // optional: hub context (tokens) at which it wraps up, then asks to be cleared
   "trimAtWork": 0,                  // optional: the same for work chats (0 = off)
   "notesMaxBytes": 6000,            // optional: hub notes size that prompts a rewrite as one snapshot (0 = off)

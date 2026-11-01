@@ -12,6 +12,9 @@ chats from its notes, though the notes said to check first).
 
 ## Next
 
+- Flaky test (seen in E3, 2026-10-31): "shared hub: seen from another
+  worktree" in `tests/run.sh` failed once in three runs (`../wt2` was not
+  a working tree), then passed.
 - **Renaming a chat yourself triggers permission prompts.** The hub keeps
   titles "current", so after the owner renames a work chat, the hub renames
   it back and the app asks permission each time. Fix: the hub treats a
@@ -138,7 +141,8 @@ Findings 1–3 shipped in 0.3.4. Still open:
 ## From moving coaster_graph onto the plugin (2026-10-25)
 
 - `devServer` in the settings is never read by anything; use it (work chat
-  starts its server with it) or drop it.
+  starts its server with it) or drop it. Partly done (R12): "Just open"
+  chats start it; "Plan first" and "Build it" chats still don't.
 - The CLAUDE.md block names the hub by title in a committed file; titles go
   stale and repeat across projects. Point to "the recorded hub" instead.
 - A chat the hub didn't start has no code, so "commit messages start with
