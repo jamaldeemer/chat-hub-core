@@ -42,7 +42,9 @@ Only what you couldn't tell. Usually:
    alphabetical sort groups chats by release).
 3. What "done" means here (e.g. tests pass, it builds, docs updated, owner
    has seen it), and where follow-ups go (an existing backlog or to-do
-   file, else `docs/backlog.md`). Offer what you found.
+   file, else `docs/backlog.md`). Offer what you found. Level 1+: the
+   command that runs those checks (e.g. `sh tests/run.sh`); the hub runs
+   it on each merge into the release preview.
 4. Level 2: the command that asks CI whether a commit passed. It must
    print `1` (passed) or `0` (not passed), and fail or print nothing when it
    can't ask CI (never `0` on an error). Propose one from what you found.
@@ -156,6 +158,7 @@ Don't commit.
   "titles": "code-first",           // "code-first" | "release-first" (R07 3F · Title)
   "nextRelease": 1,                 // release the next finished work ships in
   "done": ["tests pass", "docs updated"],
+  "checks": "",                     // level 1+: command the hub runs on each merge into the preview
   "followups": "docs/backlog.md",   // where chats write follow-ups
   "startMode": "ask",               // "ask" (hub asks each time) | "plan" | "build" | "wait"
   "commitReminder": "",             // extra text shown before every commit

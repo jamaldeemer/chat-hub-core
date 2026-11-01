@@ -3,6 +3,24 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## Unreleased (R13)
+
+- **The hub closes a chat in one step:** `hooks/close-chat.mjs <branch>`
+  finds the chat's folder, checks it, merges the branch into the release
+  preview, runs the checks on the merge, runs the close check, and prints
+  READY or FAIL. The hub sets ✅ right after it, instead of spending a
+  turn on each step. The preview moves only if the checks pass, and a
+  clash names the files for the chat to resolve.
+- **No second test run when the merge adds nothing:** when the merged
+  preview has the same files as the chat's branch (the branch already had
+  everything in the preview), the chat's own test run covers it, and the
+  hub's run is skipped.
+- **New `checks` setting (level 1+):** the command the hub runs on each
+  merge into the preview (here `sh tests/run.sh`). Setup asks for it.
+  Without it, `close-chat.mjs` won't say READY for a merge that adds
+  something.
+- `close-check.mjs --before-merge` skips the "merged" check.
+
 ## 0.3.23
 
 - **A third way to start a chat, "Just open":** the hub's start menu now

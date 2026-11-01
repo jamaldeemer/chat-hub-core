@@ -198,7 +198,7 @@ LEVEL 1 · + branches
   3F chat  --+   each on its own branch + worktree
   A7 chat  --+--push branch--> hub merges each finished branch into
   ...      --+                 `release` (a preview) and runs your
-                               `done` checks (tests, build...)
+                               `checks` command (tests, build...)
                                           |
                      you say "release" and pick the branches
                                           v
@@ -275,8 +275,8 @@ records itself in git's own folder (never committed) by two IDs, Claude's
 session ID and the desktop app's address, so every chat and worktree sees
 it at once, can message it, and it stays the hub after a restart. Your
 project gets a settings file,
-`.claude/chat-hub.json` (level, release style, what "done" means, the CI
-command), and a three-line note in CLAUDE.md. At level 1+, a guard hook
+`.claude/chat-hub.json` (level, release style, what "done" means, the
+command that runs your checks, the CI command), and a three-line note in CLAUDE.md. At level 1+, a guard hook
 refuses a few things outright instead of trusting chats to remember:
 committing on main, rebasing, editing another chat's folder, and (any
 level) commit messages without a code or without your OK: a work chat
@@ -311,7 +311,11 @@ flags any ✅ line left in the notes.
 A chat is marked ✅ (ready to close) only after it sends
 a fixed wrap-up report and the hub's `close-check` confirms its folder is
 committed, pushed, merged into the release preview and (level 2) green;
-you archive it. Nothing in the plugin names a git host, CI service or
+you archive it. At level 1+ the hub does all of that with one command,
+`hooks/close-chat.mjs <branch>`: it merges the branch into the preview,
+runs your `checks` command on the merge (skipped when the merge adds
+nothing to the branch, since the chat already ran them), runs the close
+check, and prints READY or FAIL, so ✅ comes in the same turn. Nothing in the plugin names a git host, CI service or
 framework.
 
 ## Working on the plugin

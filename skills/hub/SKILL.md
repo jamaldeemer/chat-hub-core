@@ -182,19 +182,23 @@ A chat closes only when all of this holds, checked in this order:
    "wrap up" to its "Anything more, or should I wrap up?")
    (`${CLAUDE_PLUGIN_ROOT}/templates/wrap-up.md`) with every line filled
    in. If it hasn't, send it that template.
-2. **Folder:** `node "${CLAUDE_PLUGIN_ROOT}/hooks/close-check.mjs" <its
-   folder>` prints READY. It checks git itself: nothing uncommitted;
-   level 1+ on its own branch, all pushed (to its upstream, or
-   `origin/<branch>` if it has none), and merged into the release
-   preview; level 2 CI passed on its newest commit and no fix of its still
-   waiting for the owner's check. On any FAIL, tell the chat what failed.
-   Level 1+: merge its branch into the preview first; if the merge clashes,
-   the chat resolves it, not you.
+2. **Folder:** level 1+: `node "${CLAUDE_PLUGIN_ROOT}/hooks/close-chat.mjs"
+   <its branch>` from the project prints READY. One command does it all:
+   it finds the chat's folder, checks it (nothing uncommitted, on its own
+   branch, all pushed; level 2 CI passed on its newest commit and no fix
+   waiting for the owner's check), merges the branch into the release
+   preview, runs the settings' `checks` on the merge (skipped when the
+   merge adds nothing to the branch: the chat's own run covered it), and
+   moves the preview only if they pass. Don't merge, test or look up the
+   folder yourself first. Level 0: `node
+   "${CLAUDE_PLUGIN_ROOT}/hooks/close-check.mjs" <its folder>`. On any
+   FAIL, tell the chat what failed; a merge clash is the chat's to
+   resolve, not yours.
 3. **Nothing waiting:** its last message doesn't wait on the owner, and
    `Open` in its report is "nothing" or written to the followups file.
 
-Then, in one step: set ✅ at the start of its title, tell the owner once
-that it can be deleted, and delete it from your notes. Don't mention it
+Then, right after that READY, in one step: set ✅ at the start of its
+title, tell the owner once that it can be deleted, and delete it from your notes. Don't mention it
 again: you keep no list of ✅ chats, so you can't remind the owner of one
 they already deleted. The owner deletes them; never archive a chat
 yourself. Talk chats skip step 2. After each merge, tell the owner unasked
@@ -206,9 +210,9 @@ which chats just became ✅ and why the others can't close yet.
   `branches.main`.
 - Keep a **release preview**: a local `branches.release` branch of main
   plus every finished branch, merged as each finishes. Finished = its
-  wrap-up report is in; until then don't merge it, even if pushed. Run the `done`
-  checks on it. If your sandbox can't write a merge (protected files),
-  give the owner the exact command to run; never work around it.
+  wrap-up report is in; until then don't merge it, even if pushed.
+  `close-chat.mjs` does the merge and runs the `checks` on it. If your
+  sandbox can't write a merge (protected files), give the owner the exact command to run; never work around it.
 - **Offer to ship:** as soon as a merge into the preview passes the
   checks, ask the owner with a menu: "Release now" (lists what's in it) /
   "Wait for more". If they wait, ask again after the next merge.
