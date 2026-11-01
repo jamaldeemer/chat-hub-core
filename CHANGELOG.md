@@ -3,7 +3,7 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
-## Unreleased (R17)
+## 0.3.28
 
 - **🔨 for a chat under way; ⚪ only for a new one:** ⚪ now means the
   hub just started the chat and it hasn't reported anything yet. Once
