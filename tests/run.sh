@@ -368,5 +368,8 @@ t "symbols: hub's release built is 🙋" "$(grep -c '`🙋` release built, waiti
 t "symbols: work chat names 🙋 and 🤔" "$(grep -cE 'it sets 🙋 on your title|it sets 🤔 on your title|it clears 🤔' "$root/skills/work-chat/SKILL.md")" 3
 t "symbols: hub retitles open chats after a symbol rename" "$(grep -c 'retitle every$' "$root/skills/hub/SKILL.md")" 1
 t "symbols: rename retitle is one batch" "$(grep -c 'batch of title calls (your own title too)' "$root/skills/hub/SKILL.md")" 1
+t "findable: on sets description and topics" "$(sh "$root/scripts/findable.sh" on --dry-run | grep -c -- "--description Claude Code plugin: .* --add-topic claude-code,claude-code-plugin,")" 1
+t "findable: off clears them" "$(sh "$root/scripts/findable.sh" off --dry-run | grep -c -- "--description  --remove-topic claude-code,")" 1
+t "findable: needs on, off or status" "$(sh "$root/scripts/findable.sh" 2>/dev/null; echo $?)" 2
 cd "$tmp"
 rm -rf "$tmp"; exit $fail

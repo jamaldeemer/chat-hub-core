@@ -1,7 +1,11 @@
 # chat-hub-core
 
-A Claude Code plugin for running many Claude chats on one project, with
-one **hub** chat in charge.
+A Claude Code plugin for running many Claude Code chats in parallel on one
+project. One **hub** chat starts a chat per task (each on its own git branch
+and worktree), tracks them in the sidebar, and gathers finished work into
+releases you approve.
+
+[Install](#install) · [Levels](#levels) · [How it works](#how-it-works)
 
 ## Features
 
@@ -347,6 +351,10 @@ framework.
   `CHANGELOG.md` section, commit on `release`, `git tag vX.Y.Z release`,
   then one push: `git push origin release:main vX.Y.Z`.
   Projects move to it when their owner runs the Updating steps.
+- Show up in GitHub search: `sh scripts/findable.sh on` sets the repo's
+  description and topics, `off` clears them, `status` shows them
+  (needs `gh`, signed in as the owner; `--dry-run` only prints the
+  command). It changes GitHub settings only, so nothing to commit.
 
 ## License
 

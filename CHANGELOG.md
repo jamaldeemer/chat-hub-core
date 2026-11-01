@@ -3,6 +3,18 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## Unreleased (R19)
+
+- **Easier to find:** the plugin and marketplace descriptions now say what
+  it does in a stranger's words ("Run many Claude Code chats in parallel
+  from one hub chat…") instead of "My hub-worker system…", and the
+  README opens with the same, plus links to Install, Levels and How it
+  works.
+- **`scripts/findable.sh on|off|status`:** an easy switch for the repo's
+  GitHub description and topics, which are what GitHub search matches.
+  `on` sets them, `off` clears them; it changes GitHub settings only, so
+  there is nothing to commit afterwards.
+
 ## 0.3.29
 
 - **🙋 for "waiting on your OK", 🤔 for "waiting on your answer":** two
