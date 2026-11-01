@@ -3,6 +3,20 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## Unreleased (R22)
+
+- **`/chat-hub-core:limit` changes the context limits as you go:**
+  `/chat-hub-core:limit 200k` sets the hub's wrap-up limit,
+  `/chat-hub-core:limit work 100k` (or `work off`) work chats',
+  `/chat-hub-core:limit` shows both and where they come from, and
+  `/chat-hub-core:limit default` goes back to the settings. The prompt
+  hook does it, so every chat uses the new limit from its next prompt with
+  no restart. It's kept in `.git/chat-hub/limits.json` (every worktree
+  sees it, never committed) and wins over `trimAt` / `trimAtWork` in
+  `.claude/chat-hub.json`; without git it's written there. A hub that's
+  wrapping up and is put back under its limit is told to carry on, and a
+  changed limit nudges afresh once crossed.
+
 ## 0.3.32
 
 - **Small-caps `ʀ` in release tags:** the release tag's letter is now

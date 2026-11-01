@@ -81,6 +81,22 @@ export function hubNotesFile() {
   return f ? f.replace(/\/hub$/, '/hub-notes.md') : null
 }
 
+// Context limits set with /chat-hub-core:limit (limits.json, next to the hub record). They
+// override `trimAt` / `trimAtWork` in the settings for every chat in every worktree, from the
+// next prompt on, and are never committed. {} when none are set; null file without git.
+export function limitsFile() {
+  const f = sharedHubFile()
+  return f ? f.replace(/\/hub$/, '/limits.json') : null
+}
+export function readLimits() {
+  const f = limitsFile()
+  if (!f || !existsSync(f)) return {}
+  try {
+    const o = JSON.parse(readFileSync(f, 'utf8'))
+    return o && typeof o === 'object' && !Array.isArray(o) ? o : {}
+  } catch { return {} }
+}
+
 export function readHub(cfg = readConfig()) {
   const f = sharedHubFile()
   if (f && existsSync(f)) {

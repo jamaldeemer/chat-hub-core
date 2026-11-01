@@ -179,6 +179,7 @@ Don't commit.
   "devServer": { "command": "" },   // optional: chats started with "Just open" run it
   "trimAt": 135000,                 // optional: hub context (tokens) at which it wraps up, then asks to be cleared
   "trimAtWork": 0,                  // optional: the same for work chats (0 = off)
+                                  // (/chat-hub-core:limit overrides both, in .git/chat-hub/limits.json)
   "notesMaxBytes": 6000,            // optional: hub notes size that prompts a rewrite as one snapshot (0 = off)
   "stats": true                     // optional: false hides the after-turn stats line
 }
@@ -291,7 +292,8 @@ turns × context size, and it's usually most of a project's usage.
 - **Read and write little:** read parts of files (`sed -n '40,80p'`,
   `grep -n`), not whole files; keep your replies short.
 - **When a "⚠️ WRAP UP" note says you're past your limit** (`trimAt`,
-  default 135k), wrap up, so a clear never lands in the middle of a step:
+  default 135k, or what the owner set with `/chat-hub-core:limit`; if a
+  new limit puts you back under it, stop wrapping up), wrap up, so a clear never lands in the middle of a step:
   - **No new work:** no new chats or releases. Anything new the
     owner or a chat asks for goes under "## Next" in your notes as a
     line starting `- After clear:` (the start note quotes those lines
@@ -634,6 +636,40 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
 
 ---
 
+## `skills/limit/SKILL.md`
+
+````markdown
+---
+name: limit
+description: Show or change the context limits for this project's chats - the hub's wrap-up limit and work chats' - from the next prompt on, no restart. Use when the owner types /chat-hub-core:limit (e.g. "/chat-hub-core:limit 200k", "/chat-hub-core:limit work 100k", "/chat-hub-core:limit default") or asks to see or change the hub's max context.
+---
+
+# Context limits
+
+The prompt hook has usually done it already: a "chat-hub-core /limit:"
+note came with the owner's prompt. Tell the owner what it says in one
+short reply and do nothing else for it.
+
+If no such note came (the hook didn't run), run it yourself with the
+owner's words after the command:
+`node "${CLAUDE_PLUGIN_ROOT}/hooks/limit.mjs" <words>` (none to show the
+limits) and tell the owner its one line.
+
+- `/chat-hub-core:limit` shows both limits and where each comes from.
+- `/chat-hub-core:limit 200k` (or `hub 200k`) sets the hub's (`trimAt`).
+- `/chat-hub-core:limit work 100k` sets work chats' (`trimAtWork`);
+  `work off` turns it off.
+- `/chat-hub-core:limit default` goes back to the settings
+  (`hub default` / `work default` for one).
+
+They're kept in git's shared folder (`.git/chat-hub/limits.json`, beside
+the hub record), so every chat in every worktree uses them from its next
+prompt; they override `.claude/chat-hub.json` and are never committed.
+Without git they're written into `.claude/chat-hub.json`.
+````
+
+---
+
 ## `templates/brief.md`
 
 ````markdown
@@ -707,6 +743,8 @@ From `hooks/session-start.mjs`:
 From `hooks/on-prompt.mjs`:
 
 ```js
+    'reply and do nothing else for it.'
+      'up, stop and carry on as normal.'
   if (out) say('UserPromptSubmit', out)
     say('UserPromptSubmit', `Recorded this chat (session ${input.session_id}) as the hub.` +
       ` Now add your app address so work chats can message you: look up this session's own details with your` +
@@ -715,6 +753,12 @@ From `hooks/on-prompt.mjs`:
         'is closed or they want to switch hubs, they should type "/chat-hub-core:hub replace" here. Until then this ' +
         'chat is not the hub: do not load the hub rules.')
       say('UserPromptSubmit', `Couldn't record this chat as the hub (${e.message}); tell the owner.`)
+```
+
+From `hooks/limit.mjs`:
+
+```js
+  '/chat-hub-core:limit work 100k (or "work off") for work chats, /chat-hub-core:limit default to go back to the settings.'
 ```
 
 From `hooks/before-commit.mjs`:

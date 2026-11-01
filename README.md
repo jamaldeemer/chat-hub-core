@@ -339,6 +339,16 @@ never lands in the middle of a step. Until then each reply starts
 `/clear` in the hub chat. Work chats get a similar reminder past `trimAtWork`,
 if set: stop at a natural point, note where they are, ask to be cleared.
 
+**Changing the limits as you go.** Type `/chat-hub-core:limit 200k` in any
+chat to move the hub's limit, `/chat-hub-core:limit work 100k` (or
+`work off`) for work chats, `/chat-hub-core:limit` to see both and where
+they come from, `/chat-hub-core:limit default` to go back to the settings.
+Every chat uses the new limit from its next prompt, no restart. It's kept
+in git's own folder (`.git/chat-hub/limits.json`, next to the hub record),
+so every worktree sees it and it's never committed; it wins over `trimAt`
+and `trimAtWork` in `.claude/chat-hub.json`. Raise the hub's limit while
+it's wrapping up and it carries on as normal.
+
 **Hub notes.** The hub keeps one current snapshot of its notes under fixed
 headings, edited in place. If they gain other `## ` headings (dated or
 "checkpoint" blocks) or pass `notesMaxBytes` (default 6000; 0 = off), a
