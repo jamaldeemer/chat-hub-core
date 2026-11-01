@@ -14,6 +14,18 @@ Each version is a git tag (`v0.1.0`). Projects pin a tag in
   retagging). **Hub:** after this update, retitle every open chat (and
   your own title) from `R` to `ʀ` at once, in one batch of title calls,
   as for a renamed symbol, so the sidebar never mixes the two.
+- **Coming release's names in parentheses:** a chat tagged for
+  `nextRelease` has its name (after the code and ` · `) in parentheses,
+  so the coming release's work stands out:
+  `🔨  ʀ24~ 9A · (Colour palette review)` next to
+  `🙋  ʀ25+ F2 · Staging download buttons`; code first,
+  `🔨  3F · (Fix menu spacing) (ʀ7)`. Talk chats and the hub's own title
+  don't change. After a release the hub adds them to the chats now in
+  the new coming release, in the same batch as the retag; retagging a
+  chat to a later release drops them. Titles with or without them count
+  the same. **Hub:** after this update, add parentheses to every open
+  chat tagged for `nextRelease` at once, in one batch of title calls
+  (with the `R` → `ʀ` retitle if it's still due).
 
 ## 0.3.31
 

@@ -48,7 +48,9 @@ Only what you couldn't tell. Usually:
 2. Release tags in titles: plain (ʀ1, ʀ2…, default), tick-tock (ʀ10~
    fixes, ʀ11+ features), or none. Unless none: code first
    (`3F · Title (ʀ7)`, default) or release first (`ʀ07 3F · Title`, so an
-   alphabetical sort groups chats by release).
+   alphabetical sort groups chats by release). Either way, chats in the
+   coming release show their name in parentheses (`3F · (Title) (ʀ7)`,
+   `ʀ07 3F · (Title)`); later releases' chats don't.
 3. What "done" means here (e.g. tests pass, it builds, docs updated, owner
    has seen it), and where follow-ups go (an existing backlog or to-do
    file, else `docs/backlog.md`). Offer what you found. Level 1+: the
@@ -229,7 +231,8 @@ release-first). The suffix ends with the **open count** in parentheses:
 how many open chats are tagged for that release and not yet ✅, e.g.
 `⚪  Object Creator Hub · ʀ15 (3)`. Talk chats (no release tag), ✅ chats
 and chats tagged for a later release don't count; any other symbol
-does. At none, show `(0)`: the release's work is all done or closed.
+does (so it counts the not-✅ chats whose names are in parentheses).
+At none, show `(0)`: the release's work is all done or closed.
 Leave the count out if `releases` is "none" (no suffix). Change the
 count only in a turn where you already set a title that changes it
 (starting, retagging, setting ✅ on or closing a chat, and after a
@@ -351,6 +354,16 @@ Two styles, set by `titles` in the settings:
   stay as they are. A title with an old plain-`R` tag (`R07`, `(R7)`)
   is the same tag: count it and retag it like a `ʀ` one, and write `ʀ`
   whenever you set that title.
+- **(Name):** a chat tagged for `nextRelease` (the soonest release) has
+  its name, the part after the code and ` · `, in parentheses, so the
+  coming release's work stands out: `🔨  ʀ24~ 9A · (Colour palette review)`,
+  `🔨  3F · (Fix menu spacing) (ʀ7)`. A chat tagged for a later release
+  doesn't: `🙋  ʀ25+ F2 · Staging download buttons`. Only the name goes
+  in them, never the symbol, tag or code. Talk chats (no tag) and your
+  own title never get them. Retagging a chat to a later release drops
+  them; after a release, add them to every chat now in the new soonest
+  release (Releases below). A title with or without them is the same
+  chat and tag: count and retag it the same way.
 - **Status symbol** first, then two spaces (never one), so the text clears the symbol: `🙋` waiting
   on the owner's OK to commit, merge or push, `⏳` OK given, committing
   and pushing (or wrapping up: report in, being closed), `🚀` push in CI (level 2), `🟢` pushed (level 1) or CI
@@ -478,8 +491,10 @@ which chats just became ✅ and why the others can't close yet.
   merge at once queue for an hour, and the release's own run already
   tested them together.) If the release changed CLAUDE.md, say the new
   rules in your "merge main" message: running chats don't re-read it on
-  their own. Bump `nextRelease` and retag titles, then set your own
-  suffix to the new release and its open count.
+  their own. Bump `nextRelease` and retag titles: in the same batch,
+  put the name in parentheses on every open chat now tagged for the new
+  `nextRelease` (Titles), then set your own suffix to the new release
+  and its open count.
 
 ## After a plugin update
 
@@ -492,7 +507,8 @@ update, give them `sh ~/.claude/plugins/marketplaces/chat-hub/scripts/update-all
 
 **Renamed symbols:** when a release or plugin update renames a status
 symbol (the CHANGELOG says so, e.g. 🟡 → 🙋, ❓ → 🤔) or changes how
-the release tag is written (`R` → `ʀ`), retitle every
+the release tag is written (`R` → `ʀ`), or how a title marks the
+next release (name in parentheses), retitle every
 open chat that still shows the old form to the new one at once, in one
 batch of title calls (your own title too). Don't wait for each chat's
 next status change, or the sidebar shows old and new symbols mixed.
