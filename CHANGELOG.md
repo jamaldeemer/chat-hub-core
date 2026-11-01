@@ -16,6 +16,12 @@ Each version is a git tag (`v0.1.0`). Projects pin a tag in
   `.claude/chat-hub.json`; without git it's written there. A hub that's
   wrapping up and is put back under its limit is told to carry on, and a
   changed limit nudges afresh once crossed.
+- **Small-caps `ᴢ` for talk chats:** in release-first titles, talk chats'
+  plain `Z ` is now small-caps `ᴢ ` (U+1D22), matching the release tag's
+  `ʀ`: `⚪  ᴢ A4 · Compare slicers`. It still sorts after every `ʀ` chat
+  among ⚪. Titles with an old plain `Z ` still count as talk chats.
+  **Hub:** after this update, retitle every open talk chat from `Z ` to
+  `ᴢ ` at once, in one batch of title calls, as for a renamed symbol.
 
 ## 0.3.32
 

@@ -156,9 +156,9 @@ Two styles, set by `titles` in the settings:
   features (`ʀ11+`); a chat takes the next release of its kind. Work that
   misses its release moves to the next. The tag's letter is always
   small-caps `ʀ` (U+0280), never a plain `R`; the digits and `~`/`+`
-  stay plain. Only the release tag uses it: codes, `Z ` and the rest
-  stay as they are. A title with an old plain-`R` tag (`R07`, `(R7)`)
-  is the same tag: count it and retag it like a `ʀ` one, and write `ʀ`
+  stay plain. Codes stay as they are (talk chats' `ᴢ ` is small-caps
+  too, below). A title with an old plain-`R` tag (`R07`, `(R7)`) is
+  the same tag: count it and retag it like a `ʀ` one, and write `ʀ`
   whenever you set that title.
 - **(Name):** a chat tagged for `nextRelease` (the soonest release) has
   its name, the part after the code and ` · `, in parentheses, so the
@@ -223,7 +223,9 @@ Two styles, set by `titles` in the settings:
   They start with `⚪` like other chats and keep it (except ❓ while
   waiting on the owner's answer), since they never push
   (your own title keeps ⚪ too). Release-first titles then have
-  `Z ` so they sort last among ⚪ chats (`⚪  Z A4 · Compare slicers`);
+  small-caps `ᴢ ` (U+1D22, like the tag's `ʀ`) so they sort last among
+  ⚪ chats (`⚪  ᴢ A4 · Compare slicers`); a title with an old plain
+  `Z ` is still a talk chat: write `ᴢ ` whenever you set it;
   code-first ones just drop the tag (`⚪  A4 · Compare slicers`). They close when their last message isn't
   waiting on the owner and any follow-ups are written down.
 
@@ -320,7 +322,8 @@ update, give them `sh ~/.claude/plugins/marketplaces/chat-hub/scripts/update-all
 
 **Renamed symbols:** when a release or plugin update renames a status
 symbol (the CHANGELOG says so, e.g. 🟡 → 🙋, 🤔 → ❓) or changes how
-the release tag is written (`R` → `ʀ`), or how a title marks the
+the release tag is written (`R` → `ʀ`), or a talk chat's prefix
+(`Z ` → `ᴢ `), or how a title marks the
 next release (name in parentheses), retitle every
 open chat that still shows the old form to the new one at once, in one
 batch of title calls (your own title too). Don't wait for each chat's
