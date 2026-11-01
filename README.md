@@ -103,12 +103,12 @@ Who sets each one and when: [Title symbols](#title-symbols).
 🔨  ʀ07 E2 · (Import from Excel)
 ✅  ʀ07 C9 · (Update dependencies)
 🔨  ʀ08 E3 · Bulk rename
-⚪  Z A6 · Compare libraries
+⚪  ᴢ A6 · Compare libraries
 ```
 
 `3F`, `A4`… are chat codes (they also start commit messages), `ʀ07` is the
 release the work ships in, names in parentheses are in the coming release
-(`ʀ08` work isn't yet), and `Z` marks a talk chat with no code to ship.
+(`ʀ08` work isn't yet), and small-caps `ᴢ` marks a talk chat with no code to ship.
 
 ## Install
 
@@ -252,7 +252,7 @@ asks which title style the project wants:
 | CI failed (level 2) | `🔴  3F · (Fix menu spacing) (ʀ7)` | `🔴  ʀ07 3F · (Fix menu spacing)` |
 | Ready to close | `✅  3F · (Fix menu spacing) (ʀ7)` | `✅  ʀ07 3F · (Fix menu spacing)` |
 | Later release (not the next one) | `🔨  3F · Fix menu spacing (ʀ8)` | `🔨  ʀ08 3F · Fix menu spacing` |
-| Talk chat (no release) | `⚪  A4 · Compare libraries` | `⚪  Z A4 · Compare libraries` |
+| Talk chat (no release) | `⚪  A4 · Compare libraries` | `⚪  ᴢ A4 · Compare libraries` |
 | The hub | `⚪  Hub · ʀ7 (6)` | `⚪  Hub · ʀ07 (6)` |
 
 Talk chats and the hub keep ⚪ (talk chats show ❓ while waiting on your
@@ -293,7 +293,7 @@ tag, code, name, parentheses), so the sidebar doesn't cut it off; the
 hub shortens the name to fit when it starts or retitles a chat.
 
 Release first pads the number to two digits, so an alphabetical sort
-groups chats by release, and talk chats (`Z `) sort last. With tick-tock,
+groups chats by release, and talk chats (`ᴢ `) sort last. With tick-tock,
 `~` releases are fixes and `+` releases features; the hub's title shows
 the soonest next release (`⚪  Hub · ʀ15+ (2)`). The hub also keeps notes in
 git's own folder (`.git/chat-hub/hub-notes.md`), so a restart or a clear

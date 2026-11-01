@@ -387,7 +387,12 @@ t "release tag: R → ʀ retitled in one batch" "$(grep -c 'release tag is writt
 t "release tag: no plain-R tag examples left" "$(cat "$root/skills/hub/SKILL.md" "$root/skills/setup/SKILL.md" "$root/README.md" "$root/docs/all-prompts.md" | grep -E 'R[0-9<]' | grep -vc 'old plain-`R` tag')" 0
 t "release tag: README examples use ʀ" "$(grep -cE '^(⚪|🙋|❓|⏳|🚀|🔴|🟢|🔨|✅)  (Hub · )?ʀ07' "$root/README.md")" 10
 t "release tag: README explains ʀ" "$(grep -c 'small-caps `ʀ` (`ʀ07`, `(ʀ7)`)' "$root/README.md")" 1
-t "release tag: codes and Z prefix stay plain" "$(grep -c '⚪  Z A6 · Compare libraries' "$root/README.md")" 1
+t "talk chats: README uses small-caps ᴢ" "$(grep -c '⚪  ᴢ A6 · Compare libraries' "$root/README.md")" 1
+t "talk chats: hub writes small-caps ᴢ" "$(grep -c 'small-caps `ᴢ ` (U+1D22' "$root/skills/hub/SKILL.md")" 1
+t "talk chats: old plain Z still counts" "$(grep -c 'old plain$' "$root/skills/hub/SKILL.md")" 1
+t "talk chats: Z → ᴢ retitled in one batch" "$(grep -c '(`Z ` → `ᴢ `)' "$root/skills/hub/SKILL.md")" 1
+t "talk chats: no plain Z examples left" "$(cat "$root/skills/hub/SKILL.md" "$root/README.md" "$root/docs/all-prompts.md" | grep -cE '⚪  Z |\(`Z `\) sort')" 0
+t "talk chats: ᴢ sorts after ʀ" "$(printf '⚪  ᴢ A4\n⚪  ʀ07 A3\n' | LC_ALL=C sort | tail -1 | grep -c 'ᴢ')" 1
 t "next release: name in parentheses" "$(grep -c 'its name, the part after the code and ` · `, in parentheses' "$root/skills/hub/SKILL.md")" 1
 t "next release: later releases have none" "$(grep -c '`🙋  ʀ25+ F2 · Staging download buttons`' "$root/skills/hub/SKILL.md")" 1
 t "next release: talk chats and hub never get them" "$(grep -c 'own title never get them' "$root/skills/hub/SKILL.md")" 1
@@ -397,7 +402,7 @@ t "next release: with or without them is the same chat" "$(grep -c 'A title with
 t "next release: README sidebar names in parentheses" "$(grep -cE '^(⚪|🙋|❓|⏳|🚀|🔴|🟢|🔨|✅)  ʀ07 [A-F2-9]{2} · \(.*\)$' "$root/README.md")" 9
 t "next release: README later-release chat plain" "$(grep -c '^🔨  ʀ08 E3 · Bulk rename$' "$root/README.md")" 1
 t "next release: README code-first keeps both parentheses" "$(grep -c '`🔨  3F · (Fix menu spacing) (ʀ7)`' "$root/README.md")" 1
-t "next release: talk chats and hub stay plain" "$(grep -cE '⚪  Z A6 · Compare libraries$|^⚪  Hub · ʀ07 \(6\)$' "$root/README.md")" 2
+t "next release: talk chats and hub stay plain" "$(grep -cE '⚪  ᴢ A6 · Compare libraries$|^⚪  Hub · ʀ07 \(6\)$' "$root/README.md")" 2
 t "title length: about 40 characters at most" "$(grep -c 'a whole title is about 40 characters at most' "$root/skills/hub/SKILL.md")" 1
 t "title length: hub shortens the name" "$(grep -c 'start or retitle a chat, shorten the name to fit' "$root/skills/hub/SKILL.md")" 1
 t "title length: README says so" "$(grep -c 'A title is about 40 characters at most' "$root/README.md")" 1
