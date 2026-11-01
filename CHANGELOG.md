@@ -3,7 +3,7 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
-## Unreleased (R18)
+## 0.3.29
 
 - **🙋 for "waiting on your OK", 🤔 for "waiting on your answer":** two
   symbols renamed, same rules. 🟡 (OK to commit, merge or push, and the
