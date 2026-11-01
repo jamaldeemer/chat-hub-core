@@ -279,9 +279,15 @@ turns × context size, and it's usually most of a project's usage.
   - **Finish what's in flight:** a merge or release you've started
     (through its tests and commit), title changes you owe, replies to
     messages chats have sent you, messages you said you'd send.
-  - **Then** bring your notes up to date and ask to be cleared with the
-    line the note gives you, in every reply until you are. Never carry on
-    past it as if it weren't there.
+  - **Then** bring your notes up to date and start every reply until
+    you're cleared with the line the note gives you, which tells the
+    owner to type `/clear` in this chat. Never carry on past it as if it
+    weren't there.
+  - **Never ask about clearing:** no question, menu or buttons ("Clear
+    the hub now?", "Cleared it"). A button only sends words back; it
+    can't clear a chat, and once the chat is cleared nothing is left to
+    answer. In the desktop app, end those turns with a wrap-up recap
+    only: no ask, no actions.
 
 ## Briefs
 
@@ -656,7 +662,10 @@ From `hooks/usage.mjs`:
   'title changes you owe, replies to messages chats have sent you, and messages you said you would send. ' +
   'Until all of that is done, start each reply with "⚠️ Hub at ' + short(ctx) + ' tokens: wrapping up." Once it is, ' +
   'bring your hub notes up to date, then start every reply until you\'re cleared with ' +
-  '"⚠️ Wrapped up, notes saved, please clear this chat."'
+  '"⚠️ Wrapped up, notes saved. Type /clear in this chat to clear it." ' +
+  'Never ask the owner about clearing: no question, menu or buttons (a button can\'t clear a chat, and a ' +
+  'cleared chat has nothing left to answer). In the desktop app, end the turn with a wrap-up recap only, ' +
+  'no ask or actions.'
   `⚠️ STOP: this chat's context is ${short(ctx)} tokens, and every turn re-reads all of it. When you reach a ` +
   'natural stopping point, write down where you are (in your branch\'s notes or a commit) and tell the owner, ' +
   `starting your reply with "⚠️ This chat is at ${short(ctx)} tokens: please clear it or wrap it up." Repeat that line in every reply until cleared.`

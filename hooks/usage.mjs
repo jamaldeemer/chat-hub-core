@@ -68,7 +68,10 @@ export const wrapUpText = (ctx, limit) =>
   'title changes you owe, replies to messages chats have sent you, and messages you said you would send. ' +
   'Until all of that is done, start each reply with "⚠️ Hub at ' + short(ctx) + ' tokens: wrapping up." Once it is, ' +
   'bring your hub notes up to date, then start every reply until you\'re cleared with ' +
-  '"⚠️ Wrapped up, notes saved, please clear this chat."'
+  '"⚠️ Wrapped up, notes saved. Type /clear in this chat to clear it." ' +
+  'Never ask the owner about clearing: no question, menu or buttons (a button can\'t clear a chat, and a ' +
+  'cleared chat has nothing left to answer). In the desktop app, end the turn with a wrap-up recap only, ' +
+  'no ask or actions.'
 
 const workText = ctx =>
   `⚠️ STOP: this chat's context is ${short(ctx)} tokens, and every turn re-reads all of it. When you reach a ` +

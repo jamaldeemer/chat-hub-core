@@ -150,7 +150,7 @@ node "$root/hooks/set-hub.mjs" --session u1 --replace >/dev/null
 op() { printf '{"session_id":"%s","prompt":"hi","cwd":"%s"}' "$1" "$(pwd)" | node "$root/hooks/on-prompt.mjs"; }
 pt() { j=$(node -e 'process.stdout.write(JSON.stringify({session_id:process.argv[1],cwd:process.argv[2],tool_name:process.argv[3],tool_input:JSON.parse(process.argv[4])}))' "$1" "$(pwd)" "$2" "$3"); printf "%s" "$j" | node "$root/hooks/guard.mjs"; }
 # trim: one level at trimAt; the hub wraps up (no new work, finish what's in flight, notes, then ask to be cleared)
-t "wrap up: hub past trimAt" "$(op u1 | grep -c 'WRAP UP.*past its limit of 150k.*no new work.*## Next.*in flight.*wrapping up.*notes saved, please clear')" 1
+t "wrap up: hub past trimAt" "$(op u1 | grep -c 'WRAP UP.*past its limit of 150k.*no new work.*## Next.*in flight.*wrapping up.*notes saved. Type /clear in this chat.*Never ask the owner about clearing.*no ask or actions')" 1
 t "wrap up: on every prompt" "$(op u1 | grep -c 'WRAP UP')" 1
 asst m4 0 226000; at u1 >/dev/null
 t "wrap up: no other levels further on" "$(op u1 | grep -c 'LAST WARNING\|HARD STOP')" 0

@@ -86,9 +86,15 @@ turns × context size, and it's usually most of a project's usage.
   - **Finish what's in flight:** a merge or release you've started
     (through its tests and commit), title changes you owe, replies to
     messages chats have sent you, messages you said you'd send.
-  - **Then** bring your notes up to date and ask to be cleared with the
-    line the note gives you, in every reply until you are. Never carry on
-    past it as if it weren't there.
+  - **Then** bring your notes up to date and start every reply until
+    you're cleared with the line the note gives you, which tells the
+    owner to type `/clear` in this chat. Never carry on past it as if it
+    weren't there.
+  - **Never ask about clearing:** no question, menu or buttons ("Clear
+    the hub now?", "Cleared it"). A button only sends words back; it
+    can't clear a chat, and once the chat is cleared nothing is left to
+    answer. In the desktop app, end those turns with a wrap-up recap
+    only: no ask, no actions.
 
 ## Briefs
 
