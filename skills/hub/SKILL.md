@@ -158,17 +158,20 @@ Two styles, set by `titles` in the settings:
   and pushing (or wrapping up: report in, being closed), `🚀` push in CI (level 2), `🟢` pushed (level 1) or CI
   passed (level 2) and asking the owner "more or wrap up?", `🔴` CI
   failed (level 2), `✅`
-  ready to close (passes the close check). `⚪` working, nothing waiting
-  on the owner (new, or after "more"), so titles line up in a column (the app trims blanks).
+  ready to close (passes the close check). `⚪` new: you just started
+  the chat and it hasn't reported anything yet. `🔨` under way, nothing
+  waiting on the owner; once a work chat has started, nothing sends it
+  back to ⚪ (only talk chats and your own title keep ⚪). Every title has
+  a symbol, so titles line up in a column (the app trims blanks).
   With release-first titles the sidebar then sorts by symbol first, so
   chats group by status. E.g. `🚀  R16~ A3 · Fix menu spacing`,
-  `⚪  3F · Fix menu spacing (R7)`. You set every symbol; work chats never
+  `🔨  3F · Fix menu spacing (R7)`. You set every symbol; work chats never
   touch their own titles. When a chat says it's asking for an OK, set 🟡;
-  when it says the OK was given, ⏳; when it says the owner said no, ⚪.
+  when it says the OK was given, ⏳; when it says the owner said no ("OK declined"), 🔨.
   When a chat tells you it pushed, set 🚀 (level 2) or 🟢 (level 1);
   when the run ends, 🔴 or 🟢. 🟢 includes the chat's "more or wrap up?"
   question, so don't set ❓ for it. 🟢 always means that question is
-  still open: when the chat says "more changes, working again", set ⚪;
+  still open: when the chat says "more changes, working again", set 🔨;
   when its wrap-up report arrives, set ⏳ at once (before the close
   check), then merge, run the close check and set ✅.
   `❓` waiting on the owner's answer: set it when a chat you track
@@ -176,9 +179,10 @@ Two styles, set by `titles` in the settings:
   from the app's note that a session you started is waiting on the user
   or from the chat's own message ("question for owner: …"). When the
   owner answers (the chat says "answered, working again", or its next
-  note or message), put back the symbol it had before (⚪/🚀/🔴). Backstop:
-  on every wake, set ⚪ on any ❓ chat that "Linked sessions now" shows as
-  working. For OK questions 🟡 wins over ❓.
+  note or message), put back the symbol it had before (🚀/🔴), or 🔨 if
+  it had ⚪ or 🔨 (a talk chat goes back to ⚪). Backstop: on every wake,
+  set 🔨 on any ❓ work chat that "Linked sessions now" shows as working
+  (⚪ on a talk chat). For OK questions 🟡 wins over ❓.
   Backstop for ⏳: on every wake (and first thing after a clear), close
   any ⏳ or 🟢 chat whose wrap-up report is in and that isn't ✅ yet
   (Closing chats below). A report in means the close happens now, even

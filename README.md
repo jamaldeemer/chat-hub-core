@@ -36,7 +36,8 @@ More: [Levels in detail](#levels-in-detail).
 
 | | Meaning | Level |
 |---|---|---|
-| ⚪ | Working, nothing waiting on you (also talk chats and the hub) | all |
+| ⚪ | New: just started, nothing reported yet (also talk chats and the hub) | all |
+| 🔨 | Under way, nothing waiting on you | all |
 | 🟡 | Waiting on your OK | all |
 | ❓ | Waiting on your answer | all |
 | ⏳ | OK given, committing | all |
@@ -58,7 +59,7 @@ after a release.
 
 ```mermaid
 flowchart LR
-  N["⚪ new"] --> W[working]
+  N["⚪ new"] --> W["🔨 working"]
   W --> Y["🟡 asks OK"]
   Y -- yes --> C["⏳ committing"]
   Y -- no --> W
@@ -95,9 +96,11 @@ Who sets each one and when: [Title symbols](#title-symbols).
 🟡  R07 3F · Fix menu spacing
 ❓  R07 A4 · Add CSV export
 ⏳  R07 C2 · Rename settings keys
+⚪  R07 C3 · Print view
 🚀  R07 E5 · Faster search
 🔴  R07 F8 · Login timeout
 🟢  R07 A7 · Dark mode toggle
+🔨  R07 E2 · Import from Excel
 ✅  R07 C9 · Update dependencies
 ⚪  Z A6 · Compare libraries
 ```
@@ -236,8 +239,9 @@ asks which title style the project wants:
 
 | | Code first (default) | Release first |
 |---|---|---|
-| New, or working after "more" | `⚪  3F · Fix menu spacing (R7)` | `⚪  R07 3F · Fix menu spacing` |
-| Tick-tock releases | `⚪  3F · Fix menu spacing (R16~)` | `⚪  R16~ 3F · Fix menu spacing` |
+| New, nothing reported yet | `⚪  3F · Fix menu spacing (R7)` | `⚪  R07 3F · Fix menu spacing` |
+| Under way, nothing waiting on you | `🔨  3F · Fix menu spacing (R7)` | `🔨  R07 3F · Fix menu spacing` |
+| Tick-tock releases | `🔨  3F · Fix menu spacing (R16~)` | `🔨  R16~ 3F · Fix menu spacing` |
 | Waiting on your OK | `🟡  3F · Fix menu spacing (R7)` | `🟡  R07 3F · Fix menu spacing` |
 | Waiting on your answer | `❓  3F · Fix menu spacing (R7)` | `❓  R07 3F · Fix menu spacing` |
 | OK given, committing | `⏳  3F · Fix menu spacing (R7)` | `⏳  R07 3F · Fix menu spacing` |
@@ -249,7 +253,8 @@ asks which title style the project wants:
 | The hub | `⚪  Hub · R7 (6)` | `⚪  Hub · R07 (6)` |
 
 Talk chats and the hub keep ⚪ (talk chats show ❓ while waiting on your
-answer): they never push.
+answer): they never push. A work chat leaves ⚪ for good once it
+reports anything: after that it shows 🔨 whenever nothing waits on you.
 
 ### Title symbols
 
@@ -257,7 +262,8 @@ The hub sets every symbol; work chats never change their own titles.
 
 | Symbol | Meaning | Set by the hub when | Level |
 |---|---|---|---|
-| ⚪ | Working, nothing waiting on you (also talk chats, the hub) | it starts the chat, or you answer "More changes" (the chat says "more changes, working again") | all |
+| ⚪ | New: the chat hasn't reported anything yet (also talk chats, the hub) | it starts the chat | all |
+| 🔨 | Under way, nothing waiting on you | you answer "More changes" (the chat says "more changes, working again"), you decline an OK ("OK declined"), or you answer a ❓ question the chat asked while it showed ⚪ or 🔨 | all |
 | 🟡 | Waiting on your OK to commit, merge or push | the chat says "asking for OK" | all |
 | ❓ | Waiting on your answer to a question (not an OK) | the app says the chat is waiting on you, or the chat says "question for owner"; the old symbol comes back once you answer (the chat says "answered, working again", or the hub sees it working again) | all |
 | ⏳ | OK given, committing and pushing; or wrapping up (report in, being closed) | the chat says "OK given, committing", or its wrap-up report arrives | all |
