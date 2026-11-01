@@ -28,13 +28,22 @@ is already the hub, you are not the hub: tell the owner which chat it
 names, and add `--replace` only if they say to. Every chat on this machine then sees you at once; a fresh clone or
 another machine has no hub until it's recorded there. If it reports
 replacing a session that's still open, tell the owner.
-**Your own title** is `⚪ `, the owner's name for you, then the next release:
-`⚪ <owner's name> · R<next>`: `nextRelease`, the soonest release, e.g.
-`⚪ Object Creator Hub · R15`, or with tick-tock its kind too,
-`⚪ Session Manager · R15+` (the ⚪ lines it up with other chats; padded to two digits if `titles` is
-release-first). Only ever change the symbol and that
-suffix (the suffix when it's missing or after a release); never change
-or suggest changing the rest. During a release set your own symbol:
+**Your own title** is `⚪`, two spaces, the owner's name for you, then the next release:
+`⚪  <owner's name> · R<next>`: `nextRelease`, the soonest release, e.g.
+`⚪  Object Creator Hub · R15`, or with tick-tock its kind too,
+`⚪  Session Manager · R15+` (the ⚪ lines it up with other chats; padded to two digits if `titles` is
+release-first). The suffix ends with the **open count** in parentheses:
+how many open chats are tagged for that release and not yet ✅, e.g.
+`⚪  Object Creator Hub · R15 (3)`. Talk chats (no release tag), ✅ chats
+and chats tagged for a later release don't count; any other symbol
+does. At none, show `(0)`: the release's work is all done or closed.
+Leave the count out if `releases` is "none" (no suffix). Change the
+count only in a turn where you already set a title that changes it
+(starting, retagging, setting ✅ on or closing a chat, and after a
+release), in the same batch of title calls; never retitle yourself just
+for the count. Only ever change the symbol and that
+suffix (the suffix when it's missing or after a release, the count as
+above); never change or suggest changing the rest. During a release set your own symbol:
 `🟡` release built, waiting on the owner's push; `🚀` CI running on the
 pushed release (level 2); `🟢` CI passed, ready for the owner to push to
 main; `🔴` CI failed; `⚪` once main has the release (with the new
@@ -134,7 +143,7 @@ Two styles, set by `titles` in the settings:
   "none". With "tick-tock", even releases are fixes (`R10~`) and odd ones
   features (`R11+`); a chat takes the next release of its kind. Work that
   misses its release moves to the next.
-- **Status symbol** first, then a space: `🟡` waiting
+- **Status symbol** first, then two spaces (never one), so the text clears the symbol: `🟡` waiting
   on the owner's OK to commit, merge or push, `⏳` OK given, committing
   and pushing, `🚀` push in CI (level 2), `🟢` pushed (level 1) or CI
   passed (level 2) and asking the owner "more or wrap up?", `🔴` CI
@@ -142,8 +151,8 @@ Two styles, set by `titles` in the settings:
   ready to close (passes the close check). `⚪` working, nothing waiting
   on the owner (new, or after "more"), so titles line up in a column (the app trims blanks).
   With release-first titles the sidebar then sorts by symbol first, so
-  chats group by status. E.g. `🚀 R16~ A3 · Fix menu spacing`,
-  `⚪ 3F · Fix menu spacing (R7)`. You set every symbol; work chats never
+  chats group by status. E.g. `🚀  R16~ A3 · Fix menu spacing`,
+  `⚪  3F · Fix menu spacing (R7)`. You set every symbol; work chats never
   touch their own titles. When a chat says it's asking for an OK, set 🟡;
   when it says the OK was given, ⏳; when it says the owner said no, ⚪.
   When a chat tells you it pushed, set 🚀 (level 2) or 🟢 (level 1);
@@ -163,12 +172,13 @@ Two styles, set by `titles` in the settings:
   They start with `⚪` like other chats and keep it (except ❓ while
   waiting on the owner's answer), since they never push
   (your own title keeps ⚪ too). Release-first titles then have
-  `Z ` so they sort last among ⚪ chats (`⚪ Z A4 · Compare slicers`);
-  code-first ones just drop the tag (`⚪ A4 · Compare slicers`). They close when their last message isn't
+  `Z ` so they sort last among ⚪ chats (`⚪  Z A4 · Compare slicers`);
+  code-first ones just drop the tag (`⚪  A4 · Compare slicers`). They close when their last message isn't
   waiting on the owner and any follow-ups are written down.
 
 Update titles yourself when you start, retag or close a chat, and after a
-release. Your own merges into the release branch keep git's wording.
+release, and your own title's open count with them when it changes.
+Your own merges into the release branch keep git's wording.
 
 ## Talking to the owner
 
@@ -243,7 +253,8 @@ which chats just became ✅ and why the others can't close yet.
   merge at once queue for an hour, and the release's own run already
   tested them together.) If the release changed CLAUDE.md, say the new
   rules in your "merge main" message: running chats don't re-read it on
-  their own. Bump `nextRelease` and retag titles.
+  their own. Bump `nextRelease` and retag titles, then set your own
+  suffix to the new release and its open count.
 
 ## After a plugin update
 
