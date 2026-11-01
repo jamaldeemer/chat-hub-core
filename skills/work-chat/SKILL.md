@@ -30,9 +30,9 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
 - **Questions:** whenever you end a turn on a question to the owner that
   isn't an OK (in plain text too, not just a menu: "should I add X?",
   "A or B?"), tell the hub in the same turn, in one line ("question for
-  owner: <topic>"; it sets 🤔 on your title). Without it your title
+  owner: <topic>"; it sets ❓ on your title). Without it your title
   stays 🔨 and the hub says you're still working. When the owner answers it here, first tell
-  the hub "answered, working again" (it clears 🤔), then carry on.
+  the hub "answered, working again" (it clears ❓), then carry on.
 - **Start mode:** your brief's **Start:** line. "Plan first": look
   around, send the owner a short plan (what's there, the approach, a few
   lines), tell the hub "question for owner: plan ready", and change

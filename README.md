@@ -39,7 +39,7 @@ More: [Levels in detail](#levels-in-detail).
 | ⚪ | New: just started, nothing reported yet (also talk chats and the hub) | all |
 | 🔨 | Under way, nothing waiting on you | all |
 | 🙋 | Waiting on your OK | all |
-| 🤔 | Waiting on your answer | all |
+| ❓ | Waiting on your answer | all |
 | ⏳ | OK given, committing | all |
 | 🚀 | Push in CI | 2 |
 | 🟢 | Pushed (1) or CI passed (2): more, or wrap up? | 1+ |
@@ -48,7 +48,7 @@ More: [Levels in detail](#levels-in-detail).
 
 The hub's own title uses ⚪ normally, and during a release 🙋 (built,
 waiting on your push), 🚀 (release in CI), 🟢 (CI passed, push to main),
-🔴 (CI failed), 🤔 (question for you); ⚪ again once main has it.
+🔴 (CI failed), ❓ (question for you); ⚪ again once main has it.
 Its title ends with the number of chats still open for that release, in
 parentheses: `⚪  Hub · ʀ07 (6)`. Talk chats and ✅ chats don't count;
 `(0)` means the release's work is all done. The hub updates it only
@@ -94,7 +94,7 @@ Who sets each one and when: [Title symbols](#title-symbols).
 ```
 ⚪  Hub · ʀ07 (6)
 🙋  ʀ07 3F · (Fix menu spacing)
-🤔  ʀ07 A4 · (Add CSV export)
+❓  ʀ07 A4 · (Add CSV export)
 ⏳  ʀ07 C2 · (Rename settings keys)
 ⚪  ʀ07 C3 · (Print view)
 🚀  ʀ07 E5 · (Faster search)
@@ -245,7 +245,7 @@ asks which title style the project wants:
 | Under way, nothing waiting on you | `🔨  3F · (Fix menu spacing) (ʀ7)` | `🔨  ʀ07 3F · (Fix menu spacing)` |
 | Tick-tock releases | `🔨  3F · (Fix menu spacing) (ʀ16~)` | `🔨  ʀ16~ 3F · (Fix menu spacing)` |
 | Waiting on your OK | `🙋  3F · (Fix menu spacing) (ʀ7)` | `🙋  ʀ07 3F · (Fix menu spacing)` |
-| Waiting on your answer | `🤔  3F · (Fix menu spacing) (ʀ7)` | `🤔  ʀ07 3F · (Fix menu spacing)` |
+| Waiting on your answer | `❓  3F · (Fix menu spacing) (ʀ7)` | `❓  ʀ07 3F · (Fix menu spacing)` |
 | OK given, committing | `⏳  3F · (Fix menu spacing) (ʀ7)` | `⏳  ʀ07 3F · (Fix menu spacing)` |
 | Push in CI (level 2) | `🚀  3F · (Fix menu spacing) (ʀ7)` | `🚀  ʀ07 3F · (Fix menu spacing)` |
 | Pushed / CI passed: more or wrap up? | `🟢  3F · (Fix menu spacing) (ʀ7)` | `🟢  ʀ07 3F · (Fix menu spacing)` |
@@ -255,7 +255,7 @@ asks which title style the project wants:
 | Talk chat (no release) | `⚪  A4 · Compare libraries` | `⚪  Z A4 · Compare libraries` |
 | The hub | `⚪  Hub · ʀ7 (6)` | `⚪  Hub · ʀ07 (6)` |
 
-Talk chats and the hub keep ⚪ (talk chats show 🤔 while waiting on your
+Talk chats and the hub keep ⚪ (talk chats show ❓ while waiting on your
 answer): they never push. A work chat leaves ⚪ for good once it
 reports anything: after that it shows 🔨 whenever nothing waits on you.
 
@@ -266,9 +266,9 @@ The hub sets every symbol; work chats never change their own titles.
 | Symbol | Meaning | Set by the hub when | Level |
 |---|---|---|---|
 | ⚪ | New: the chat hasn't reported anything yet (also talk chats, the hub) | it starts the chat | all |
-| 🔨 | Under way, nothing waiting on you | you answer "More changes" (the chat says "more changes, working again"), you decline an OK ("OK declined"), or you answer a 🤔 question the chat asked while it showed ⚪ or 🔨 | all |
+| 🔨 | Under way, nothing waiting on you | you answer "More changes" (the chat says "more changes, working again"), you decline an OK ("OK declined"), or you answer a ❓ question the chat asked while it showed ⚪ or 🔨 | all |
 | 🙋 | Waiting on your OK to commit, merge or push | the chat says "asking for OK" | all |
-| 🤔 | Waiting on your answer to a question (not an OK) | the app says the chat is waiting on you, the chat says "question for owner", or the hub sees an idle 🔨 chat whose last message asks you something (not a closing "anything else?"); the old symbol comes back once you answer (the chat says "answered, working again", or the hub sees it working again) | all |
+| ❓ | Waiting on your answer to a question (not an OK) | the app says the chat is waiting on you, the chat says "question for owner", or the hub sees an idle 🔨 chat whose last message asks you something (not a closing "anything else?"); the old symbol comes back once you answer (the chat says "answered, working again", or the hub sees it working again) | all |
 | ⏳ | OK given, committing and pushing; or wrapping up (report in, being closed) | the chat says "OK given, committing", or its wrap-up report arrives | all |
 | 🚀 | Push in CI | the chat says it pushed | 2 |
 | 🟢 | Pushed (level 1) or CI passed (level 2); the chat is asking "Anything more, or should I wrap up?" in a menu ("Wrap up" / "More changes"); it changes as soon as you answer, so 🟢 always means the question is open | the chat says it pushed / the CI run passes | 1+ |
