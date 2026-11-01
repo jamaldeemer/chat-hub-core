@@ -381,6 +381,11 @@ t "next release: README sidebar names in parentheses" "$(grep -cE '^(⚪|🙋|�
 t "next release: README later-release chat plain" "$(grep -c '^🔨  ʀ08 E3 · Bulk rename$' "$root/README.md")" 1
 t "next release: README code-first keeps both parentheses" "$(grep -c '`🔨  3F · (Fix menu spacing) (ʀ7)`' "$root/README.md")" 1
 t "next release: talk chats and hub stay plain" "$(grep -cE '⚪  Z A6 · Compare libraries$|^⚪  Hub · ʀ07 \(6\)$' "$root/README.md")" 2
+t "title length: about 40 characters at most" "$(grep -c 'a whole title is about 40 characters at most' "$root/skills/hub/SKILL.md")" 1
+t "title length: hub shortens the name" "$(grep -c 'start or retitle a chat, shorten the name to fit' "$root/skills/hub/SKILL.md")" 1
+t "title length: README says so" "$(grep -c 'A title is about 40 characters at most' "$root/README.md")" 1
+t "title length: CHANGELOG says so" "$(grep -c 'Titles about 40 characters at most' "$root/CHANGELOG.md")" 1
+t "title length: README sidebar fits" "$(sed -n '/^## Example sidebar/,/^## Install/p' "$root/README.md" | grep -E '^(⚪|🙋|🤔|⏳|🚀|🔴|🟢|🔨|✅)  ' | awk 'length > 40' | wc -l | tr -d ' ')" 0
 t "next release: setup mentions it" "$(grep -c 'coming release show their name in parentheses' "$root/skills/setup/SKILL.md")" 1
 t "titles: two spaces after the symbol" "$(grep -c "then two spaces (never one)" "$root/skills/hub/SKILL.md")" 1
 t "titles: no one-space title examples left" "$(cat "$root/skills/hub/SKILL.md" "$root/skills/setup/SKILL.md" "$root/README.md" | grep -cE '`(⚪|🔨|🙋|⏳|🚀|🟢|🔴|✅|🤔) [^ ]')" 0
