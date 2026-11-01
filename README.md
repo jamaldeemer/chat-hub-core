@@ -296,8 +296,10 @@ clear), finishes what it already has in flight (a merge or release it
 started, titles it owes, replies to chats, messages it promised), brings
 its notes up to date, and only then asks you to clear it, so a clear
 never lands in the middle of a step. Until then each reply starts
-"⚠️ Hub at …: wrapping up", then "⚠️ Wrapped up, notes saved, please
-clear this chat." Work chats get a similar reminder past `trimAtWork`,
+"⚠️ Hub at …: wrapping up", then "⚠️ Wrapped up, notes saved. Type
+/clear in this chat to clear it." The hub never asks you about clearing
+(no question or buttons: a button can't clear a chat); you just type
+`/clear` in the hub chat. Work chats get a similar reminder past `trimAtWork`,
 if set: stop at a natural point, note where they are, ask to be cleared.
 
 **Hub notes.** The hub keeps one current snapshot of its notes under fixed

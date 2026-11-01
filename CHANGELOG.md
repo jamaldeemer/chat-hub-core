@@ -20,6 +20,11 @@ Each version is a git tag (`v0.1.0`). Projects pin a tag in
   Without it, `close-chat.mjs` won't say READY for a merge that adds
   something.
 - `close-check.mjs --before-merge` skips the "merged" check.
+- **The hub never asks about clearing:** once wrapped up at its limit, it
+  starts each reply with "⚠️ Wrapped up, notes saved. Type /clear in this
+  chat to clear it." and ends the turn with no question or buttons about
+  clearing (in the desktop app, a recap only). A button can't clear a
+  chat, and a cleared chat has nothing left to answer.
 
 ## 0.3.23
 
