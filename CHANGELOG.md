@@ -3,6 +3,11 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## 0.3.31
+
+- **Backlog:** a pointer to the parked E7 work (making the repo findable
+  on GitHub, branch `parked/e7-findable`). No rule changes.
+
 ## 0.3.30
 
 - **🤔 when a chat ends on a question:** a work chat that ended its turn
