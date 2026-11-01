@@ -368,7 +368,7 @@ t "release tag: digits and kind stay plain" "$(grep -c 'the digits and `~`/`+`$'
 t "release tag: old plain-R titles still count" "$(grep -c 'old plain-`R` tag (`R07`, `(R7)`)' "$root/skills/hub/SKILL.md")" 1
 t "release tag: R → ʀ retitled in one batch" "$(grep -c 'release tag is written (`R` → `ʀ`)' "$root/skills/hub/SKILL.md")" 1
 t "release tag: no plain-R tag examples left" "$(cat "$root/skills/hub/SKILL.md" "$root/skills/setup/SKILL.md" "$root/README.md" "$root/docs/all-prompts.md" | grep -E 'R[0-9<]' | grep -vc 'old plain-`R` tag')" 0
-t "release tag: README examples use ʀ" "$(grep -cE '^(⚪|🙋|🤔|⏳|🚀|🔴|🟢|🔨|✅)  (Hub · )?ʀ07' "$root/README.md")" 10
+t "release tag: README examples use ʀ" "$(grep -cE '^(⚪|🙋|❓|⏳|🚀|🔴|🟢|🔨|✅)  (Hub · )?ʀ07' "$root/README.md")" 10
 t "release tag: README explains ʀ" "$(grep -c 'small-caps `ʀ` (`ʀ07`, `(ʀ7)`)' "$root/README.md")" 1
 t "release tag: codes and Z prefix stay plain" "$(grep -c '⚪  Z A6 · Compare libraries' "$root/README.md")" 1
 t "next release: name in parentheses" "$(grep -c 'its name, the part after the code and ` · `, in parentheses' "$root/skills/hub/SKILL.md")" 1
@@ -377,7 +377,7 @@ t "next release: talk chats and hub never get them" "$(grep -c 'own title never 
 t "next release: retag to later drops them" "$(grep -c 'Retagging a chat to a later release drops' "$root/skills/hub/SKILL.md")" 1
 t "next release: added after a release in the retag batch" "$(grep -c 'put the name in parentheses on every open chat now tagged for the new' "$root/skills/hub/SKILL.md")" 1
 t "next release: with or without them is the same chat" "$(grep -c 'A title with or without them is the same' "$root/skills/hub/SKILL.md")" 1
-t "next release: README sidebar names in parentheses" "$(grep -cE '^(⚪|🙋|🤔|⏳|🚀|🔴|🟢|🔨|✅)  ʀ07 [A-F2-9]{2} · \(.*\)$' "$root/README.md")" 9
+t "next release: README sidebar names in parentheses" "$(grep -cE '^(⚪|🙋|❓|⏳|🚀|🔴|🟢|🔨|✅)  ʀ07 [A-F2-9]{2} · \(.*\)$' "$root/README.md")" 9
 t "next release: README later-release chat plain" "$(grep -c '^🔨  ʀ08 E3 · Bulk rename$' "$root/README.md")" 1
 t "next release: README code-first keeps both parentheses" "$(grep -c '`🔨  3F · (Fix menu spacing) (ʀ7)`' "$root/README.md")" 1
 t "next release: talk chats and hub stay plain" "$(grep -cE '⚪  Z A6 · Compare libraries$|^⚪  Hub · ʀ07 \(6\)$' "$root/README.md")" 2
@@ -385,27 +385,27 @@ t "title length: about 40 characters at most" "$(grep -c 'a whole title is about
 t "title length: hub shortens the name" "$(grep -c 'start or retitle a chat, shorten the name to fit' "$root/skills/hub/SKILL.md")" 1
 t "title length: README says so" "$(grep -c 'A title is about 40 characters at most' "$root/README.md")" 1
 t "title length: CHANGELOG says so" "$(grep -c 'Titles about 40 characters at most' "$root/CHANGELOG.md")" 1
-t "title length: README sidebar fits" "$(sed -n '/^## Example sidebar/,/^## Install/p' "$root/README.md" | grep -E '^(⚪|🙋|🤔|⏳|🚀|🔴|🟢|🔨|✅)  ' | awk 'length > 40' | wc -l | tr -d ' ')" 0
+t "title length: README sidebar fits" "$(sed -n '/^## Example sidebar/,/^## Install/p' "$root/README.md" | grep -E '^(⚪|🙋|❓|⏳|🚀|🔴|🟢|🔨|✅)  ' | awk 'length > 40' | wc -l | tr -d ' ')" 0
 t "next release: setup mentions it" "$(grep -c 'coming release show their name in parentheses' "$root/skills/setup/SKILL.md")" 1
 t "titles: two spaces after the symbol" "$(grep -c "then two spaces (never one)" "$root/skills/hub/SKILL.md")" 1
-t "titles: no one-space title examples left" "$(cat "$root/skills/hub/SKILL.md" "$root/skills/setup/SKILL.md" "$root/README.md" | grep -cE '`(⚪|🔨|🙋|⏳|🚀|🟢|🔴|✅|🤔) [^ ]')" 0
+t "titles: no one-space title examples left" "$(cat "$root/skills/hub/SKILL.md" "$root/skills/setup/SKILL.md" "$root/README.md" | grep -cE '`(⚪|🔨|🙋|⏳|🚀|🟢|🔴|✅|❓) [^ ]')" 0
 
 t "symbols: no rule sends a work chat back to ⚪" "$(cat "$root/skills/hub/SKILL.md" "$root/skills/work-chat/SKILL.md" "$root/README.md" | grep -E '(set|sets|back to|→|no,) ⚪|\(⚪/|⚪/🔨' | grep -vc 'talk chat')" 0
 t "symbols: ⚪ means new in the hub" "$(grep -c '`⚪` new: you just started' "$root/skills/hub/SKILL.md")" 1
-t "symbols: hub sets 🔨 after more, declined OK, answer, backstop" "$(grep -cE 'working again", set 🔨|said no \("OK declined"\), 🔨|or 🔨 if$|set 🔨 on any 🤔 work chat' "$root/skills/hub/SKILL.md")" 4
+t "symbols: hub sets 🔨 after more, declined OK, answer, backstop" "$(grep -cE 'working again", set 🔨|said no \("OK declined"\), 🔨|or 🔨 if$|set 🔨 on any ❓ work chat' "$root/skills/hub/SKILL.md")" 4
 t "symbols: work chat names 🔨 for more and declined" "$(grep -cE '\(it sets 🔨\)' "$root/skills/work-chat/SKILL.md")" 2
 t "symbols: README legend has 🔨" "$(grep -c '^| 🔨 | Under way' "$root/README.md")" 2
-t "symbols: no 🟡 or ❓ left (now 🙋 and 🤔)" "$(cat "$root/skills/hub/SKILL.md" "$root/skills/work-chat/SKILL.md" "$root/skills/setup/SKILL.md" "$root/README.md" "$root/docs/all-prompts.md" "$root"/hooks/*.mjs | grep -E '🟡|❓' | grep -vc '🟡 → 🙋')" 0
-t "symbols: README legend has 🙋 and 🤔" "$(grep -cE '^\| (🙋 \| Waiting on your OK|🤔 \| Waiting on your answer)' "$root/README.md")" 4
+t "symbols: no 🟡 or 🤔 left (now 🙋 and ❓)" "$(cat "$root/skills/hub/SKILL.md" "$root/skills/work-chat/SKILL.md" "$root/skills/setup/SKILL.md" "$root/README.md" "$root/docs/all-prompts.md" "$root"/hooks/*.mjs | grep -E '🟡|🤔' | grep -vc '🟡 → 🙋')" 0
+t "symbols: README legend has 🙋 and ❓" "$(grep -cE '^\| (🙋 \| Waiting on your OK|❓ \| Waiting on your answer)' "$root/README.md")" 4
 t "symbols: hub's release built is 🙋" "$(grep -c '`🙋` release built, waiting on the owner' "$root/skills/hub/SKILL.md")" 1
-t "symbols: work chat names 🙋 and 🤔" "$(grep -cE 'it sets 🙋 on your title|it sets 🤔 on your title|it clears 🤔' "$root/skills/work-chat/SKILL.md")" 3
+t "symbols: work chat names 🙋 and ❓" "$(grep -cE 'it sets 🙋 on your title|it sets ❓ on your title|it clears ❓' "$root/skills/work-chat/SKILL.md")" 3
 t "symbols: hub retitles open chats after a symbol rename" "$(grep -c 'retitle every$' "$root/skills/hub/SKILL.md")" 1
 t "symbols: rename retitle is one batch" "$(grep -c 'batch of title calls (your own title too)' "$root/skills/hub/SKILL.md")" 1
 t "question: work chat tells the hub in plain text too" "$(grep -c 'in plain text too, not just a menu' "$root/skills/work-chat/SKILL.md")" 1
 t "question: work chat tells the hub in the same turn" "$(grep -c 'tell the hub in the same turn' "$root/skills/work-chat/SKILL.md")" 1
-t "question: hub backstop sets 🤔 on an idle 🔨 chat" "$(grep -c 'set 🤔 on any$' "$root/skills/hub/SKILL.md")" 1
+t "question: hub backstop sets ❓ on an idle 🔨 chat" "$(grep -c 'set ❓ on any$' "$root/skills/hub/SKILL.md")" 1
 t "question: backstop reads the note before the transcript" "$(grep -c "read the$" "$root/skills/hub/SKILL.md")" 1
 t "question: backstop skips closing lines and the 🟢 question" "$(grep -cE 'closing "anything else\?" or "let me know" is not one|is the 🟢 "more or wrap up\?" question' "$root/skills/hub/SKILL.md")" 2
-t "question: README names the hub's 🤔 backstop" "$(grep -c 'hub sees an idle 🔨 chat whose last message asks you' "$root/README.md")" 1
+t "question: README names the hub's ❓ backstop" "$(grep -c 'hub sees an idle 🔨 chat whose last message asks you' "$root/README.md")" 1
 cd "$tmp"
 rm -rf "$tmp"; exit $fail

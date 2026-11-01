@@ -30,6 +30,14 @@ Each version is a git tag (`v0.1.0`). Projects pin a tag in
   code, ` · `, name and parentheses included, so the sidebar doesn't cut
   it off. The hub shortens the name to fit when it starts or retitles a
   chat; the symbol, tag, code and parentheses are never cut.
+- **❓ is back for "waiting on your answer":** symbol renamed 🤔 → ❓,
+  same rules (undoes that half of 0.3.29; 🙋 for "waiting on your OK"
+  stays). ❓ is a wide emoji like the others, so titles still line up.
+  In release-first titles the sort order is now ⏳ ⚪ ✅ ❓ 🔨 🔴 🙋 🚀 🟢:
+  ❓ moves from last to between ✅ and 🔨. Tests check that no 🤔 is
+  left in the rules, README or hooks. **Hub:** after this update,
+  retitle every open 🤔 chat (and your own title) to ❓ at once, in one
+  batch of title calls, as for any renamed symbol.
 
 ## 0.3.31
 

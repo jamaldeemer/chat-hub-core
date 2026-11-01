@@ -48,7 +48,7 @@ above); never change or suggest changing the rest. During a release set your own
 `🙋` release built, waiting on the owner's push; `🚀` CI running on the
 pushed release (level 2); `🟢` CI passed, ready for the owner to push to
 main; `🔴` CI failed; `⚪` once main has the release (with the new
-suffix); `🤔` when you stopped on a question for the owner. You're found by your recorded IDs, not your name.
+suffix); `❓` when you stopped on a question for the owner. You're found by your recorded IDs, not your name.
 
 Other projects have hubs too: a message from another project's chat isn't
 for you. Say so in one line and do nothing else.
@@ -193,33 +193,33 @@ Two styles, set by `titles` in the settings:
   when it says the OK was given, ⏳; when it says the owner said no ("OK declined"), 🔨.
   When a chat tells you it pushed, set 🚀 (level 2) or 🟢 (level 1);
   when the run ends, 🔴 or 🟢. 🟢 includes the chat's "more or wrap up?"
-  question, so don't set 🤔 for it. 🟢 always means that question is
+  question, so don't set ❓ for it. 🟢 always means that question is
   still open: when the chat says "more changes, working again", set 🔨;
   when its wrap-up report arrives, set ⏳ at once (before the close
   check), then merge, run the close check and set ✅.
-  `🤔` waiting on the owner's answer: set it when a chat you track
+  `❓` waiting on the owner's answer: set it when a chat you track
   (talk chats too) stopped on a question to the owner that isn't an OK,
   from the app's note that a session you started is waiting on the user
   or from the chat's own message ("question for owner: …"). When the
   owner answers (the chat says "answered, working again", or its next
   note or message), put back the symbol it had before (🚀/🔴), or 🔨 if
   it had ⚪ or 🔨 (a talk chat goes back to ⚪). Backstop: on every wake,
-  set 🔨 on any 🤔 work chat that "Linked sessions now" shows as working
-  (⚪ on a talk chat). And the other way: on every wake, set 🤔 on any
+  set 🔨 on any ❓ work chat that "Linked sessions now" shows as working
+  (⚪ on a talk chat). And the other way: on every wake, set ❓ on any
   🔨 work chat (⚪ talk chat) that is idle and whose last message ends
   on a question to the owner, even if it never said "question for
   owner". Judge from the app's note (its quoted text) first; read the
   chat's transcript only if unsure. A question to the owner asks them
   to decide or answer something ("should I build X?", "A or B?"); a
   closing "anything else?" or "let me know" is not one, and neither
-  is the 🟢 "more or wrap up?" question. For OK questions 🙋 wins over 🤔.
+  is the 🟢 "more or wrap up?" question. For OK questions 🙋 wins over ❓.
   Backstop for ⏳: on every wake (and first thing after a clear), close
   any ⏳ or 🟢 chat whose wrap-up report is in and that isn't ✅ yet
   (Closing chats below). A report in means the close happens now, even
   while wrapping up; it never waits for a clear.
 - **Talk chats** (questions, research, planning; no code to ship): no
   release tag, no branch or worktree, never retagged at a release.
-  They start with `⚪` like other chats and keep it (except 🤔 while
+  They start with `⚪` like other chats and keep it (except ❓ while
   waiting on the owner's answer), since they never push
   (your own title keeps ⚪ too). Release-first titles then have
   `Z ` so they sort last among ⚪ chats (`⚪  Z A4 · Compare slicers`);
@@ -318,7 +318,7 @@ update, give them `sh ~/.claude/plugins/marketplaces/chat-hub/scripts/update-all
 (every project at once; they run it, your sandbox can't).
 
 **Renamed symbols:** when a release or plugin update renames a status
-symbol (the CHANGELOG says so, e.g. 🟡 → 🙋, ❓ → 🤔) or changes how
+symbol (the CHANGELOG says so, e.g. 🟡 → 🙋, 🤔 → ❓) or changes how
 the release tag is written (`R` → `ʀ`), or how a title marks the
 next release (name in parentheses), retitle every
 open chat that still shows the old form to the new one at once, in one
