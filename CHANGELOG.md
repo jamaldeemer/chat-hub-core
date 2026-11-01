@@ -3,7 +3,7 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
-## Unreleased (R12)
+## 0.3.23
 
 - **A third way to start a chat, "Just open":** the hub's start menu now
   offers it next to "Plan first" and "Build it". The chat reads its brief
