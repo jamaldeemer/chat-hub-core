@@ -7,12 +7,15 @@ Each version is a git tag (`v0.1.0`). Projects pin a tag in
 
 - **The hub's title shows how many chats are left for its release:** it
   ends in parentheses with the open chats tagged for `nextRelease` that
-  aren't ✅ yet, e.g. `⚪ chat-hub-core HUB · R14 (3)`. Talk chats and
+  aren't ✅ yet, e.g. `⚪  chat-hub-core HUB · R14 (3)`. Talk chats and
   chats for later releases don't count; `(0)` means the release's work
   is all done. The hub changes the count only in the same batch as a
   title change it's already making (starting, retagging, ✅, closing,
   after a release), so it costs no extra turns. The count is part of
   the suffix; the hub still changes only its symbol and suffix.
+- **Two spaces after the status symbol in every title** (the hub's
+  too), so the text clears the symbol: `⚪  R14 E6 · Hub title shows open
+  chats left`, `⚪  chat-hub-core HUB · R14 (3)`.
 
 ## 0.3.24
 

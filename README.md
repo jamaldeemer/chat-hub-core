@@ -49,7 +49,7 @@ The hub's own title uses ⚪ normally, and during a release 🟡 (built,
 waiting on your push), 🚀 (release in CI), 🟢 (CI passed, push to main),
 🔴 (CI failed), ❓ (question for you); ⚪ again once main has it.
 Its title ends with the number of chats still open for that release, in
-parentheses: `⚪ Hub · R07 (6)`. Talk chats and ✅ chats don't count;
+parentheses: `⚪  Hub · R07 (6)`. Talk chats and ✅ chats don't count;
 `(0)` means the release's work is all done. The hub updates it only
 when it retitles a chat anyway (starting, retagging, ✅, closing) and
 after a release.
@@ -91,15 +91,15 @@ Who sets each one and when: [Title symbols](#title-symbols).
 ## Example sidebar
 
 ```
-⚪ Hub · R07 (6)
-🟡 R07 3F · Fix menu spacing
-❓ R07 A4 · Add CSV export
-⏳ R07 C2 · Rename settings keys
-🚀 R07 E5 · Faster search
-🔴 R07 F8 · Login timeout
-🟢 R07 A7 · Dark mode toggle
-✅ R07 C9 · Update dependencies
-⚪ Z A6 · Compare libraries
+⚪  Hub · R07 (6)
+🟡  R07 3F · Fix menu spacing
+❓  R07 A4 · Add CSV export
+⏳  R07 C2 · Rename settings keys
+🚀  R07 E5 · Faster search
+🔴  R07 F8 · Login timeout
+🟢  R07 A7 · Dark mode toggle
+✅  R07 C9 · Update dependencies
+⚪  Z A6 · Compare libraries
 ```
 
 `3F`, `A4`… are chat codes (they also start commit messages), `R07` is the
@@ -130,7 +130,7 @@ You need Claude Code (terminal or the desktop app's Code tab), git and Node.
    questions, shows what it will write, and writes it when you say yes.
 4. Setup ends by making a hub: by default the chat you ran it in. The hub
    records itself, so every other chat knows exactly which one it is, and
-   adds the next release to its title (`⚪ Hub · R2 (0)`). Then talk to it.
+   adds the next release to its title (`⚪  Hub · R2 (0)`). Then talk to it.
    To make a different chat the hub later, type
    `/chat-hub-core:hub replace` in it.
 
@@ -231,21 +231,22 @@ LEVEL 2 · + CI and checks
 
 Each work chat gets a two-character code (one of A C E F plus a digit
 2–9, e.g. `3F`, `A7`), which also starts its commit messages (`3F: Fix the
-menu`). Setup asks which title style the project wants:
+menu`). Every title starts with its status symbol and two spaces. Setup
+asks which title style the project wants:
 
 | | Code first (default) | Release first |
 |---|---|---|
-| New, or working after "more" | `⚪ 3F · Fix menu spacing (R7)` | `⚪ R07 3F · Fix menu spacing` |
-| Tick-tock releases | `⚪ 3F · Fix menu spacing (R16~)` | `⚪ R16~ 3F · Fix menu spacing` |
-| Waiting on your OK | `🟡 3F · Fix menu spacing (R7)` | `🟡 R07 3F · Fix menu spacing` |
-| Waiting on your answer | `❓ 3F · Fix menu spacing (R7)` | `❓ R07 3F · Fix menu spacing` |
-| OK given, committing | `⏳ 3F · Fix menu spacing (R7)` | `⏳ R07 3F · Fix menu spacing` |
-| Push in CI (level 2) | `🚀 3F · Fix menu spacing (R7)` | `🚀 R07 3F · Fix menu spacing` |
-| Pushed / CI passed: more or wrap up? | `🟢 3F · Fix menu spacing (R7)` | `🟢 R07 3F · Fix menu spacing` |
-| CI failed (level 2) | `🔴 3F · Fix menu spacing (R7)` | `🔴 R07 3F · Fix menu spacing` |
-| Ready to close | `✅ 3F · Fix menu spacing (R7)` | `✅ R07 3F · Fix menu spacing` |
-| Talk chat (no release) | `⚪ A4 · Compare libraries` | `⚪ Z A4 · Compare libraries` |
-| The hub | `⚪ Hub · R7 (6)` | `⚪ Hub · R07 (6)` |
+| New, or working after "more" | `⚪  3F · Fix menu spacing (R7)` | `⚪  R07 3F · Fix menu spacing` |
+| Tick-tock releases | `⚪  3F · Fix menu spacing (R16~)` | `⚪  R16~ 3F · Fix menu spacing` |
+| Waiting on your OK | `🟡  3F · Fix menu spacing (R7)` | `🟡  R07 3F · Fix menu spacing` |
+| Waiting on your answer | `❓  3F · Fix menu spacing (R7)` | `❓  R07 3F · Fix menu spacing` |
+| OK given, committing | `⏳  3F · Fix menu spacing (R7)` | `⏳  R07 3F · Fix menu spacing` |
+| Push in CI (level 2) | `🚀  3F · Fix menu spacing (R7)` | `🚀  R07 3F · Fix menu spacing` |
+| Pushed / CI passed: more or wrap up? | `🟢  3F · Fix menu spacing (R7)` | `🟢  R07 3F · Fix menu spacing` |
+| CI failed (level 2) | `🔴  3F · Fix menu spacing (R7)` | `🔴  R07 3F · Fix menu spacing` |
+| Ready to close | `✅  3F · Fix menu spacing (R7)` | `✅  R07 3F · Fix menu spacing` |
+| Talk chat (no release) | `⚪  A4 · Compare libraries` | `⚪  Z A4 · Compare libraries` |
+| The hub | `⚪  Hub · R7 (6)` | `⚪  Hub · R07 (6)` |
 
 Talk chats and the hub keep ⚪ (talk chats show ❓ while waiting on your
 answer): they never push.
@@ -268,7 +269,7 @@ The hub sets every symbol; work chats never change their own titles.
 Release first pads the number to two digits, so an alphabetical sort
 groups chats by release, and talk chats (`Z `) sort last. With tick-tock,
 `~` releases are fixes and `+` releases features; the hub's title shows
-the soonest next release (`⚪ Hub · R15+ (2)`). The hub also keeps notes in
+the soonest next release (`⚪  Hub · R15+ (2)`). The hub also keeps notes in
 git's own folder (`.git/chat-hub/hub-notes.md`), so a restart or a clear
 loses nothing.
 

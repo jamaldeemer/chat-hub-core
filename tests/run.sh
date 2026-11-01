@@ -321,6 +321,8 @@ t "close: setup has checks" "$(grep -c '"checks": ""' "$root/skills/setup/SKILL.
 t "hub title: open count in parentheses" "$(grep -c "the \*\*open count\*\* in parentheses" "$root/skills/hub/SKILL.md")" 1
 t "hub title: talk and ✅ chats not counted" "$(grep -c "Talk chats (no release tag), ✅ chats" "$root/skills/hub/SKILL.md")" 1
 t "hub title: count only with other title changes" "$(grep -c "never retitle yourself just" "$root/skills/hub/SKILL.md")" 1
+t "titles: two spaces after the symbol" "$(grep -c "then two spaces (never one)" "$root/skills/hub/SKILL.md")" 1
+t "titles: no one-space title examples left" "$(cat "$root/skills/hub/SKILL.md" "$root/skills/setup/SKILL.md" "$root/README.md" | grep -cE '`(⚪|🟡|⏳|🚀|🟢|🔴|✅|❓) [^ ]')" 0
 
 cd "$tmp"
 rm -rf "$tmp"; exit $fail
