@@ -61,8 +61,11 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
   owner "Anything more, or should I wrap up?" with a menu (the
   AskUserQuestion tool, options "Wrap up" / "More changes"), like the
   commit OK; plain text only if this chat has no such tool. Your 🟢
-  title already says so; don't tell the hub it's a question. Never wrap
-  up on your own judgment.
+  title already says so; don't tell the hub it's a question. 🟢 means
+  the question is open, so tell the hub the answer at once: "More
+  changes" → "more changes, working again" (it sets ⚪), then carry on;
+  "Wrap up" → your wrap-up report (it sets ⏳). Never wrap up on your
+  own judgment.
 - **Wrap-up** (when the owner or hub says to): send the hub the
   report in `${CLAUDE_PLUGIN_ROOT}/templates/wrap-up.md`, in exactly that
   shape. Never call yourself ready to close or set ✅; the hub checks and

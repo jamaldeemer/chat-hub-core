@@ -311,6 +311,8 @@ t "skills: answered line in work chat" "$(grep -c 'answered, working again' "$ro
 t "skills: OK asked with a menu" "$(grep -c 'Ask for it with a menu' "$root/skills/work-chat/SKILL.md")" 1
 t "skills: more or wrap up asked with a menu" "$(grep -c 'should I wrap up?" with a menu' "$root/skills/work-chat/SKILL.md")" 1
 t "skills: menu has Wrap up / More changes" "$(grep -c 'options \"Wrap up\" / \"More changes\"' "$root/skills/work-chat/SKILL.md")" 1
+t "skills: chat tells the hub the more answer" "$(grep -c '"more changes, working again" (it sets ⚪)' "$root/skills/work-chat/SKILL.md")" 1
+t "skills: hub drops 🟢 on the report" "$(grep -c 'report arrives, set ⏳ at once' "$root/skills/hub/SKILL.md")" 1
 t "skills: hub expects the Wrap up menu answer" "$(grep -c 'should I wrap up?" menu' "$root/skills/hub/SKILL.md")" 1
 t "skills: answered line in hub" "$(grep -c 'answered, working again' "$root/skills/hub/SKILL.md")" 1
 t "start modes: Just open in hub" "$(grep -c '\*\*Just open:\*\*' "$root/skills/hub/SKILL.md")" 1

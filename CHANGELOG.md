@@ -12,6 +12,10 @@ Each version is a git tag (`v0.1.0`). Projects pin a tag in
   picked "Wrap up". This is a rule with a test, not a hook: the hub can
   also start a wrap-up by message, which a hook can't tell apart, and
   the hub's close check still catches an early wrap-up.
+- **🟢 always means the question is open:** the chat tells the hub the
+  answer at once ("more changes, working again" → ⚪; the wrap-up report
+  → ⏳), and the hub changes the symbol right away instead of keeping 🟢
+  until ✅.
 
 ## 0.3.25
 

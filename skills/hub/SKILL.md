@@ -145,7 +145,7 @@ Two styles, set by `titles` in the settings:
   misses its release moves to the next.
 - **Status symbol** first, then two spaces (never one), so the text clears the symbol: `🟡` waiting
   on the owner's OK to commit, merge or push, `⏳` OK given, committing
-  and pushing, `🚀` push in CI (level 2), `🟢` pushed (level 1) or CI
+  and pushing (or wrapping up: report in, being closed), `🚀` push in CI (level 2), `🟢` pushed (level 1) or CI
   passed (level 2) and asking the owner "more or wrap up?", `🔴` CI
   failed (level 2), `✅`
   ready to close (passes the close check). `⚪` working, nothing waiting
@@ -157,8 +157,10 @@ Two styles, set by `titles` in the settings:
   when it says the OK was given, ⏳; when it says the owner said no, ⚪.
   When a chat tells you it pushed, set 🚀 (level 2) or 🟢 (level 1);
   when the run ends, 🔴 or 🟢. 🟢 includes the chat's "more or wrap up?"
-  question, so don't set ❓ for it; "more" sets ⚪, "wrap up" brings its report, then you merge, run the close check and
-  set ✅.
+  question, so don't set ❓ for it. 🟢 always means that question is
+  still open: when the chat says "more changes, working again", set ⚪;
+  when its wrap-up report arrives, set ⏳ at once (before the close
+  check), then merge, run the close check and set ✅.
   `❓` waiting on the owner's answer: set it when a chat you track
   (talk chats too) stopped on a question to the owner that isn't an OK,
   from the app's note that a session you started is waiting on the user
