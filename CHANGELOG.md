@@ -3,13 +3,24 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
-## Unreleased
+## Unreleased (R12)
 
 - **A third way to start a chat, "Just open":** the hub's start menu now
   offers it next to "Plan first" and "Build it". The chat reads its brief
   and rules, starts the dev server if `devServer.command` is set, says in
   one line it's ready, and waits for the owner's instructions.
   `startMode: "wait"` makes every chat start this way.
+- **The hub wraps up at its limit:** past `trimAt` (default 150k) the
+  hub takes on no new work (new requests go under "## Next" in
+  its notes), finishes everything already in flight (a merge or release
+  it started, titles it owes, replies to chats, messages it promised),
+  brings its notes up to date, and only then asks to be cleared. A clear
+  no longer lands in the middle of a step.
+- **One level instead of three:** the repeating reminders, the last
+  warning and the hard stop are gone, with the `trimEvery` and
+  `trimHardStop` settings (they're ignored if still set). The note now
+  comes on every prompt past the limit, and once on a tool call when the
+  hub first crosses it.
 
 ## 0.3.22
 
