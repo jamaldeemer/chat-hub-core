@@ -12,6 +12,14 @@ chats from its notes, though the notes said to check first).
 
 ## Next
 
+- **Revisit making the repo findable (E7, parked 2026-11-01).** Work is
+  on branch `parked/e7-findable`: plugin.json/marketplace.json/README
+  wording in a stranger's words, and `scripts/findable.sh on|off|status`
+  to set or clear the GitHub description and topics (GitHub settings
+  only, nothing to commit). When ready: merge main into it, move its
+  CHANGELOG entry to that release, ship it, then run
+  `sh scripts/findable.sh on`; later paths are awesome-lists and a post
+  with a screen recording.
 - Flaky test (seen in E3, 2026-10-31): "shared hub: seen from another
   worktree" in `tests/run.sh` failed once in three runs (`../wt2` was not
   a working tree), then passed.
