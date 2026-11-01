@@ -3,7 +3,7 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
-## Unreleased (R16)
+## 0.3.27
 
 - **`trimAt` defaults to 135k** (was 150k) for every project that
   doesn't set it.
