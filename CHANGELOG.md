@@ -3,7 +3,7 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
-## Unreleased (R19)
+## 0.3.30
 
 - **🤔 when a chat ends on a question:** a work chat that ended its turn
   asking the owner something in plain text could keep 🔨, so the hub
