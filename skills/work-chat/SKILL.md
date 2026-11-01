@@ -23,7 +23,7 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
   tell the hub in one line ("asking for OK"; it sets 🟡 on your title).
   When the owner says yes, tell the hub at once, before committing ("OK
   given, committing"; it sets ⏳), then again after you push. If the
-  owner says no, tell it "OK declined".
+  owner says no, tell it "OK declined" (it sets 🔨).
 - **Questions:** when you end a turn on a question to the owner that
   isn't an OK, tell the hub in one line ("question for owner: <topic>";
   it sets ❓ on your title). When the owner answers it here, first tell
@@ -63,7 +63,7 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
   commit OK; plain text only if this chat has no such tool. Your 🟢
   title already says so; don't tell the hub it's a question. 🟢 means
   the question is open, so tell the hub the answer at once: "More
-  changes" → "more changes, working again" (it sets ⚪), then carry on;
+  changes" → "more changes, working again" (it sets 🔨), then carry on;
   "Wrap up" → your wrap-up report (it sets ⏳). Never wrap up on your
   own judgment.
 - **Wrap-up** (when the owner or hub says to): send the hub the

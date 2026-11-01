@@ -3,6 +3,18 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## Unreleased (R16)
+
+- **🔨 for a chat under way; ⚪ only for a new one:** ⚪ now means the
+  hub just started the chat and it hasn't reported anything yet. Once
+  it has, the hub sets 🔨 wherever it used to put the chat back to ⚪:
+  the owner said "More changes", an OK was declined, a ❓ was answered
+  (when the chat had ⚪ or 🔨 before), and the ❓ backstop. No extra
+  title changes: the hub already retitles at those moments. Talk chats
+  and the hub's own title keep ⚪. 🔨 is a wide emoji like the others,
+  so titles still line up; in release-first titles it sorts after ❓
+  and before 🔴. A test checks that no rule sends a work chat back to ⚪.
+
 ## 0.3.26
 
 - **The 🟢 "Anything more, or should I wrap up?" is a menu:** a work
