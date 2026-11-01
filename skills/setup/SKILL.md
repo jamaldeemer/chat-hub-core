@@ -39,7 +39,9 @@ Only what you couldn't tell. Usually:
 2. Release tags in titles: plain (ʀ1, ʀ2…, default), tick-tock (ʀ10~
    fixes, ʀ11+ features), or none. Unless none: code first
    (`3F · Title (ʀ7)`, default) or release first (`ʀ07 3F · Title`, so an
-   alphabetical sort groups chats by release).
+   alphabetical sort groups chats by release). Either way, chats in the
+   coming release show their name in parentheses (`3F · (Title) (ʀ7)`,
+   `ʀ07 3F · (Title)`); later releases' chats don't.
 3. What "done" means here (e.g. tests pass, it builds, docs updated, owner
    has seen it), and where follow-ups go (an existing backlog or to-do
    file, else `docs/backlog.md`). Offer what you found. Level 1+: the

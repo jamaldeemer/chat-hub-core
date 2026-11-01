@@ -93,20 +93,22 @@ Who sets each one and when: [Title symbols](#title-symbols).
 
 ```
 ⚪  Hub · ʀ07 (6)
-🙋  ʀ07 3F · Fix menu spacing
-🤔  ʀ07 A4 · Add CSV export
-⏳  ʀ07 C2 · Rename settings keys
-⚪  ʀ07 C3 · Print view
-🚀  ʀ07 E5 · Faster search
-🔴  ʀ07 F8 · Login timeout
-🟢  ʀ07 A7 · Dark mode toggle
-🔨  ʀ07 E2 · Import from Excel
-✅  ʀ07 C9 · Update dependencies
+🙋  ʀ07 3F · (Fix menu spacing)
+🤔  ʀ07 A4 · (Add CSV export)
+⏳  ʀ07 C2 · (Rename settings keys)
+⚪  ʀ07 C3 · (Print view)
+🚀  ʀ07 E5 · (Faster search)
+🔴  ʀ07 F8 · (Login timeout)
+🟢  ʀ07 A7 · (Dark mode toggle)
+🔨  ʀ07 E2 · (Import from Excel)
+✅  ʀ07 C9 · (Update dependencies)
+🔨  ʀ08 E3 · Bulk rename
 ⚪  Z A6 · Compare libraries
 ```
 
 `3F`, `A4`… are chat codes (they also start commit messages), `ʀ07` is the
-release the work ships in, and `Z` marks a talk chat with no code to ship.
+release the work ships in, names in parentheses are in the coming release
+(`ʀ08` work isn't yet), and `Z` marks a talk chat with no code to ship.
 
 ## Install
 
@@ -239,16 +241,17 @@ asks which title style the project wants:
 
 | | Code first (default) | Release first |
 |---|---|---|
-| New, nothing reported yet | `⚪  3F · Fix menu spacing (ʀ7)` | `⚪  ʀ07 3F · Fix menu spacing` |
-| Under way, nothing waiting on you | `🔨  3F · Fix menu spacing (ʀ7)` | `🔨  ʀ07 3F · Fix menu spacing` |
-| Tick-tock releases | `🔨  3F · Fix menu spacing (ʀ16~)` | `🔨  ʀ16~ 3F · Fix menu spacing` |
-| Waiting on your OK | `🙋  3F · Fix menu spacing (ʀ7)` | `🙋  ʀ07 3F · Fix menu spacing` |
-| Waiting on your answer | `🤔  3F · Fix menu spacing (ʀ7)` | `🤔  ʀ07 3F · Fix menu spacing` |
-| OK given, committing | `⏳  3F · Fix menu spacing (ʀ7)` | `⏳  ʀ07 3F · Fix menu spacing` |
-| Push in CI (level 2) | `🚀  3F · Fix menu spacing (ʀ7)` | `🚀  ʀ07 3F · Fix menu spacing` |
-| Pushed / CI passed: more or wrap up? | `🟢  3F · Fix menu spacing (ʀ7)` | `🟢  ʀ07 3F · Fix menu spacing` |
-| CI failed (level 2) | `🔴  3F · Fix menu spacing (ʀ7)` | `🔴  ʀ07 3F · Fix menu spacing` |
-| Ready to close | `✅  3F · Fix menu spacing (ʀ7)` | `✅  ʀ07 3F · Fix menu spacing` |
+| New, nothing reported yet | `⚪  3F · (Fix menu spacing) (ʀ7)` | `⚪  ʀ07 3F · (Fix menu spacing)` |
+| Under way, nothing waiting on you | `🔨  3F · (Fix menu spacing) (ʀ7)` | `🔨  ʀ07 3F · (Fix menu spacing)` |
+| Tick-tock releases | `🔨  3F · (Fix menu spacing) (ʀ16~)` | `🔨  ʀ16~ 3F · (Fix menu spacing)` |
+| Waiting on your OK | `🙋  3F · (Fix menu spacing) (ʀ7)` | `🙋  ʀ07 3F · (Fix menu spacing)` |
+| Waiting on your answer | `🤔  3F · (Fix menu spacing) (ʀ7)` | `🤔  ʀ07 3F · (Fix menu spacing)` |
+| OK given, committing | `⏳  3F · (Fix menu spacing) (ʀ7)` | `⏳  ʀ07 3F · (Fix menu spacing)` |
+| Push in CI (level 2) | `🚀  3F · (Fix menu spacing) (ʀ7)` | `🚀  ʀ07 3F · (Fix menu spacing)` |
+| Pushed / CI passed: more or wrap up? | `🟢  3F · (Fix menu spacing) (ʀ7)` | `🟢  ʀ07 3F · (Fix menu spacing)` |
+| CI failed (level 2) | `🔴  3F · (Fix menu spacing) (ʀ7)` | `🔴  ʀ07 3F · (Fix menu spacing)` |
+| Ready to close | `✅  3F · (Fix menu spacing) (ʀ7)` | `✅  ʀ07 3F · (Fix menu spacing)` |
+| Later release (not the next one) | `🔨  3F · Fix menu spacing (ʀ8)` | `🔨  ʀ08 3F · Fix menu spacing` |
 | Talk chat (no release) | `⚪  A4 · Compare libraries` | `⚪  Z A4 · Compare libraries` |
 | The hub | `⚪  Hub · ʀ7 (6)` | `⚪  Hub · ʀ07 (6)` |
 
@@ -276,6 +279,14 @@ The release tag's letter is small-caps `ʀ` (`ʀ07`, `(ʀ7)`), so it
 stands apart from the code; the digits, `~` and `+` stay plain. Older
 titles with a plain `R` still count as the same release, and the hub
 writes `ʀ` the next time it sets them.
+
+Chats in the coming release (the one in the hub's title) have their name,
+the part after the code, in parentheses, so that release's work stands
+out: `🔨  ʀ24~ 9A · (Colour palette review)` next to
+`🙋  ʀ25+ F2 · Staging download buttons`. Talk chats and the hub's own
+title don't get them. After a release the hub adds them to the chats
+now in the new coming release, in the same batch as the retag; a chat
+retagged to a later release loses them.
 
 Release first pads the number to two digits, so an alphabetical sort
 groups chats by release, and talk chats (`Z `) sort last. With tick-tock,

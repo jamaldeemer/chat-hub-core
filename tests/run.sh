@@ -92,6 +92,10 @@ printf '## Me\nx\n## Open chats\n- ✅ ʀ11 C8 · Newest version\n- R11 C9 · Ol
 nc s5 >/dev/null
 t "notes check: ✅ chat with a ʀ tag flagged" "$(nd 'still list ✅ (closed) chats: \\"✅ ʀ11 C8')" 1
 t "notes check: open chat with an old R tag not flagged" "$(nd 'R11 C9')" 0
+printf '## Me\nx\n## Open chats\n- ✅ ʀ11 C7 · (Next release name)\n- ʀ11 C6 · (Open next release)\n- ʀ12 C5 · Later release\n' > .git/chat-hub/hub-notes.md
+nc s5 >/dev/null
+t "notes check: ✅ chat with name in parentheses flagged" "$(nd 'still list ✅ (closed) chats: \\"✅ ʀ11 C7 · (Next release name)')" 1
+t "notes check: open chats with and without parentheses not flagged" "$(nd 'C6 · \|C5 · ')" 0
 printf '## Me\nx\n## Open chats\n- C9 · Stop reminders\n' > .git/chat-hub/hub-notes.md; nc s5 >/dev/null
 t "notes check: no ✅ quiet" "$(nd 'still list ✅')" 0
 echo '{"level":0}' > .claude/chat-hub.json
@@ -367,6 +371,17 @@ t "release tag: no plain-R tag examples left" "$(cat "$root/skills/hub/SKILL.md"
 t "release tag: README examples use ʀ" "$(grep -cE '^(⚪|🙋|🤔|⏳|🚀|🔴|🟢|🔨|✅)  (Hub · )?ʀ07' "$root/README.md")" 10
 t "release tag: README explains ʀ" "$(grep -c 'small-caps `ʀ` (`ʀ07`, `(ʀ7)`)' "$root/README.md")" 1
 t "release tag: codes and Z prefix stay plain" "$(grep -c '⚪  Z A6 · Compare libraries' "$root/README.md")" 1
+t "next release: name in parentheses" "$(grep -c 'its name, the part after the code and ` · `, in parentheses' "$root/skills/hub/SKILL.md")" 1
+t "next release: later releases have none" "$(grep -c '`🙋  ʀ25+ F2 · Staging download buttons`' "$root/skills/hub/SKILL.md")" 1
+t "next release: talk chats and hub never get them" "$(grep -c 'own title never get them' "$root/skills/hub/SKILL.md")" 1
+t "next release: retag to later drops them" "$(grep -c 'Retagging a chat to a later release drops' "$root/skills/hub/SKILL.md")" 1
+t "next release: added after a release in the retag batch" "$(grep -c 'put the name in parentheses on every open chat now tagged for the new' "$root/skills/hub/SKILL.md")" 1
+t "next release: with or without them is the same chat" "$(grep -c 'A title with or without them is the same' "$root/skills/hub/SKILL.md")" 1
+t "next release: README sidebar names in parentheses" "$(grep -cE '^(⚪|🙋|🤔|⏳|🚀|🔴|🟢|🔨|✅)  ʀ07 [A-F2-9]{2} · \(.*\)$' "$root/README.md")" 9
+t "next release: README later-release chat plain" "$(grep -c '^🔨  ʀ08 E3 · Bulk rename$' "$root/README.md")" 1
+t "next release: README code-first keeps both parentheses" "$(grep -c '`🔨  3F · (Fix menu spacing) (ʀ7)`' "$root/README.md")" 1
+t "next release: talk chats and hub stay plain" "$(grep -cE '⚪  Z A6 · Compare libraries$|^⚪  Hub · ʀ07 \(6\)$' "$root/README.md")" 2
+t "next release: setup mentions it" "$(grep -c 'coming release show their name in parentheses' "$root/skills/setup/SKILL.md")" 1
 t "titles: two spaces after the symbol" "$(grep -c "then two spaces (never one)" "$root/skills/hub/SKILL.md")" 1
 t "titles: no one-space title examples left" "$(cat "$root/skills/hub/SKILL.md" "$root/skills/setup/SKILL.md" "$root/README.md" | grep -cE '`(⚪|🔨|🙋|⏳|🚀|🟢|🔴|✅|🤔) [^ ]')" 0
 
