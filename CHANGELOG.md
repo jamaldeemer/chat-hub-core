@@ -3,7 +3,7 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
-## Unreleased (R21)
+## 0.3.32
 
 - **Small-caps `ʀ` in release tags:** the release tag's letter is now
   `ʀ` (U+0280), so it stands apart from the chat code:
