@@ -237,10 +237,10 @@ release), in the same batch of title calls; never retitle yourself just
 for the count. Only ever change the symbol and that
 suffix (the suffix when it's missing or after a release, the count as
 above); never change or suggest changing the rest. During a release set your own symbol:
-`🟡` release built, waiting on the owner's push; `🚀` CI running on the
+`🙋` release built, waiting on the owner's push; `🚀` CI running on the
 pushed release (level 2); `🟢` CI passed, ready for the owner to push to
 main; `🔴` CI failed; `⚪` once main has the release (with the new
-suffix); `❓` when you stopped on a question for the owner. You're found by your recorded IDs, not your name.
+suffix); `🤔` when you stopped on a question for the owner. You're found by your recorded IDs, not your name.
 
 Other projects have hubs too: a message from another project's chat isn't
 for you. Say so in one line and do nothing else.
@@ -346,7 +346,7 @@ Two styles, set by `titles` in the settings:
   "none". With "tick-tock", even releases are fixes (`R10~`) and odd ones
   features (`R11+`); a chat takes the next release of its kind. Work that
   misses its release moves to the next.
-- **Status symbol** first, then two spaces (never one), so the text clears the symbol: `🟡` waiting
+- **Status symbol** first, then two spaces (never one), so the text clears the symbol: `🙋` waiting
   on the owner's OK to commit, merge or push, `⏳` OK given, committing
   and pushing (or wrapping up: report in, being closed), `🚀` push in CI (level 2), `🟢` pushed (level 1) or CI
   passed (level 2) and asking the owner "more or wrap up?", `🔴` CI
@@ -359,30 +359,30 @@ Two styles, set by `titles` in the settings:
   With release-first titles the sidebar then sorts by symbol first, so
   chats group by status. E.g. `🚀  R16~ A3 · Fix menu spacing`,
   `🔨  3F · Fix menu spacing (R7)`. You set every symbol; work chats never
-  touch their own titles. When a chat says it's asking for an OK, set 🟡;
+  touch their own titles. When a chat says it's asking for an OK, set 🙋;
   when it says the OK was given, ⏳; when it says the owner said no ("OK declined"), 🔨.
   When a chat tells you it pushed, set 🚀 (level 2) or 🟢 (level 1);
   when the run ends, 🔴 or 🟢. 🟢 includes the chat's "more or wrap up?"
-  question, so don't set ❓ for it. 🟢 always means that question is
+  question, so don't set 🤔 for it. 🟢 always means that question is
   still open: when the chat says "more changes, working again", set 🔨;
   when its wrap-up report arrives, set ⏳ at once (before the close
   check), then merge, run the close check and set ✅.
-  `❓` waiting on the owner's answer: set it when a chat you track
+  `🤔` waiting on the owner's answer: set it when a chat you track
   (talk chats too) stopped on a question to the owner that isn't an OK,
   from the app's note that a session you started is waiting on the user
   or from the chat's own message ("question for owner: …"). When the
   owner answers (the chat says "answered, working again", or its next
   note or message), put back the symbol it had before (🚀/🔴), or 🔨 if
   it had ⚪ or 🔨 (a talk chat goes back to ⚪). Backstop: on every wake,
-  set 🔨 on any ❓ work chat that "Linked sessions now" shows as working
-  (⚪ on a talk chat). For OK questions 🟡 wins over ❓.
+  set 🔨 on any 🤔 work chat that "Linked sessions now" shows as working
+  (⚪ on a talk chat). For OK questions 🙋 wins over 🤔.
   Backstop for ⏳: on every wake (and first thing after a clear), close
   any ⏳ or 🟢 chat whose wrap-up report is in and that isn't ✅ yet
   (Closing chats below). A report in means the close happens now, even
   while wrapping up; it never waits for a clear.
 - **Talk chats** (questions, research, planning; no code to ship): no
   release tag, no branch or worktree, never retagged at a release.
-  They start with `⚪` like other chats and keep it (except ❓ while
+  They start with `⚪` like other chats and keep it (except 🤔 while
   waiting on the owner's answer), since they never push
   (your own title keeps ⚪ too). Release-first titles then have
   `Z ` so they sort last among ⚪ chats (`⚪  Z A4 · Compare slicers`);
@@ -526,14 +526,14 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
   tool, options like "Yes, commit" / "Not yet"); plain text only if
   this chat has no such tool. A hook refuses a commit without a menu
   yes since your last one. When you ask (to commit, merge or push),
-  tell the hub in one line ("asking for OK"; it sets 🟡 on your title).
+  tell the hub in one line ("asking for OK"; it sets 🙋 on your title).
   When the owner says yes, tell the hub at once, before committing ("OK
   given, committing"; it sets ⏳), then again after you push. If the
   owner says no, tell it "OK declined" (it sets 🔨).
 - **Questions:** when you end a turn on a question to the owner that
   isn't an OK, tell the hub in one line ("question for owner: <topic>";
-  it sets ❓ on your title). When the owner answers it here, first tell
-  the hub "answered, working again" (it clears ❓), then carry on.
+  it sets 🤔 on your title). When the owner answers it here, first tell
+  the hub "answered, working again" (it clears 🤔), then carry on.
 - **Start mode:** your brief's **Start:** line. "Plan first": look
   around, send the owner a short plan (what's there, the approach, a few
   lines), tell the hub "question for owner: plan ready", and change

@@ -23,14 +23,14 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
   tool, options like "Yes, commit" / "Not yet"); plain text only if
   this chat has no such tool. A hook refuses a commit without a menu
   yes since your last one. When you ask (to commit, merge or push),
-  tell the hub in one line ("asking for OK"; it sets 🟡 on your title).
+  tell the hub in one line ("asking for OK"; it sets 🙋 on your title).
   When the owner says yes, tell the hub at once, before committing ("OK
   given, committing"; it sets ⏳), then again after you push. If the
   owner says no, tell it "OK declined" (it sets 🔨).
 - **Questions:** when you end a turn on a question to the owner that
   isn't an OK, tell the hub in one line ("question for owner: <topic>";
-  it sets ❓ on your title). When the owner answers it here, first tell
-  the hub "answered, working again" (it clears ❓), then carry on.
+  it sets 🤔 on your title). When the owner answers it here, first tell
+  the hub "answered, working again" (it clears 🤔), then carry on.
 - **Start mode:** your brief's **Start:** line. "Plan first": look
   around, send the owner a short plan (what's there, the approach, a few
   lines), tell the hub "question for owner: plan ready", and change

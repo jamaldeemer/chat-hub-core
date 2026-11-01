@@ -355,12 +355,16 @@ t "hub title: open count in parentheses" "$(grep -c "the \*\*open count\*\* in p
 t "hub title: talk and ✅ chats not counted" "$(grep -c "Talk chats (no release tag), ✅ chats" "$root/skills/hub/SKILL.md")" 1
 t "hub title: count only with other title changes" "$(grep -c "never retitle yourself just" "$root/skills/hub/SKILL.md")" 1
 t "titles: two spaces after the symbol" "$(grep -c "then two spaces (never one)" "$root/skills/hub/SKILL.md")" 1
-t "titles: no one-space title examples left" "$(cat "$root/skills/hub/SKILL.md" "$root/skills/setup/SKILL.md" "$root/README.md" | grep -cE '`(⚪|🔨|🟡|⏳|🚀|🟢|🔴|✅|❓) [^ ]')" 0
+t "titles: no one-space title examples left" "$(cat "$root/skills/hub/SKILL.md" "$root/skills/setup/SKILL.md" "$root/README.md" | grep -cE '`(⚪|🔨|🙋|⏳|🚀|🟢|🔴|✅|🤔) [^ ]')" 0
 
 t "symbols: no rule sends a work chat back to ⚪" "$(cat "$root/skills/hub/SKILL.md" "$root/skills/work-chat/SKILL.md" "$root/README.md" | grep -E '(set|sets|back to|→|no,) ⚪|\(⚪/|⚪/🔨' | grep -vc 'talk chat')" 0
 t "symbols: ⚪ means new in the hub" "$(grep -c '`⚪` new: you just started' "$root/skills/hub/SKILL.md")" 1
-t "symbols: hub sets 🔨 after more, declined OK, answer, backstop" "$(grep -cE 'working again", set 🔨|said no \("OK declined"\), 🔨|or 🔨 if$|set 🔨 on any ❓ work chat' "$root/skills/hub/SKILL.md")" 4
+t "symbols: hub sets 🔨 after more, declined OK, answer, backstop" "$(grep -cE 'working again", set 🔨|said no \("OK declined"\), 🔨|or 🔨 if$|set 🔨 on any 🤔 work chat' "$root/skills/hub/SKILL.md")" 4
 t "symbols: work chat names 🔨 for more and declined" "$(grep -cE '\(it sets 🔨\)' "$root/skills/work-chat/SKILL.md")" 2
 t "symbols: README legend has 🔨" "$(grep -c '^| 🔨 | Under way' "$root/README.md")" 2
+t "symbols: no 🟡 or ❓ left (now 🙋 and 🤔)" "$(cat "$root/skills/hub/SKILL.md" "$root/skills/work-chat/SKILL.md" "$root/skills/setup/SKILL.md" "$root/README.md" "$root/docs/all-prompts.md" "$root"/hooks/*.mjs | grep -cE '🟡|❓')" 0
+t "symbols: README legend has 🙋 and 🤔" "$(grep -cE '^\| (🙋 \| Waiting on your OK|🤔 \| Waiting on your answer)' "$root/README.md")" 4
+t "symbols: hub's release built is 🙋" "$(grep -c '`🙋` release built, waiting on the owner' "$root/skills/hub/SKILL.md")" 1
+t "symbols: work chat names 🙋 and 🤔" "$(grep -cE 'it sets 🙋 on your title|it sets 🤔 on your title|it clears 🤔' "$root/skills/work-chat/SKILL.md")" 3
 cd "$tmp"
 rm -rf "$tmp"; exit $fail
