@@ -220,6 +220,41 @@ t "close-check: level 2 CI not passed fails" "$(ccw "$wt" "FAIL CI: hasn't passe
 echo '{"level":2,"ci":{"passed":"echo 1"}}' > "$wt/.claude/chat-hub.json"
 echo '- #9 try it' > "$wt/.claude/issues-to-check.md"
 t "close-check: unchecked fix fails" "$(ccw "$wt" 'FAIL fixes: 1 still waiting')" 1
+# close-chat.mjs: the hub's one-step close (merge into the preview, checks, close check)
+mkdir "$tmp/ch" && cd "$tmp/ch" && git init -q --bare remote.git && git init -q -b main repo && cd repo
+mkdir .claude && echo '{"level":1,"checks":"test ! -e bad.txt"}' > .claude/chat-hub.json && git add -A && gc -m init && git remote add origin ../remote.git && git push -q origin main
+git branch release
+ch() { GIT_AUTHOR_NAME=t GIT_AUTHOR_EMAIL=a@b GIT_COMMITTER_NAME=t GIT_COMMITTER_EMAIL=a@b node "$root/hooks/close-chat.mjs" "$1" 2>&1; }
+chw() { ch "$1" | grep -c "$2"; }
+wk() { git worktree add -q "../$1" -b "$1" main; echo "$3" > "../$1/$2"; git -C "../$1" add -A; git -C "../$1" -c user.email=a@b -c user.name=t commit -q -m "$1"; git -C "../$1" push -q origin HEAD; }
+wk b1 f.txt one
+echo dirt > ../b1/dirt.txt
+t "close-chat: uncommitted stops before merging" "$(chw b1 'FAIL uncommitted')" 1
+t "close-chat: preview left alone on a failed check" "$(git rev-parse release)" "$(git rev-parse main)"
+rm ../b1/dirt.txt
+t "close-chat: finds the folder itself" "$(chw b1 "PASS folder: .*/b1")" 1
+t "close-chat: merge that adds nothing skips the checks" "$(git branch -f release main; chw b1 'PASS checks: skipped')" 1
+t "close-chat: branch is in the preview" "$(git merge-base --is-ancestor b1 release; echo $?)" 0
+t "close-chat: preview merge has two parents" "$(git rev-list --parents -1 release | wc -w | tr -d ' ')" 3
+t "close-chat: all good is ready" "$(ch b1 | tail -1 | grep -c '^READY to close b1')" 1
+t "close-chat: already merged" "$(chw b1 'PASS merge: .* is already in release')" 1
+wk b2 f.txt two
+t "close-chat: clash fails and names the file" "$(chw b2 'FAIL merge: clashes with release in f.txt')" 1
+wk b3 g.txt three
+t "close-chat: merge that adds something runs the checks" "$(chw b3 'PASS checks: `test ! -e bad.txt` passed')" 1
+t "close-chat: then ready" "$(ch b3 | tail -1 | grep -c '^READY')" 1
+wk b4 bad.txt four; before=$(git rev-parse release)
+t "close-chat: failing checks fail" "$(chw b4 'FAIL checks: .* failed on the merge')" 1
+t "close-chat: failing checks leave the preview alone" "$(git rev-parse release)" "$before"
+echo '{"level":1}' > .claude/chat-hub.json
+t "close-chat: no checks command fails" "$(chw b4 'FAIL checks: no `checks` command')" 1
+git checkout -q -- .claude/chat-hub.json
+git branch b5 main
+t "close-chat: branch without a folder fails" "$(chw b5 'FAIL folder: no worktree has b5')" 1
+git worktree add -q ../rel release
+t "close-chat: preview checked out somewhere fails" "$(chw b3 'FAIL preview: release is checked out')" 1
+git worktree remove --force ../rel
+cd "$tmp/cc/repo"
 # run.mjs (the launcher) and the reload notice: two versions installed side by side
 cache="$tmp/cache/chat-hub-core"; mkdir -p "$cache"
 for v in 1.0.0 2.0.0; do
@@ -280,6 +315,9 @@ t "start modes: wait is a startMode value" "$(grep -c '"plan", "build" or "wait"
 t "start modes: work chat handles Just open" "$(grep -c '"Just open": read your brief' "$root/skills/work-chat/SKILL.md")" 1
 t "start modes: brief offers just open" "$(grep -c '"just open"' "$root/templates/brief.md")" 1
 t "start modes: setup lists wait" "$(grep -c '"plan" | "build" | "wait"' "$root/skills/setup/SKILL.md")" 1
+t "close: hub uses close-chat" "$(grep -c 'hooks/close-chat.mjs"' "$root/skills/hub/SKILL.md")" 1
+t "close: hub sets ✅ with the READY" "$(grep -c 'right after that READY, in one step' "$root/skills/hub/SKILL.md")" 1
+t "close: setup has checks" "$(grep -c '"checks": ""' "$root/skills/setup/SKILL.md")" 1
 
 cd "$tmp"
 rm -rf "$tmp"; exit $fail

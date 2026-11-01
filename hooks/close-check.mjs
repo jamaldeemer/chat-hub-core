@@ -1,16 +1,19 @@
-// Is a work chat's folder safe to close? node close-check.mjs <the chat's worktree>
+// Is a work chat's folder safe to close? node close-check.mjs <the chat's worktree> [--before-merge]
 // Prints one PASS/FAIL line per check and exits 1 if any fails. The hub runs it before
 // marking a chat ✅; nothing here asks the chat, it looks at git itself.
 //   all levels: nothing uncommitted.
 //   level 1+:   on its own branch (not main); every commit pushed; merged into the release preview.
 //   level 2:    CI passed on its newest commit; no fix of its still waiting for the owner's check.
+// --before-merge skips the "merged" check (close-chat.mjs runs the rest before it merges).
 // "Pushed" uses the upstream, or origin/<branch> if none, as last fetched; the hub fetches first if in doubt.
 import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { loadConfig } from './config.mjs'
 
-const dir = resolve(process.argv[2] || '.')
+const args = process.argv.slice(2)
+const beforeMerge = args.includes('--before-merge')
+const dir = resolve(args.find(a => !a.startsWith('--')) || '.')
 const lines = []
 let failed = false
 const pass = msg => lines.push(`PASS ${msg}`)
@@ -54,7 +57,8 @@ if (tryGit('rev-parse', '--is-inside-work-tree') !== 'true') {
         const ahead = Number(tryGit('rev-list', '--count', '@{u}..HEAD') || 0)
         ahead ? fail(`pushed: ${ahead} commit(s) not pushed to ${upstream}`) : pass(`pushed: all of it, to ${upstream}`)
       }
-      if (tryGit('rev-parse', '--verify', '-q', release) === null) fail(`merged: no ${release} branch (the release preview) to check against`)
+      if (beforeMerge) { /* close-chat.mjs merges next, then runs the full check */ }
+      else if (tryGit('rev-parse', '--verify', '-q', release) === null) fail(`merged: no ${release} branch (the release preview) to check against`)
       else if (tryGit('merge-base', '--is-ancestor', head, release) === null) fail(`merged: ${head.slice(0, 7)} isn't in the release preview (${release}) yet`)
       else pass(`merged: in the release preview (${release})`)
 
