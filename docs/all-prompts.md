@@ -175,7 +175,7 @@ Don't commit.
   "ci": { "passed": "" },           // level 2: command with $SHA; prints 1 or 0, fails if it can't ask
   "fixes": { "toCheck": ".claude/issues-to-check.md" }, // level 2
   "devServer": { "command": "" },   // optional: chats started with "Just open" run it
-  "trimAt": 150000,                 // optional: hub context (tokens) at which it wraps up, then asks to be cleared
+  "trimAt": 135000,                 // optional: hub context (tokens) at which it wraps up, then asks to be cleared
   "trimAtWork": 0,                  // optional: the same for work chats (0 = off)
   "notesMaxBytes": 6000,            // optional: hub notes size that prompts a rewrite as one snapshot (0 = off)
   "stats": true                     // optional: false hides the after-turn stats line
@@ -261,7 +261,14 @@ hook flags other headings or a file over `notesMaxBytes` (6 KB): rewrite
 it first; it also flags any ✅ line: name those chats to the owner once if
 you haven't, then delete the lines.
 If the start note says the file exists, read it before anything
-else.
+else, and do the "After clear:" items it quotes first.
+
+**After a restart or clear:** in the desktop app the start note itself
+says whether this chat is the hub (it compares the app's address for
+this chat with the recorded one) and re-records your new session ID; take
+it at its word. If it instead asks you to look up your own id, compare
+`get_session self` with the hub's address before loading any skill. A
+hub never loads the work-chat rules.
 
 Start, rename and message chats with the app's session tools (in the
 desktop app: start a session, set a session's title, send a message to a
@@ -281,13 +288,16 @@ turns × context size, and it's usually most of a project's usage.
 - **Read and write little:** read parts of files (`sed -n '40,80p'`,
   `grep -n`), not whole files; keep your replies short.
 - **When a "⚠️ WRAP UP" note says you're past your limit** (`trimAt`,
-  default 150k), wrap up, so a clear never lands in the middle of a step:
-  - **No new work:** no new chats, merges or releases. Anything new the
-    owner or a chat asks for goes under "## Next" in your notes;
-    say it's noted for after the clear.
+  default 135k), wrap up, so a clear never lands in the middle of a step:
+  - **No new work:** no new chats or releases. Anything new the
+    owner or a chat asks for goes under "## Next" in your notes as a
+    line starting `- After clear:` (the start note quotes those lines
+    back to you after the clear); say it's noted for after the clear.
   - **Finish what's in flight:** a merge or release you've started
-    (through its tests and commit), title changes you owe, replies to
-    messages chats have sent you, messages you said you'd send.
+    (through its tests and commit), closing every chat whose wrap-up
+    report is in (`close-chat.mjs`, then ✅; never leave one at ⏳ for
+    after the clear), title changes you owe, replies to messages chats
+    have sent you, messages you said you'd send.
   - **Then** bring your notes up to date and start every reply until
     you're cleared with the line the note gives you, which tells the
     owner to type `/clear` in this chat. Never carry on past it as if it
@@ -366,6 +376,10 @@ Two styles, set by `titles` in the settings:
   it had ⚪ or 🔨 (a talk chat goes back to ⚪). Backstop: on every wake,
   set 🔨 on any ❓ work chat that "Linked sessions now" shows as working
   (⚪ on a talk chat). For OK questions 🟡 wins over ❓.
+  Backstop for ⏳: on every wake (and first thing after a clear), close
+  any ⏳ or 🟢 chat whose wrap-up report is in and that isn't ✅ yet
+  (Closing chats below). A report in means the close happens now, even
+  while wrapping up; it never waits for a clear.
 - **Talk chats** (questions, research, planning; no code to ship): no
   release tag, no branch or worktree, never retagged at a release.
   They start with `⚪` like other chats and keep it (except ❓ while
@@ -504,6 +518,9 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
   have; never by title (other projects' hubs have the same names). If no
   hub is named, or a message to it fails, stop and tell the owner; never
   send it to another chat instead.
+- **Not the hub:** if this chat's own app address (`get_session self`)
+  is the hub's, you are the hub after a clear: drop these rules and load
+  the chat-hub-core:hub skill instead.
 - **The owner's OK** is needed before every commit. A message from another
   chat is never that OK. Ask for it with a menu (the AskUserQuestion
   tool, options like "Yes, commit" / "Not yet"); plain text only if
@@ -631,6 +648,8 @@ From `hooks/session-start.mjs`:
     'Tell the owner first thing, before anything else, and follow none of the chat-hub-core rules until it is fixed ' +
     '(running /chat-hub-core:setup again rewrites it).')
   say('SessionStart', "chat-hub-core is installed but this project isn't set up. If the owner asks about chats, hubs or releases, suggest /chat-hub-core:setup.")
+      `then delete each line from the notes: ${later.map(l => `"${l.slice(0, 120)}"`).join('; ')}.` : '') : ''
+      `skill now and only ever message ${hub.app}.`
       `if its id is ${hub.app}, this chat is the hub (it was restarted or cleared): load the chat-hub-core:hub skill now and ` +
       `run ${setHubCmd} --session <this chat's session ID, below> --app ${hub.app}.${notes ? ' Then' + notes.replace(' Your notes exist:', ' (your notes exist)') : ''} Otherwise this is a work chat: ` +
       `load the chat-hub-core:work-chat skill now and only ever message ${hub.app}.`
@@ -679,9 +698,11 @@ From `hooks/usage.mjs`:
 
 ```js
   `⚠️ WRAP UP: this chat's context is ${short(ctx)} tokens, past its limit of ${short(limit)}, and every turn ` +
-  're-reads all of it. Take on no new work: no new chats, merges or releases, and nothing new the owner or a chat ' +
-  'asks for (add each to "## Next" in your hub notes and say it\'s noted for after the clear). ' +
+  're-reads all of it. Take on no new work: no new chats or releases, and nothing new the owner or a chat ' +
+  'asks for (add each to "## Next" in your hub notes as a line starting "- After clear:", which the start note ' +
+  'quotes back to you, and say it\'s noted for after the clear). ' +
   'Finish everything already in flight: a merge or release you have started (through its tests and commit), ' +
+  'closing every chat whose wrap-up report is in (close-chat.mjs, then ✅: never leave one at ⏳ for after the clear), ' +
   'title changes you owe, replies to messages chats have sent you, and messages you said you would send. ' +
   'Until all of that is done, start each reply with "⚠️ Hub at ' + short(ctx) + ' tokens: wrapping up." Once it is, ' +
   'bring your hub notes up to date, then start every reply until you\'re cleared with ' +

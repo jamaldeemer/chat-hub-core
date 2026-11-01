@@ -166,7 +166,7 @@ Don't commit.
   "ci": { "passed": "" },           // level 2: command with $SHA; prints 1 or 0, fails if it can't ask
   "fixes": { "toCheck": ".claude/issues-to-check.md" }, // level 2
   "devServer": { "command": "" },   // optional: chats started with "Just open" run it
-  "trimAt": 150000,                 // optional: hub context (tokens) at which it wraps up, then asks to be cleared
+  "trimAt": 135000,                 // optional: hub context (tokens) at which it wraps up, then asks to be cleared
   "trimAtWork": 0,                  // optional: the same for work chats (0 = off)
   "notesMaxBytes": 6000,            // optional: hub notes size that prompts a rewrite as one snapshot (0 = off)
   "stats": true                     // optional: false hides the after-turn stats line

@@ -68,7 +68,14 @@ hook flags other headings or a file over `notesMaxBytes` (6 KB): rewrite
 it first; it also flags any ✅ line: name those chats to the owner once if
 you haven't, then delete the lines.
 If the start note says the file exists, read it before anything
-else.
+else, and do the "After clear:" items it quotes first.
+
+**After a restart or clear:** in the desktop app the start note itself
+says whether this chat is the hub (it compares the app's address for
+this chat with the recorded one) and re-records your new session ID; take
+it at its word. If it instead asks you to look up your own id, compare
+`get_session self` with the hub's address before loading any skill. A
+hub never loads the work-chat rules.
 
 Start, rename and message chats with the app's session tools (in the
 desktop app: start a session, set a session's title, send a message to a
@@ -88,13 +95,16 @@ turns × context size, and it's usually most of a project's usage.
 - **Read and write little:** read parts of files (`sed -n '40,80p'`,
   `grep -n`), not whole files; keep your replies short.
 - **When a "⚠️ WRAP UP" note says you're past your limit** (`trimAt`,
-  default 150k), wrap up, so a clear never lands in the middle of a step:
-  - **No new work:** no new chats, merges or releases. Anything new the
-    owner or a chat asks for goes under "## Next" in your notes;
-    say it's noted for after the clear.
+  default 135k), wrap up, so a clear never lands in the middle of a step:
+  - **No new work:** no new chats or releases. Anything new the
+    owner or a chat asks for goes under "## Next" in your notes as a
+    line starting `- After clear:` (the start note quotes those lines
+    back to you after the clear); say it's noted for after the clear.
   - **Finish what's in flight:** a merge or release you've started
-    (through its tests and commit), title changes you owe, replies to
-    messages chats have sent you, messages you said you'd send.
+    (through its tests and commit), closing every chat whose wrap-up
+    report is in (`close-chat.mjs`, then ✅; never leave one at ⏳ for
+    after the clear), title changes you owe, replies to messages chats
+    have sent you, messages you said you'd send.
   - **Then** bring your notes up to date and start every reply until
     you're cleared with the line the note gives you, which tells the
     owner to type `/clear` in this chat. Never carry on past it as if it
@@ -173,6 +183,10 @@ Two styles, set by `titles` in the settings:
   it had ⚪ or 🔨 (a talk chat goes back to ⚪). Backstop: on every wake,
   set 🔨 on any ❓ work chat that "Linked sessions now" shows as working
   (⚪ on a talk chat). For OK questions 🟡 wins over ❓.
+  Backstop for ⏳: on every wake (and first thing after a clear), close
+  any ⏳ or 🟢 chat whose wrap-up report is in and that isn't ✅ yet
+  (Closing chats below). A report in means the close happens now, even
+  while wrapping up; it never waits for a clear.
 - **Talk chats** (questions, research, planning; no code to ship): no
   release tag, no branch or worktree, never retagged at a release.
   They start with `⚪` like other chats and keep it (except ❓ while

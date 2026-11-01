@@ -3,6 +3,7 @@
 set -u
 root=$(cd "$(dirname "$0")/.." && pwd); fail=0
 t() { if [ "$2" = "$3" ]; then echo "ok   $1"; else echo "FAIL $1: got [$2] want [$3]"; fail=1; fi; }
+unset CLAUDE_CODE_HOST_SESSION_ID   # the desktop app's own address for the chat running the tests
 tmp=$(mktemp -d "${TMPDIR:-/tmp}/chat-hub-test.XXXXXX") && [ -d "$tmp" ] || { echo "no temp folder"; exit 1; }; cd "$tmp" || exit 1
 t "no config: suggests setup" "$(echo '{}' | node "$root/hooks/session-start.mjs" | grep -c 'chat-hub-core:setup')" 1
 mkdir .claude; echo '{"level":0,"done":["tests pass"]}' > .claude/chat-hub.json
@@ -46,6 +47,21 @@ node "$root/hooks/set-hub.mjs" --session s5 --app local_A --replace >/dev/null
 echo '# notes' > .git/chat-hub/hub-notes.md
 t "hub notes: hub told to read them" "$(echo '{"session_id":"s5"}' | node "$root/hooks/session-start.mjs" | grep -c 'read .*hub-notes.md before anything else')" 1
 t "hub notes: others only if they turn out to be the hub" "$(echo '{"session_id":"s6"}' | node "$root/hooks/session-start.mjs" | grep -c 'if its id is local_A, this chat is the hub.*hub-notes.md.*Otherwise this is a work chat')" 1
+# In the desktop app the hooks see this chat's app address (CLAUDE_CODE_HOST_SESSION_ID), which a clear keeps.
+ssa() { printf '{"session_id":"%s"}' "$2" | CLAUDE_CODE_HOST_SESSION_ID="$1" node "$root/hooks/session-start.mjs"; }
+t "app address: cleared hub told it is the hub" "$(ssa local_A s7 | grep -c 'This chat is the hub (the app gives.*never the work-chat skill.*hub-notes.md before anything else')" 1
+t "app address: cleared hub not asked to look itself up" "$(ssa local_A s7 | grep -c 'if its id is\|Otherwise this is a work chat')" 0
+t "app address: cleared hub's new session ID recorded" "$(grep -c '"session":"s7","app":"local_A"' .git/chat-hub/hub)" 1
+t "app address: work chat told so outright" "$(ssa local_Z s6 | grep -c 'This chat is a work chat (its app address is local_Z; the hub is local_A).*only ever message local_A')" 1
+t "app address: work chat not told to read the notes" "$(ssa local_Z s6 | grep -c 'hub-notes.md')" 0
+printf '## Me\nx\n## Next\n- code E10 next\n- After clear: close E8 (report in)\n- after the clear: tell E7 to merge main\n## Plans\n- After clear: not this one\n' > .git/chat-hub/hub-notes.md
+t "after clear: start note quotes the Next items" "$(ssa local_A s7 | grep -c 'put off until after the clear; do it first.*close E8 (report in).*tell E7 to merge main')" 1
+t "after clear: only from ## Next" "$(ssa local_A s7 | grep -c 'not this one')" 0
+t "after clear: none, nothing quoted" "$(printf '## Next\n- E10\n' > .git/chat-hub/hub-notes.md; ssa local_A s7 | grep -c 'put off')" 0
+node "$root/hooks/set-hub.mjs" --session s5 --app local_A >/dev/null
+t "app address: hub without one gets it recorded" "$(node "$root/hooks/set-hub.mjs" --session s10 --replace >/dev/null; ssa local_D s10 | grep -c -- '--app'; grep -c '"session":"s10","app":"local_D"' .git/chat-hub/hub)" "0
+1"
+node "$root/hooks/set-hub.mjs" --session s5 --app local_A --replace >/dev/null
 rm .git/chat-hub/hub-notes.md
 printf '# Hub notes\n## Me\nx\n## Next\nC5\n## Open chats (by release)\n- C4\n' > .git/chat-hub/hub-notes.md
 t "notes check: clean small file quiet at start" "$(echo '{"session_id":"s5"}' | node "$root/hooks/session-start.mjs" | grep -c 'ONE current snapshot')" 0
@@ -163,6 +179,18 @@ t "wrap up: once on a tool call when crossed" "$(pt u1 Read '{"file_path":"x"}' 
 t "wrap up: not again on tool calls" "$(pt u1 Read '{"file_path":"x"}' | wc -c | tr -d ' ')" 0
 echo '{"level":0,"trimAt":200000}' > .claude/chat-hub.json
 t "wrap up: trimAt sets the limit" "$(op u1 | wc -c | tr -d ' ')" 0
+echo '{"level":0}' > .claude/chat-hub.json
+t "wrap up: default limit is 135k" "$(op u1 | grep -c 'past its limit of 135k')" 1
+asst m8 0 134000; at u1 >/dev/null
+t "wrap up: quiet under 135k by default" "$(op u1 | wc -c | tr -d ' ')" 0
+asst m9 0 136000; at u1 >/dev/null
+t "wrap up: closing chats whose report is in counts as in flight" "$(op u1 | grep -c 'closing every chat whose wrap-up report is in.*never leave one at ⏳')" 1
+t "wrap up: put-off work noted as After clear" "$(op u1 | grep -c 'starting .*- After clear:')" 1
+node "$root/hooks/set-hub.mjs" --session u1 --app local_H >/dev/null
+opa() { printf '{"session_id":"%s","prompt":"hi","cwd":"%s"}' "$2" "$(pwd)" | CLAUDE_CODE_HOST_SESSION_ID="$1" node "$root/hooks/on-prompt.mjs"; }
+cp "$TMPDIR/chat-hub-core/u1.json" "$TMPDIR/chat-hub-core/u1c.json"
+t "wrap up: hub known by app address before its new session ID is recorded" "$(opa local_H u1c | grep -c 'WRAP UP')" 1
+t "wrap up: other app address not the hub" "$(opa local_W u1c | grep -c 'WRAP UP')" 0
 echo '{"level":0,"trimAt":150000}' > .claude/chat-hub.json
 asst m13 0 151000; at u2 >/dev/null
 t "trim: work chats not by default" "$(op u2 | wc -c | tr -d ' ')" 0

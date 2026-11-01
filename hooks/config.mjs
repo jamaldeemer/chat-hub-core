@@ -96,6 +96,30 @@ export function readHub(cfg = readConfig()) {
 // The ID to tell other chats to message: the app address when known.
 export const hubAddress = h => h.app || h.session
 
+// This chat's own app address (`local_…`). The desktop app gives it to every chat and its hooks,
+// and it stays the same across a restart or clear, so the hooks can tell the hub apart
+// themselves. Empty outside the desktop app (e.g. the plain terminal).
+export const hostApp = () => process.env.CLAUDE_CODE_HOST_SESSION_ID || ''
+
+// Is this chat the hub? By session ID, or (after a clear, before the new session ID is
+// recorded) by the app address.
+export const isHubChat = (hub, session) =>
+  !!((hub.session && session && hub.session === session) || (hub.app && hostApp() === hub.app))
+
+// Lines in the hub notes' "## Next" section that start "After clear:" (also "After the clear:"),
+// the work the hub put off while wrapping up. Quoted in the start note so it comes first.
+export function afterClearItems(file = hubNotesFile()) {
+  if (!file || !existsSync(file)) return []
+  const out = []
+  let inNext = false
+  for (const line of readFileSync(file, 'utf8').split('\n')) {
+    if (/^## /.test(line)) { inNext = /^## Next\b/i.test(line); continue }
+    const m = inNext && line.match(/^[-*\s]*after (?:the )?clear:\s*(.+)$/i)
+    if (m) out.push(m[1].trim())
+  }
+  return out
+}
+
 // Record the hub. A new session replaces the record (keeping the app address only if given);
 // an app address alone is added to the current record. Taking over from a different hub
 // (another session, and not the same app address) is refused unless `replace` is set, so a
