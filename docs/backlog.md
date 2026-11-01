@@ -12,6 +12,12 @@ chats from its notes, though the notes said to check first).
 
 ## Next
 
+- **Revisit making the repo findable (E7, 2026-11-01).** The owner isn't
+  ready for strangers to find it yet. When ready: run
+  `sh scripts/findable.sh on` (sets the GitHub description and topics;
+  `off` clears them, `status` shows them), check the wording and topics
+  still fit, then the later paths: curated awesome-lists and a post with
+  a screen recording.
 - Flaky test (seen in E3, 2026-10-31): "shared hub: seen from another
   worktree" in `tests/run.sh` failed once in three runs (`../wt2` was not
   a working tree), then passed.
