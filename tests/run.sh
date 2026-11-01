@@ -302,6 +302,11 @@ rm "$vd/fail-update"
 t "skills: answered line in work chat" "$(grep -c 'answered, working again' "$root/skills/work-chat/SKILL.md")" 1
 t "skills: OK asked with a menu" "$(grep -c 'Ask for it with a menu' "$root/skills/work-chat/SKILL.md")" 1
 t "skills: answered line in hub" "$(grep -c 'answered, working again' "$root/skills/hub/SKILL.md")" 1
+t "start modes: Just open in hub" "$(grep -c '\*\*Just open:\*\*' "$root/skills/hub/SKILL.md")" 1
+t "start modes: wait is a startMode value" "$(grep -c '"plan", "build" or "wait"' "$root/skills/hub/SKILL.md")" 1
+t "start modes: work chat handles Just open" "$(grep -c '"Just open": read your brief' "$root/skills/work-chat/SKILL.md")" 1
+t "start modes: brief offers just open" "$(grep -c '"just open"' "$root/templates/brief.md")" 1
+t "start modes: setup lists wait" "$(grep -c '"plan" | "build" | "wait"' "$root/skills/setup/SKILL.md")" 1
 
 cd "$tmp"
 rm -rf "$tmp"; exit $fail
