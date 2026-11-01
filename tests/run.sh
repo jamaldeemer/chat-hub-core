@@ -309,6 +309,9 @@ rm "$vd/fail-update"
 
 t "skills: answered line in work chat" "$(grep -c 'answered, working again' "$root/skills/work-chat/SKILL.md")" 1
 t "skills: OK asked with a menu" "$(grep -c 'Ask for it with a menu' "$root/skills/work-chat/SKILL.md")" 1
+t "skills: more or wrap up asked with a menu" "$(grep -c 'should I wrap up?" with a menu' "$root/skills/work-chat/SKILL.md")" 1
+t "skills: menu has Wrap up / More changes" "$(grep -c 'options \"Wrap up\" / \"More changes\"' "$root/skills/work-chat/SKILL.md")" 1
+t "skills: hub expects the Wrap up menu answer" "$(grep -c 'should I wrap up?" menu' "$root/skills/hub/SKILL.md")" 1
 t "skills: answered line in hub" "$(grep -c 'answered, working again' "$root/skills/hub/SKILL.md")" 1
 t "start modes: Just open in hub" "$(grep -c '\*\*Just open:\*\*' "$root/skills/hub/SKILL.md")" 1
 t "start modes: wait is a startMode value" "$(grep -c '"plan", "build" or "wait"' "$root/skills/hub/SKILL.md")" 1

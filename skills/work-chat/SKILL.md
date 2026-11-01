@@ -57,9 +57,12 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
   show why the test should change) and reply when pushed. A fix for a
   reported problem says `Fixes #n` and adds `- #n <what to try>` to the
   file `fixes.toCheck` names.
-- **More or wrap up:** after you push (level 2: after CI passes), ask the owner "Anything more, or
-  should I wrap up?" (your 🟢 title already says so; don't tell the
-  hub it's a question). Never wrap up on your own judgment.
+- **More or wrap up:** after you push (level 2: after CI passes), ask the
+  owner "Anything more, or should I wrap up?" with a menu (the
+  AskUserQuestion tool, options "Wrap up" / "More changes"), like the
+  commit OK; plain text only if this chat has no such tool. Your 🟢
+  title already says so; don't tell the hub it's a question. Never wrap
+  up on your own judgment.
 - **Wrap-up** (when the owner or hub says to): send the hub the
   report in `${CLAUDE_PLUGIN_ROOT}/templates/wrap-up.md`, in exactly that
   shape. Never call yourself ready to close or set ✅; the hub checks and

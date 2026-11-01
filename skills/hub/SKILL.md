@@ -194,8 +194,8 @@ Your own merges into the release branch keep git's wording.
 
 A chat closes only when all of this holds, checked in this order:
 
-1. **Report:** it sent the wrap-up report (only after the owner said
-   "wrap up" to its "Anything more, or should I wrap up?")
+1. **Report:** it sent the wrap-up report (only after the owner picked
+   "Wrap up" in its "Anything more, or should I wrap up?" menu)
    (`${CLAUDE_PLUGIN_ROOT}/templates/wrap-up.md`) with every line filled
    in. If it hasn't, send it that template.
 2. **Folder:** level 1+: `node "${CLAUDE_PLUGIN_ROOT}/hooks/close-chat.mjs"
