@@ -14,6 +14,12 @@ Each version is a git tag (`v0.1.0`). Projects pin a tag in
   from between 🚀 and 🟢 to between 🔴 and 🚀, and 🤔 moves from
   between ✅ and 🔨 to last. Tests check that no 🟡 or ❓ is left in the
   rules, README or hooks.
+- **Old symbols retitled at once:** open chats used to keep an old
+  symbol until their next status change, so after a rename the sidebar
+  showed 🟡/❓ next to 🙋/🤔. New hub rule (After a plugin update): when
+  a release or update renames a status symbol, the hub retitles every
+  open chat still showing an old one, its own title too, in one batch of
+  title calls. A test checks the rule.
 
 ## 0.3.28
 
