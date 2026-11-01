@@ -54,17 +54,19 @@ export function updateUsage(session, transcript) {
 
 export const short = n => (n >= 1e6 ? `${(n / 1e6).toFixed(n >= 1e7 ? 0 : 1)}M` : n >= 1e3 ? `${Math.round(n / 1e3)}k` : String(n))
 
-// The size limit: `trimAt` for the hub (default 150k); work chats only if `trimAtWork` is set.
-export const trimLimit = (isHub, cfg) => (isHub ? (cfg.trimAt ?? 150000) : (cfg.trimAtWork || 0))
+// The size limit: `trimAt` for the hub (default 135k); work chats only if `trimAtWork` is set.
+export const trimLimit = (isHub, cfg) => (isHub ? (cfg.trimAt ?? 135000) : (cfg.trimAtWork || 0))
 
 // One level: past the limit the hub wraps up. It takes on no new work, finishes what it already
 // has in flight, brings its notes up to date and only then asks to be cleared, so a clear never
 // lands in the middle of a step.
 export const wrapUpText = (ctx, limit) =>
   `⚠️ WRAP UP: this chat's context is ${short(ctx)} tokens, past its limit of ${short(limit)}, and every turn ` +
-  're-reads all of it. Take on no new work: no new chats, merges or releases, and nothing new the owner or a chat ' +
-  'asks for (add each to "## Next" in your hub notes and say it\'s noted for after the clear). ' +
+  're-reads all of it. Take on no new work: no new chats or releases, and nothing new the owner or a chat ' +
+  'asks for (add each to "## Next" in your hub notes as a line starting "- After clear:", which the start note ' +
+  'quotes back to you, and say it\'s noted for after the clear). ' +
   'Finish everything already in flight: a merge or release you have started (through its tests and commit), ' +
+  'closing every chat whose wrap-up report is in (close-chat.mjs, then ✅: never leave one at ⏳ for after the clear), ' +
   'title changes you owe, replies to messages chats have sent you, and messages you said you would send. ' +
   'Until all of that is done, start each reply with "⚠️ Hub at ' + short(ctx) + ' tokens: wrapping up." Once it is, ' +
   'bring your hub notes up to date, then start every reply until you\'re cleared with ' +

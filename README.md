@@ -271,7 +271,10 @@ groups chats by release, and talk chats (`Z `) sort last. With tick-tock,
 `~` releases are fixes and `+` releases features; the hub's title shows
 the soonest next release (`⚪  Hub · R15+ (2)`). The hub also keeps notes in
 git's own folder (`.git/chat-hub/hub-notes.md`), so a restart or a clear
-loses nothing.
+loses nothing. In the desktop app the start hook knows the hub by its app
+address, which a clear doesn't change, so a cleared hub is told it's the
+hub outright (and its new session ID recorded) instead of having to work
+it out.
 
 ## How it works
 
@@ -296,10 +299,12 @@ reach), chats stop and tell you rather than guess.
 312 turns · this chat ≈ 41M token-reads` (Claude doesn't see it; set
 `"stats": false` to hide it). Every turn re-reads the whole context, so
 long chats, the hub above all, cost the most. When the hub passes
-`trimAt` (default 150k tokens) it wraps up: it takes on no new work
-(anything new you or a chat ask for goes in its notes for after the
+`trimAt` (default 135k tokens) it wraps up: it takes on no new work
+(anything new you or a chat ask for goes in its notes as an
+"After clear:" line, which the start note quotes back to it after the
 clear), finishes what it already has in flight (a merge or release it
-started, titles it owes, replies to chats, messages it promised), brings
+started, closing every chat whose wrap-up report is in, titles it owes,
+replies to chats, messages it promised), brings
 its notes up to date, and only then asks you to clear it, so a clear
 never lands in the middle of a step. Until then each reply starts
 "⚠️ Hub at …: wrapping up", then "⚠️ Wrapped up, notes saved. Type

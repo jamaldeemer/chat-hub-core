@@ -9,7 +9,7 @@ import { execFileSync } from 'node:child_process'
 import { realpathSync, writeSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { basename, dirname, resolve } from 'node:path'
-import { hookInput, menuOk, readConfig, readHub, say } from './config.mjs'
+import { hookInput, isHubChat, menuOk, readConfig, readHub, say } from './config.mjs'
 import { trimNudge } from './usage.mjs'
 
 const input = hookInput()
@@ -19,7 +19,7 @@ if (!c) process.exit(0)
 const level = c.level || 0
 const main = c.branches?.main || 'main'
 const hub = readHub(c)
-const isHub = !!(hub.session && input.session_id === hub.session)
+const isHub = isHubChat(hub, input.session_id)
 
 const deny = reason => {
   writeSync(1, JSON.stringify({ hookSpecificOutput: {
