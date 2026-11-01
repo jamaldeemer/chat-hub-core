@@ -182,7 +182,14 @@ Two styles, set by `titles` in the settings:
   note or message), put back the symbol it had before (🚀/🔴), or 🔨 if
   it had ⚪ or 🔨 (a talk chat goes back to ⚪). Backstop: on every wake,
   set 🔨 on any 🤔 work chat that "Linked sessions now" shows as working
-  (⚪ on a talk chat). For OK questions 🙋 wins over 🤔.
+  (⚪ on a talk chat). And the other way: on every wake, set 🤔 on any
+  🔨 work chat (⚪ talk chat) that is idle and whose last message ends
+  on a question to the owner, even if it never said "question for
+  owner". Judge from the app's note (its quoted text) first; read the
+  chat's transcript only if unsure. A question to the owner asks them
+  to decide or answer something ("should I build X?", "A or B?"); a
+  closing "anything else?" or "let me know" is not one, and neither
+  is the 🟢 "more or wrap up?" question. For OK questions 🙋 wins over 🤔.
   Backstop for ⏳: on every wake (and first thing after a clear), close
   any ⏳ or 🟢 chat whose wrap-up report is in and that isn't ✅ yet
   (Closing chats below). A report in means the close happens now, even

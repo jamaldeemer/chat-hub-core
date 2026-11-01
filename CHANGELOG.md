@@ -3,6 +3,18 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## Unreleased (R19)
+
+- **🤔 when a chat ends on a question:** a work chat that ended its turn
+  asking the owner something in plain text could keep 🔨, so the hub
+  said it was still working. Now the work chat tells the hub "question
+  for owner: …" in the same turn whenever it ends on a question that
+  isn't an OK, menu or not. And the hub has a backstop the other way:
+  on every wake, an idle 🔨 work chat (⚪ talk chat) whose last message
+  asks the owner something gets 🤔, judged from the app's note first,
+  the transcript only if unsure. A closing "anything else?" and the 🟢
+  "more or wrap up?" question don't count.
+
 ## 0.3.29
 
 - **🙋 for "waiting on your OK", 🤔 for "waiting on your answer":** two

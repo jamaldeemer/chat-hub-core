@@ -368,5 +368,11 @@ t "symbols: hub's release built is 🙋" "$(grep -c '`🙋` release built, waiti
 t "symbols: work chat names 🙋 and 🤔" "$(grep -cE 'it sets 🙋 on your title|it sets 🤔 on your title|it clears 🤔' "$root/skills/work-chat/SKILL.md")" 3
 t "symbols: hub retitles open chats after a symbol rename" "$(grep -c 'retitle every$' "$root/skills/hub/SKILL.md")" 1
 t "symbols: rename retitle is one batch" "$(grep -c 'batch of title calls (your own title too)' "$root/skills/hub/SKILL.md")" 1
+t "question: work chat tells the hub in plain text too" "$(grep -c 'in plain text too, not just a menu' "$root/skills/work-chat/SKILL.md")" 1
+t "question: work chat tells the hub in the same turn" "$(grep -c 'tell the hub in the same turn' "$root/skills/work-chat/SKILL.md")" 1
+t "question: hub backstop sets 🤔 on an idle 🔨 chat" "$(grep -c 'set 🤔 on any$' "$root/skills/hub/SKILL.md")" 1
+t "question: backstop reads the note before the transcript" "$(grep -c "read the$" "$root/skills/hub/SKILL.md")" 1
+t "question: backstop skips closing lines and the 🟢 question" "$(grep -cE 'closing "anything else\?" or "let me know" is not one|is the 🟢 "more or wrap up\?" question' "$root/skills/hub/SKILL.md")" 2
+t "question: README names the hub's 🤔 backstop" "$(grep -c 'hub sees an idle 🔨 chat whose last message asks you' "$root/README.md")" 1
 cd "$tmp"
 rm -rf "$tmp"; exit $fail
