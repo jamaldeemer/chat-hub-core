@@ -1,5 +1,5 @@
 // Hard stops for rules that used to depend on a chat remembering them. Runs before a chat's
-// shell commands, file edits and (for the hub past its hard stop) every tool. Refuses (with the reason) when, at level 1+:
+// shell commands, file edits and every other tool. Refuses (with the reason) when, at level 1+:
 //   - a chat commits on the main branch (the hub is exempt: releases are its job),
 //   - anyone rebases,
 //   - a work chat edits a file in another chat's worktree;
@@ -9,8 +9,8 @@ import { execFileSync } from 'node:child_process'
 import { realpathSync, writeSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { basename, dirname, resolve } from 'node:path'
-import { hookInput, hubNotesFile, menuOk, readConfig, readHub, say } from './config.mjs'
-import { hardStopText, hardStopped, readUsage, trimLimits, trimNudge } from './usage.mjs'
+import { hookInput, menuOk, readConfig, readHub, say } from './config.mjs'
+import { trimNudge } from './usage.mjs'
 
 const input = hookInput()
 const cwd = input.cwd || process.cwd()
@@ -36,22 +36,6 @@ const real = p => { try { return realpathSync(p) } catch { try { return resolve(
 const tool = input.tool_name || ''
 const ti = input.tool_input || {}
 
-
-// Past the hub's hard stop (trimHardStop), refuse everything but saving its notes: reading,
-// read-only shell commands, and edits to hub-notes.md. The owner clearing the chat lifts it.
-if (isHub && hardStopped({ session: input.session_id, isHub, cfg: c })) {
-  const notes = hubNotesFile()
-  const file = ti.file_path || ti.notebook_path
-  const readOnlyCmd = cmd => !/[;&>`]|\$\(|\bsed\s+-i|\btee\b/.test(cmd) &&
-    cmd.split('|').every(p => /^\s*(cat|head|tail|sed -n|grep|ls|wc|pwd|date|git (status|log|diff|show|branch|rev-parse|worktree list))\b/.test(p))
-  const ok = /^(Read|Grep|Glob|ToolSearch|mcp__ccd_turn__.*)$/.test(tool) ||
-    (/^(Edit|Write|MultiEdit)$/.test(tool) && notes && file && real(expand(file)) === real(notes)) ||
-    (tool === 'Bash' && readOnlyCmd(String(ti.command || '')))
-  if (!ok) {
-    deny(hardStopText(readUsage(input.session_id).context, trimLimits(true, c).hard) +
-      (notes ? ` Your notes file: ${notes}` : ''))
-  }
-}
 
 if (tool === 'Bash') {
   const cmd = String(ti.command || '')

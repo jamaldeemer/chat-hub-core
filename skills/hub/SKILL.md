@@ -78,16 +78,17 @@ turns × context size, and it's usually most of a project's usage.
   watcher in the background and let it wake you.
 - **Read and write little:** read parts of files (`sed -n '40,80p'`,
   `grep -n`), not whole files; keep your replies short.
-- **When a "⚠️ STOP" note says you're getting long,** bring your notes up
-  to date before anything else, and start every reply from then on with
-  the line it gives you, asking the owner to clear you. Never carry on
-  past it as if it weren't there.
-- **At the last warning** (`trimHardStop` repeats over the limit, default
-  2: 200k), finish only the step already in progress: no new work, no new
-  chats. Then save your notes and ask to be cleared.
-- **Past the hard stop** (one step later, default 225k), a hook refuses every tool except reading and writing your hub
-  notes. Do only that, and answer every message with "⛔ Notes saved,
-  please clear this chat." until the owner clears you.
+- **When a "⚠️ WRAP UP" note says you're past your limit** (`trimAt`,
+  default 150k), wrap up, so a clear never lands in the middle of a step:
+  - **No new work:** no new chats, merges or releases. Anything new the
+    owner or a chat asks for goes under "## Next" in your notes;
+    say it's noted for after the clear.
+  - **Finish what's in flight:** a merge or release you've started
+    (through its tests and commit), title changes you owe, replies to
+    messages chats have sent you, messages you said you'd send.
+  - **Then** bring your notes up to date and ask to be cleared with the
+    line the note gives you, in every reply until you are. Never carry on
+    past it as if it weren't there.
 
 ## Briefs
 

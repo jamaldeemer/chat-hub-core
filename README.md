@@ -288,16 +288,15 @@ reach), chats stop and tell you rather than guess.
 312 turns · this chat ≈ 41M token-reads` (Claude doesn't see it; set
 `"stats": false` to hide it). Every turn re-reads the whole context, so
 long chats, the hub above all, cost the most. When the hub passes
-`trimAt` (default 150k tokens) it gets a "⚠️ STOP" reminder: update its
-notes and ask you to clear it, with that line in every reply. It's
-reminded again every `trimEvery` tokens over (default 25k), each time
-saying which reminder it is and what comes next. After `trimHardStop`
-repeats (default 2, so at 200k; 0 turns it off) it gets a last warning:
-finish only the step in progress, then save its notes. One step later
-(225k) the hub is hard-stopped: a hook refuses every tool except reading and writing its hub notes, and it
-answers only "Notes saved, please clear this chat" until you clear it.
-Work chats get the same reminders past `trimAtWork`, if set, but no hard
-stop: they'd lose work mid-task.
+`trimAt` (default 150k tokens) it wraps up: it takes on no new work
+(anything new you or a chat ask for goes in its notes for after the
+clear), finishes what it already has in flight (a merge or release it
+started, titles it owes, replies to chats, messages it promised), brings
+its notes up to date, and only then asks you to clear it, so a clear
+never lands in the middle of a step. Until then each reply starts
+"⚠️ Hub at …: wrapping up", then "⚠️ Wrapped up, notes saved, please
+clear this chat." Work chats get a similar reminder past `trimAtWork`,
+if set: stop at a natural point, note where they are, ask to be cleared.
 
 **Hub notes.** The hub keeps one current snapshot of its notes under fixed
 headings, edited in place. If they gain other `## ` headings (dated or

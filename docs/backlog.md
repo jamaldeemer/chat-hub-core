@@ -184,5 +184,4 @@ Findings 1–3 shipped in 0.3.4. Still open:
   project to the plugin's own chat.
 
 - tests/run.sh: "commit reminder: done" fails on main too (seen by A2 while adding trimEvery).
-- skills/setup/SKILL.md settings list: add `"trimHardStop": 2, // optional: after this many trim reminders the hub gets a last warning, then a hard stop one step later (0 = off)` (C4 left it to avoid C3's setup edits).
 - tests/run.sh: older tests pipe JSON into hooks (`echo … | node hook`); in C5 that sometimes reached the hook empty. Feed input from a file (`node hook < file`) like the notes-check tests do (C5).
