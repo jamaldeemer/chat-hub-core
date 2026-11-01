@@ -3,6 +3,18 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## Unreleased (R21)
+
+- **Small-caps `ʀ` in release tags:** the release tag's letter is now
+  `ʀ` (U+0280), so it stands apart from the chat code:
+  `🔨  ʀ16~ A3 · Fix menu spacing`, `🔨  3F · Fix menu spacing (ʀ7)`,
+  `⚪  Object Creator Hub · ʀ15 (3)`. Digits, `~` and `+` stay plain;
+  chat codes, the talk-chat `Z ` and the symbols don't change. Titles
+  with an old plain `R` still count as the same release (open count,
+  retagging). **Hub:** after this update, retitle every open chat (and
+  your own title) from `R` to `ʀ` at once, in one batch of title calls,
+  as for a renamed symbol, so the sidebar never mixes the two.
+
 ## 0.3.31
 
 - **Backlog:** a pointer to the parked E7 work (making the repo findable

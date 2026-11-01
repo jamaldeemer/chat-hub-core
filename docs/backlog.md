@@ -12,6 +12,12 @@ chats from its notes, though the notes said to check first).
 
 ## Next
 
+- **Check that `Z ` talk chats still sort last with `ʀ` tags (F6,
+  R21).** With release-first titles, a locale sort (JS `localeCompare`)
+  puts `⚪  ʀ07 …` before `⚪  Z A6 …`, as before. A plain codepoint sort
+  would put `Z` first (`Z` is U+005A, `ʀ` U+0280). Look at the
+  desktop sidebar after R21's retitle; if talk chats jump ahead, pick
+  another talk-chat prefix that sorts after `ʀ`.
 - **Revisit making the repo findable (E7, parked 2026-11-01).** Work is
   on branch `parked/e7-findable`: plugin.json/marketplace.json/README
   wording in a stranger's words, and `scripts/findable.sh on|off|status`

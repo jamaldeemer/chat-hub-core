@@ -88,6 +88,11 @@ t "notes check: ✅ chat flagged at start" "$(echo '{"session_id":"s5"}' | node 
 nc s6 >/dev/null
 t "notes check: ✅ work chats not told" "$(nd 'still list ✅')" 0
 printf '## Me\nx\n## Open chats\n- C9 · Stop reminders\n' > .git/chat-hub/hub-notes.md; nc s5 >/dev/null
+printf '## Me\nx\n## Open chats\n- ✅ ʀ11 C8 · Newest version\n- R11 C9 · Old tag\n' > .git/chat-hub/hub-notes.md
+nc s5 >/dev/null
+t "notes check: ✅ chat with a ʀ tag flagged" "$(nd 'still list ✅ (closed) chats: \\"✅ ʀ11 C8')" 1
+t "notes check: open chat with an old R tag not flagged" "$(nd 'R11 C9')" 0
+printf '## Me\nx\n## Open chats\n- C9 · Stop reminders\n' > .git/chat-hub/hub-notes.md; nc s5 >/dev/null
 t "notes check: no ✅ quiet" "$(nd 'still list ✅')" 0
 echo '{"level":0}' > .claude/chat-hub.json
 printf 'local_C\n' > .git/chat-hub/hub
@@ -354,6 +359,14 @@ t "close: setup has checks" "$(grep -c '"checks": ""' "$root/skills/setup/SKILL.
 t "hub title: open count in parentheses" "$(grep -c "the \*\*open count\*\* in parentheses" "$root/skills/hub/SKILL.md")" 1
 t "hub title: talk and ✅ chats not counted" "$(grep -c "Talk chats (no release tag), ✅ chats" "$root/skills/hub/SKILL.md")" 1
 t "hub title: count only with other title changes" "$(grep -c "never retitle yourself just" "$root/skills/hub/SKILL.md")" 1
+t "release tag: hub writes small-caps ʀ" "$(grep -c 'small-caps `ʀ` (U+0280), never a plain `R`' "$root/skills/hub/SKILL.md")" 1
+t "release tag: digits and kind stay plain" "$(grep -c 'the digits and `~`/`+`$' "$root/skills/hub/SKILL.md")" 1
+t "release tag: old plain-R titles still count" "$(grep -c 'old plain-`R` tag (`R07`, `(R7)`)' "$root/skills/hub/SKILL.md")" 1
+t "release tag: R → ʀ retitled in one batch" "$(grep -c 'release tag is written (`R` → `ʀ`)' "$root/skills/hub/SKILL.md")" 1
+t "release tag: no plain-R tag examples left" "$(cat "$root/skills/hub/SKILL.md" "$root/skills/setup/SKILL.md" "$root/README.md" "$root/docs/all-prompts.md" | grep -E 'R[0-9<]' | grep -vc 'old plain-`R` tag')" 0
+t "release tag: README examples use ʀ" "$(grep -cE '^(⚪|🙋|🤔|⏳|🚀|🔴|🟢|🔨|✅)  (Hub · )?ʀ07' "$root/README.md")" 10
+t "release tag: README explains ʀ" "$(grep -c 'small-caps `ʀ` (`ʀ07`, `(ʀ7)`)' "$root/README.md")" 1
+t "release tag: codes and Z prefix stay plain" "$(grep -c '⚪  Z A6 · Compare libraries' "$root/README.md")" 1
 t "titles: two spaces after the symbol" "$(grep -c "then two spaces (never one)" "$root/skills/hub/SKILL.md")" 1
 t "titles: no one-space title examples left" "$(cat "$root/skills/hub/SKILL.md" "$root/skills/setup/SKILL.md" "$root/README.md" | grep -cE '`(⚪|🔨|🙋|⏳|🚀|🟢|🔴|✅|🤔) [^ ]')" 0
 

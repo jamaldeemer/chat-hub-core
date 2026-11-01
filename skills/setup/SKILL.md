@@ -36,9 +36,9 @@ Suggest the highest level the project supports and seems to want.
 Only what you couldn't tell. Usually:
 
 1. Level (your suggestion first, marked Recommended).
-2. Release tags in titles: plain (R1, R2…, default), tick-tock (R10~
-   fixes, R11+ features), or none. Unless none: code first
-   (`3F · Title (R7)`, default) or release first (`R07 3F · Title`, so an
+2. Release tags in titles: plain (ʀ1, ʀ2…, default), tick-tock (ʀ10~
+   fixes, ʀ11+ features), or none. Unless none: code first
+   (`3F · Title (ʀ7)`, default) or release first (`ʀ07 3F · Title`, so an
    alphabetical sort groups chats by release).
 3. What "done" means here (e.g. tests pass, it builds, docs updated, owner
    has seen it), and where follow-ups go (an existing backlog or to-do
@@ -138,7 +138,7 @@ Then end with three short parts, in this order:
    block: commands in one code block, text to paste in another.
 3. **Get started:** numbered steps for this project's level, e.g.:
    1. The hub: this chat, or the one you'll type `/chat-hub-core:hub` in.
-      It adds the next release to its title, e.g. `⚪  cns Hub · R2 (0)`.
+      It adds the next release to its title, e.g. `⚪  cns Hub · ʀ2 (0)`.
    2. Tell the hub what you want: "start a chat to <task>". It starts a
       chat with a code like `A2`, briefs it, and follows it.
    3. Work in that chat; it asks before every commit.
@@ -155,7 +155,7 @@ Don't commit.
   "level": 1,
   "hubSession": "",                 // only without git: the hub records itself (setup leaves this out)
   "releases": "plain",              // "plain" | "tick-tock" | "none"
-  "titles": "code-first",           // "code-first" | "release-first" (R07 3F · Title)
+  "titles": "code-first",           // "code-first" | "release-first" (ʀ07 3F · Title)
   "nextRelease": 1,                 // release the next finished work ships in
   "done": ["tests pass", "docs updated"],
   "checks": "",                     // level 1+: command the hub runs on each merge into the preview
