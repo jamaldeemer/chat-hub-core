@@ -95,13 +95,16 @@ Fill in `${CLAUDE_PLUGIN_ROOT}/templates/brief.md`.
 
 Before starting each chat, ask the owner how it should start (a menu
 with AskUserQuestion where you have it, else one line), unless the
-settings' `startMode` is "plan" or "build" (default "ask"):
+settings' `startMode` is "plan", "build" or "wait" (default "ask"):
 
 - **Plan first:** the chat looks around, sends a short plan (what's
   there, the approach, a few lines) and waits for the owner's go before
   changing anything.
 - **Build it:** the chat goes straight to work, stopping only for the
   commit OK.
+- **Just open:** the chat reads its brief and rules, starts the dev
+  server if the settings have one, says in one line it's ready, then
+  waits for the owner's instructions.
 
 Put the answer on the brief's **Start:** line.
 

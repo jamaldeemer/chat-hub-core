@@ -32,6 +32,11 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
   around, send the owner a short plan (what's there, the approach, a few
   lines), tell the hub "question for owner: plan ready", and change
   nothing until the owner says go. "Build it": go straight to work.
+  "Just open": read your brief and these rules, start the dev server if
+  the settings' `devServer.command` is set, say in one line you're ready
+  (with its address if you started it), tell the hub "question for
+  owner: waiting for instructions", and look at or change nothing else
+  until the owner says what to do.
 - **Commit messages** start with your chat's code: `3F: Fix the menu`.
 - **Done** means everything in the `done` list in the settings (e.g. tests
   pass, it builds): the answers the owner gave setup.
@@ -63,7 +68,9 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
 - **Plugin update:** when a note says chat-hub-core was updated, read
   the rules file it names before anything else; it replaces these rules.
   Restart only if the note says to.
-- **Dev server:** keep exactly two browser tabs on it, yours first, then
+- **Dev server:** start it with the settings' `devServer.command` (in
+  the background, or the browser pane's dev-server tool where you have
+  it). Keep exactly two browser tabs on it, yours first, then
   the owner's. Only ever drive your own: pass its tab ID to every browser
   call (a call without one acts on whichever tab is in front), and give
   any helper agent that uses the browser the same rule.

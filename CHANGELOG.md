@@ -3,6 +3,14 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## Unreleased
+
+- **A third way to start a chat, "Just open":** the hub's start menu now
+  offers it next to "Plan first" and "Build it". The chat reads its brief
+  and rules, starts the dev server if `devServer.command` is set, says in
+  one line it's ready, and waits for the owner's instructions.
+  `startMode: "wait"` makes every chat start this way.
+
 ## 0.3.22
 
 - **No reminders about deleted ✅ chats:** when a chat passes the close
