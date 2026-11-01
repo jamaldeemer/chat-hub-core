@@ -3,7 +3,7 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
-## Unreleased (R13)
+## 0.3.24
 
 - **The hub closes a chat in one step:** `hooks/close-chat.mjs <branch>`
   finds the chat's folder, checks it, merges the branch into the release
