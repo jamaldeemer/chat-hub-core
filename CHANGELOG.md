@@ -3,6 +3,20 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## Unreleased (R15)
+
+- **The 🟢 "Anything more, or should I wrap up?" is a menu:** a work
+  chat asks it with the AskUserQuestion tool (options "Wrap up" / "More
+  changes"), like the commit OK; plain text only if the chat has no
+  such tool. The hub expects the wrap-up report only after the owner
+  picked "Wrap up". This is a rule with a test, not a hook: the hub can
+  also start a wrap-up by message, which a hook can't tell apart, and
+  the hub's close check still catches an early wrap-up.
+- **🟢 always means the question is open:** the chat tells the hub the
+  answer at once ("more changes, working again" → ⚪; the wrap-up report
+  → ⏳), and the hub changes the symbol right away instead of keeping 🟢
+  until ✅.
+
 ## 0.3.25
 
 - **The hub's title shows how many chats are left for its release:** it

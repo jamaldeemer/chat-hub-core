@@ -69,7 +69,7 @@ flowchart LR
   R -- pass --> Q["🟢 more or wrap up?"]
   P -- L1 --> Q
   Q -- more --> W
-  Q -- wrap up --> WR[report]
+  Q -- wrap up --> WR["⏳ report"]
   WR --> M[hub merges + close check]
   M --> D["✅"]
 ```
@@ -257,12 +257,12 @@ The hub sets every symbol; work chats never change their own titles.
 
 | Symbol | Meaning | Set by the hub when | Level |
 |---|---|---|---|
-| ⚪ | Working, nothing waiting on you (also talk chats, the hub) | it starts the chat, or you answer "more" | all |
+| ⚪ | Working, nothing waiting on you (also talk chats, the hub) | it starts the chat, or you answer "More changes" (the chat says "more changes, working again") | all |
 | 🟡 | Waiting on your OK to commit, merge or push | the chat says "asking for OK" | all |
 | ❓ | Waiting on your answer to a question (not an OK) | the app says the chat is waiting on you, or the chat says "question for owner"; the old symbol comes back once you answer (the chat says "answered, working again", or the hub sees it working again) | all |
-| ⏳ | OK given, committing and pushing | the chat says "OK given, committing" | all |
+| ⏳ | OK given, committing and pushing; or wrapping up (report in, being closed) | the chat says "OK given, committing", or its wrap-up report arrives | all |
 | 🚀 | Push in CI | the chat says it pushed | 2 |
-| 🟢 | Pushed (level 1) or CI passed (level 2); the chat is asking "Anything more, or should I wrap up?" | the chat says it pushed / the CI run passes | 1+ |
+| 🟢 | Pushed (level 1) or CI passed (level 2); the chat is asking "Anything more, or should I wrap up?" in a menu ("Wrap up" / "More changes"); it changes as soon as you answer, so 🟢 always means the question is open | the chat says it pushed / the CI run passes | 1+ |
 | 🔴 | CI failed | the CI run fails | 2 |
 | ✅ | Ready to close | the chat's wrap-up passes the close check | all |
 
