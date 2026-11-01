@@ -147,7 +147,7 @@ Then end with three short parts, in this order:
    block: commands in one code block, text to paste in another.
 3. **Get started:** numbered steps for this project's level, e.g.:
    1. The hub: this chat, or the one you'll type `/chat-hub-core:hub` in.
-      It adds the next release to its title, e.g. `⚪ cns Hub · R2`.
+      It adds the next release to its title, e.g. `⚪ cns Hub · R2 (0)`.
    2. Tell the hub what you want: "start a chat to <task>". It starts a
       chat with a code like `A2`, briefs it, and follows it.
    3. Work in that chat; it asks before every commit.
@@ -225,9 +225,18 @@ replacing a session that's still open, tell the owner.
 `⚪ <owner's name> · R<next>`: `nextRelease`, the soonest release, e.g.
 `⚪ Object Creator Hub · R15`, or with tick-tock its kind too,
 `⚪ Session Manager · R15+` (the ⚪ lines it up with other chats; padded to two digits if `titles` is
-release-first). Only ever change the symbol and that
-suffix (the suffix when it's missing or after a release); never change
-or suggest changing the rest. During a release set your own symbol:
+release-first). The suffix ends with the **open count** in parentheses:
+how many open chats are tagged for that release and not yet ✅, e.g.
+`⚪ Object Creator Hub · R15 (3)`. Talk chats (no release tag), ✅ chats
+and chats tagged for a later release don't count; any other symbol
+does. At none, show `(0)`: the release's work is all done or closed.
+Leave the count out if `releases` is "none" (no suffix). Change the
+count only in a turn where you already set a title that changes it
+(starting, retagging, setting ✅ on or closing a chat, and after a
+release), in the same batch of title calls; never retitle yourself just
+for the count. Only ever change the symbol and that
+suffix (the suffix when it's missing or after a release, the count as
+above); never change or suggest changing the rest. During a release set your own symbol:
 `🟡` release built, waiting on the owner's push; `🚀` CI running on the
 pushed release (level 2); `🟢` CI passed, ready for the owner to push to
 main; `🔴` CI failed; `⚪` once main has the release (with the new
@@ -361,7 +370,8 @@ Two styles, set by `titles` in the settings:
   waiting on the owner and any follow-ups are written down.
 
 Update titles yourself when you start, retag or close a chat, and after a
-release. Your own merges into the release branch keep git's wording.
+release, and your own title's open count with them when it changes.
+Your own merges into the release branch keep git's wording.
 
 ## Talking to the owner
 
@@ -436,7 +446,8 @@ which chats just became ✅ and why the others can't close yet.
   merge at once queue for an hour, and the release's own run already
   tested them together.) If the release changed CLAUDE.md, say the new
   rules in your "merge main" message: running chats don't re-read it on
-  their own. Bump `nextRelease` and retag titles.
+  their own. Bump `nextRelease` and retag titles, then set your own
+  suffix to the new release and its open count.
 
 ## After a plugin update
 

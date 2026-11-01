@@ -318,6 +318,9 @@ t "start modes: setup lists wait" "$(grep -c '"plan" | "build" | "wait"' "$root/
 t "close: hub uses close-chat" "$(grep -c 'hooks/close-chat.mjs"' "$root/skills/hub/SKILL.md")" 1
 t "close: hub sets ✅ with the READY" "$(grep -c 'right after that READY, in one step' "$root/skills/hub/SKILL.md")" 1
 t "close: setup has checks" "$(grep -c '"checks": ""' "$root/skills/setup/SKILL.md")" 1
+t "hub title: open count in parentheses" "$(grep -c "the \*\*open count\*\* in parentheses" "$root/skills/hub/SKILL.md")" 1
+t "hub title: talk and ✅ chats not counted" "$(grep -c "Talk chats (no release tag), ✅ chats" "$root/skills/hub/SKILL.md")" 1
+t "hub title: count only with other title changes" "$(grep -c "never retitle yourself just" "$root/skills/hub/SKILL.md")" 1
 
 cd "$tmp"
 rm -rf "$tmp"; exit $fail

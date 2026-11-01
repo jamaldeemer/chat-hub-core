@@ -3,6 +3,17 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## Unreleased (R14)
+
+- **The hub's title shows how many chats are left for its release:** it
+  ends in parentheses with the open chats tagged for `nextRelease` that
+  aren't ✅ yet, e.g. `⚪ chat-hub-core HUB · R14 (3)`. Talk chats and
+  chats for later releases don't count; `(0)` means the release's work
+  is all done. The hub changes the count only in the same batch as a
+  title change it's already making (starting, retagging, ✅, closing,
+  after a release), so it costs no extra turns. The count is part of
+  the suffix; the hub still changes only its symbol and suffix.
+
 ## 0.3.24
 
 - **The hub closes a chat in one step:** `hooks/close-chat.mjs <branch>`
