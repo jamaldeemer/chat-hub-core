@@ -288,6 +288,10 @@ title don't get them. After a release the hub adds them to the chats
 now in the new coming release, in the same batch as the retag; a chat
 retagged to a later release loses them.
 
+A title is about 40 characters at most, everything included (symbol,
+tag, code, name, parentheses), so the sidebar doesn't cut it off; the
+hub shortens the name to fit when it starts or retitles a chat.
+
 Release first pads the number to two digits, so an alphabetical sort
 groups chats by release, and talk chats (`Z `) sort last. With tick-tock,
 `~` releases are fixes and `+` releases features; the hub's title shows

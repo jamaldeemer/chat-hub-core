@@ -364,6 +364,13 @@ Two styles, set by `titles` in the settings:
   them; after a release, add them to every chat now in the new soonest
   release (Releases below). A title with or without them is the same
   chat and tag: count and retag it the same way.
+- **Length:** a whole title is about 40 characters at most, counting
+  everything: symbol (one character), two spaces, tag, code, ` · `,
+  name and parentheses. Longer ones get cut off in the sidebar. When you
+  start or retitle a chat, shorten the name to fit (`Staging download
+  buttons for the admin panel` → `Staging download buttons`); never cut
+  the symbol, tag, code or parentheses. Your own title doesn't follow
+  this rule.
 - **Status symbol** first, then two spaces (never one), so the text clears the symbol: `🙋` waiting
   on the owner's OK to commit, merge or push, `⏳` OK given, committing
   and pushing (or wrapping up: report in, being closed), `🚀` push in CI (level 2), `🟢` pushed (level 1) or CI

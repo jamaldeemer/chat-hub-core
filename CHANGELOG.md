@@ -26,6 +26,10 @@ Each version is a git tag (`v0.1.0`). Projects pin a tag in
   the same. **Hub:** after this update, add parentheses to every open
   chat tagged for `nextRelease` at once, in one batch of title calls
   (with the `R` → `ʀ` retitle if it's still due).
+- **Titles about 40 characters at most:** the whole title, symbol, tag,
+  code, ` · `, name and parentheses included, so the sidebar doesn't cut
+  it off. The hub shortens the name to fit when it starts or retitles a
+  chat; the symbol, tag, code and parentheses are never cut.
 
 ## 0.3.31
 
