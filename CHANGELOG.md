@@ -3,7 +3,7 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
-## Unreleased (R22)
+## 0.3.33
 
 - **`/chat-hub-core:limit` changes the context limits as you go:**
   `/chat-hub-core:limit 200k` sets the hub's wrap-up limit,
