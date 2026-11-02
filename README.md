@@ -367,8 +367,12 @@ or the hub wraps up almost as soon as it starts.
 **Turning off tools a project doesn't use.** Every tool a chat has costs
 context on every turn, the hub's most of all, and most chats never touch
 the Browser pane, the iOS simulator or Artifacts (about 12k tokens on its
-own). Setup shows a numbered list of every tool group, suggests which to
-turn off and asks; change it any time with `/chat-hub-core:tools`:
+own). The iOS simulator, Artifacts and the rarely used extras (groups 2,
+4 and 13–27, about 15k tokens a chat) are **off by default**: the first
+chat after setup or an update turns them off once and says so (new chats
+start without them). Turn one back on with `/chat-hub-core:tools on ios`
+and it stays on. Setup shows the numbered list and asks about the rest;
+change it any time with `/chat-hub-core:tools`:
 
 | Command | Does |
 |---|---|
@@ -385,7 +389,8 @@ tools) always stay on. It writes deny rules into the project's
 is removed from the chat entirely, not just blocked. In the desktop app,
 worktree chats read the main checkout's settings, so the hub and work
 chats always get the same set. New chats load it; restart an open chat
-to drop or get them. Since an off tool is invisible, every chat's start
+to drop or get them. Which default groups were already turned off is
+kept in `.git/chat-hub/tools.json`, so each is turned off only once. Since an off tool is invisible, every chat's start
 note names what's off in one line, so a chat that needs one asks you to
 type `/chat-hub-core:tools on <name>`. Tools you never use anywhere can go in your own
 `~/.claude/settings.json` the same way (`"permissions": {"deny":

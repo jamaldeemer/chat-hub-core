@@ -250,6 +250,33 @@ t "tools: nonsense refused" "$(node "$root/hooks/tools.mjs" maybe | grep -c 'Not
 rm .claude/settings.local.json
 t "tools: no settings file yet, created" "$(node "$root/hooks/tools.mjs" off workflows >/dev/null; grep -c '"Workflow"' .claude/settings.local.json)" 1
 rm .claude/settings.local.json
+# Default off: ios, artifacts and the unused extras, once per project; a group turned back on stays on
+rm -f .git/chat-hub/tools.json; printf '{"permissions":{"deny":["Bash(rm *)"]}}\n' > .claude/settings.local.json
+t "defaults: start note says what it turned off" "$(echo '{}' | node "$root/hooks/session-start.mjs" | grep -c 'turned these tool groups off by default.*: ios, artifacts, chrome, workflows,.*worktrees (this chat still has them')" 1
+t "defaults: this chat's own off note unchanged" "$(rm -f .git/chat-hub/tools.json; printf '{}\n' > .claude/settings.local.json; echo '{}' | node "$root/hooks/session-start.mjs" | grep -c 'Tools turned off in this project')" 0
+t "defaults: rules written, browser kept" "$(grep -c '"mcp__Claude_Code_iOS_Simulator"\|"Artifact"\|"Workflow"\|"mcp__ccd_pr"\|"EnterWorktree"\|"mcp__Claude_Browser"' .claude/settings.local.json)" 5
+t "defaults: 17 groups off in the list" "$(node "$root/hooks/tools.mjs" | grep -cE '^ ?[0-9]+\. off ')" 17
+t "defaults: list names them" "$(node "$root/hooks/tools.mjs" | grep -c '^Off by default.*2\. ios, 4\. artifacts, 13\. chrome')" 1
+t "defaults: next chat's note lists them" "$(echo '{}' | node "$root/hooks/session-start.mjs" | grep -c 'Tools turned off in this project: ios, artifacts, chrome')" 1
+t "defaults: applied once" "$(echo '{}' | node "$root/hooks/session-start.mjs" | grep -c 'by default')" 0
+node "$root/hooks/tools.mjs" on ios Workflow >/dev/null
+rm -f .claude/settings.local.json
+t "defaults: turned back on stays on" "$(echo '{}' | node "$root/hooks/session-start.mjs" | grep -c 'by default'; grep -c '"Artifact"' .claude/settings.local.json 2>/dev/null || echo 0)" "0
+0"
+node "$root/hooks/tools.mjs" off 4 >/dev/null
+printf '{"applied":["ios","artifacts","workflows"]}\n' > .git/chat-hub/tools.json
+t "defaults: owner's "on" kept, new ones applied" "$(echo '{}' | node "$root/hooks/session-start.mjs" | grep -c 'by default.*: chrome, suggestions'; grep -c '"mcp__Claude_Code_iOS_Simulator"\|"Workflow"' .claude/settings.local.json)" "1
+0"
+rm -f .git/chat-hub/tools.json .claude/settings.local.json
+t "defaults: "on" before they ran is kept" "$(node "$root/hooks/tools.mjs" on artifacts >/dev/null; echo '{}' | node "$root/hooks/session-start.mjs" >/dev/null; grep -c '"Artifact"' .claude/settings.local.json; grep -c '"mcp__claude-in-chrome"' .claude/settings.local.json)" "0
+1"
+rm -f .git/chat-hub/tools.json .claude/settings.local.json
+t "defaults: prompt hook applies them too" "$(echo '{"session_id":"u9","prompt":"hello"}' | node "$root/hooks/on-prompt.mjs" | grep -c 'turned these tool groups off by default')" 1
+t "defaults: prompt hook only once" "$(echo '{"session_id":"u9","prompt":"hello"}' | node "$root/hooks/on-prompt.mjs" | grep -c 'by default')" 0
+rm -f .git/chat-hub/tools.json; printf '{"permissions":{"deny":["Bash(rm *)"]}}\n' > .claude/settings.local.json
+t "defaults: /tools on in the same prompt wins" "$(tl 'on ios' >/dev/null; grep -c '"mcp__Claude_Code_iOS_Simulator"' .claude/settings.local.json; grep -c '"Artifact"\|Bash(rm' .claude/settings.local.json)" "0
+2"
+rm .claude/settings.local.json
 rm -rf .git/chat-hub; export TMPDIR="$oldtmp"
 echo '{"level":0,"done":["tests pass"]}' > .claude/chat-hub.json
 mkdir .githooks && touch .githooks/pre-push; echo '{"level":1}' > .claude/chat-hub.json

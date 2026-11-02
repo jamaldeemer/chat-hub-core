@@ -53,12 +53,14 @@ Only what you couldn't tell. Usually:
 
 5. Tools to turn off (every tool costs context on every turn, the hub's
    most of all). Run `node "${CLAUDE_PLUGIN_ROOT}/hooks/tools.mjs"`
-   and show the owner its numbered list of every tool group as it is, then
-   which numbers you'd turn off for this project and why in a few words
-   (no web UI: `browser`; no iOS app: `ios`; the rarely used extras,
-   marked `unused` in the script, almost always). Ask in a second menu:
-   "Turn off <numbers>" (Recommended) / "Keep everything"; the owner can
-   type other numbers (e.g. `4, 13-27`) as their own answer. Skip it on a
+   and show the owner its numbered list of every tool group as it is.
+   `ios` (2), `artifacts` (4) and the rarely used extras (13–27) are off
+   by default: the hooks turn them off on the first prompt after setup,
+   so don't ask about them; say so in one line. Suggest any other numbers
+   to turn off and why in a few words (no web UI: `browser`), or one to
+   keep on (an iOS app: `on 2`). Ask in a second menu: "Turn off
+   <numbers>" (Recommended) / "Keep the defaults"; the owner can type
+   other numbers (e.g. `1`, or `on 2`) as their own answer. Skip it on a
    re-run unless the owner asks; `/chat-hub-core:tools` changes it later.
 
 Don't ask how chats start: `startMode` defaults to "ask" (the hub asks
@@ -96,11 +98,12 @@ start-of-chat hook sets it in every checkout. If the project already has a
 hooks folder with its own pre-push, save ours there as `chat-hub-pre-push`
 and add a line to theirs that runs it.
 
-**Tools** the owner picked to turn off: run `node
-"${CLAUDE_PLUGIN_ROOT}/hooks/tools.mjs" off <numbers>`. It writes
-`.claude/settings.local.json`, which your sandbox usually blocks; then put
-`/chat-hub-core:tools off <numbers>` under "Left for you" (the owner types
-it; the prompt hook writes it).
+**Tools** the owner picked to turn off (or on, from the defaults): run
+`node "${CLAUDE_PLUGIN_ROOT}/hooks/tools.mjs" off <numbers>` (or `on
+<numbers>`). It writes `.claude/settings.local.json`, which your sandbox
+usually blocks; then put `/chat-hub-core:tools off <numbers>` under "Left
+for you" (the owner types it; the prompt hook writes it). Nothing to do
+for the defaults.
 
 **Level 2:** add `.claude/issues-to-check.md` to `.gitignore`.
 

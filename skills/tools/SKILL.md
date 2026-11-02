@@ -22,6 +22,10 @@ command to type instead: `/chat-hub-core:tools <words>`.
 - `/chat-hub-core:tools on browser` turns them back on; `on all` for
   every group.
 
+Off by default in every project: `ios` (2), `artifacts` (4) and the
+rarely used extras (13–27). The start and prompt hooks turn each off
+once and record it; one the owner turns back on stays on.
+
 The tools chat-hub-core needs (Bash, Read, Edit, Write, Skill,
 ToolSearch, AskUserQuestion, SendMessage, the app's session, task-list
 and host tools) always stay on.

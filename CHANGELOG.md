@@ -5,6 +5,20 @@ Each version is a git tag (`v0.1.0`). Projects pin a tag in
 
 ## Unreleased
 
+- **Tools no chat uses are off by default:** a scan of 48 chats found
+  the iOS simulator, Artifacts and the rarely used extras (groups 2, 4
+  and 13–27 in `/chat-hub-core:tools`) never used, at about 15k tokens a
+  chat. Every project now has them off without being asked: the start
+  and prompt hooks (which run outside the chat's sandbox) add their deny
+  rules to `.claude/settings.local.json` once, and record which groups
+  they did in `.git/chat-hub/tools.json`, so a project already set up
+  gets them on update and a new one right after setup. A group you turn
+  back on (`/chat-hub-core:tools on ios`) stays on, and so does one you
+  turned on before the update ran. The chat that first sees it says so
+  and keeps its tools until restarted; new chats start without them. The
+  list marks which groups are off by default. Setup no longer asks about
+  them, only about the rest (e.g. the Browser pane with no web UI).
+
 - **The start note says which tools are off:** a tool turned off with
   `/chat-hub-core:tools` vanishes from every chat, so a chat asked to do
   something it did couldn't tell why. When tools are off, every chat's
