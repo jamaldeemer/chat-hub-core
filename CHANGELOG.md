@@ -5,6 +5,17 @@ Each version is a git tag (`v0.1.0`). Projects pin a tag in
 
 ## Unreleased
 
+- **Chats set their own title symbol:** a work chat now sets its own
+  status symbol (🙋 🔨 ❓ ⏳ 🚀 🟢 🔴) the moment it changes, with the
+  app's rename tool on itself, changing only that first character. The
+  sidebar is never behind, and the hub is no longer woken for every
+  status change (one large project's hub made 701 rename calls and got
+  248 status messages in a month). Chats message the hub only for new
+  chats, the wrap-up report, and a merge pushed after a release. The hub
+  sets only ⚪ and ✅ and the rest of the title, keeping a chat's symbol
+  whenever it retitles it. If a chat's rename fails, it tells the hub the
+  status as before and the hub sets it.
+
 - **`/chat-hub-core:tools` turns off tools a project doesn't use:** every
   tool costs every chat context on every turn, the hub's most of all.
   The bare command lists every tool group a desktop-app chat gets
