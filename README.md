@@ -357,20 +357,21 @@ or the hub wraps up almost as soon as it starts.
 
 **Turning off tools a project doesn't use.** Every tool a chat has costs
 context on every turn, the hub's most of all, and most chats never touch
-the Browser pane, the iOS simulator or Artifacts. Setup asks which to turn
-off; change it any time with `/chat-hub-core:tools`:
+the Browser pane, the iOS simulator or Artifacts (about 12k tokens on its
+own). Setup shows a numbered list of every tool group, suggests which to
+turn off and asks; change it any time with `/chat-hub-core:tools`:
 
 | Command | Does |
 |---|---|
-| `/chat-hub-core:tools` | shows which groups are off and on |
-| `/chat-hub-core:tools off browser ios` | turns groups off (`off unused`: all of them) |
-| `/chat-hub-core:tools on browser` | turns them back on (`on all`: all of them) |
+| `/chat-hub-core:tools` | lists every tool group, numbered, on or off |
+| `/chat-hub-core:tools off 4 13-27` | turns groups off by number, name (`off artifacts ios`) or single tool (`off SendUserFile`); `off unused`: the rarely used extras |
+| `/chat-hub-core:tools on browser` | turns them back on (`on all`: every group) |
 
-Groups: `browser` (Browser pane, about 7k tokens; keep for a web UI),
-`chrome` (Claude in Chrome), `ios` (iOS simulator, about 2k; keep for an
-iOS app), `charts` (inline charts and diagrams), `artifacts` (published
-pages, about 12k), `workflows` (multi-agent scripts), `suggestions`
-(plugin and skill suggestions). It writes deny rules into the project's
+The groups cover every tool a desktop-app chat gets (Browser pane, iOS
+simulator, charts, Artifacts, helper agents, web search, Workflows,
+scheduling, layout, plan mode and so on); the tools chat-hub-core itself
+needs (Bash, Read, Edit, Write, Skill, messaging and the app's session
+tools) always stay on. It writes deny rules into the project's
 `.claude/settings.local.json` (just you, never committed): a denied tool
 is removed from the chat entirely, not just blocked. In the desktop app,
 worktree chats read the main checkout's settings, so the hub and work

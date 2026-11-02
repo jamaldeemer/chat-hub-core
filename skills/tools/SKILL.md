@@ -1,30 +1,30 @@
 ---
 name: tools
-description: Show or change which heavy tools this project's chats load (Browser pane, iOS simulator, charts, Artifacts...), to cut every chat's context. Use when the owner types /chat-hub-core:tools (e.g. "/chat-hub-core:tools off browser ios", "/chat-hub-core:tools on all") or asks to turn tools off or on for this project.
+description: Show or change which tools this project's chats load (Browser pane, iOS simulator, charts, Artifacts, any tool), to cut every chat's context. Use when the owner types /chat-hub-core:tools (e.g. "/chat-hub-core:tools off 4 13-27", "/chat-hub-core:tools on browser") or asks to turn tools off or on for this project.
 ---
 
 # Tools
 
 The prompt hook has usually done it already: a "chat-hub-core /tools:"
-note came with the owner's prompt. Tell the owner what it says in one
-short reply and do nothing else for it.
+note came with the owner's prompt. Tell the owner what it says (show the
+list as it is, numbered) and do nothing else for it.
 
 If no such note came (the hook didn't run), run it yourself with the
 owner's words after the command:
-`node "${CLAUDE_PLUGIN_ROOT}/hooks/tools.mjs" <words>` (none to show what's
-off) and tell the owner its line. If your sandbox blocks the write, give
-the owner the command to type instead: `/chat-hub-core:tools <words>`.
+`node "${CLAUDE_PLUGIN_ROOT}/hooks/tools.mjs" <words>` and show the owner
+what it prints. If your sandbox blocks the write, give the owner the
+command to type instead: `/chat-hub-core:tools <words>`.
 
-- `/chat-hub-core:tools` shows which groups are off and on.
-- `/chat-hub-core:tools off browser ios` turns groups off; `off unused`
-  turns off every group.
+- `/chat-hub-core:tools` lists every tool group, numbered, on or off.
+- `/chat-hub-core:tools off 4 13-27` turns groups off by number, or by
+  name (`off artifacts ios`), or single tools (`off SendUserFile`);
+  `off unused` turns off the rarely used extras.
 - `/chat-hub-core:tools on browser` turns them back on; `on all` for
   every group.
 
-Groups: `browser` (Browser pane), `chrome` (Claude in Chrome), `ios` (iOS
-simulator), `charts` (inline charts and diagrams), `artifacts` (published
-pages), `workflows` (multi-agent scripts), `suggestions` (plugin and skill
-suggestions).
+The tools chat-hub-core needs (Bash, Read, Edit, Write, Skill,
+ToolSearch, AskUserQuestion, SendMessage, the app's session, task-list
+and host tools) always stay on.
 
 It writes deny rules in the project's `.claude/settings.local.json` (just
 the owner, never committed), which remove those tools from every chat,

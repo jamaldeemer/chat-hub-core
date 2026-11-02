@@ -7,14 +7,15 @@ Each version is a git tag (`v0.1.0`). Projects pin a tag in
 
 - **`/chat-hub-core:tools` turns off tools a project doesn't use:** every
   tool costs every chat context on every turn, the hub's most of all.
-  `/chat-hub-core:tools off browser ios` (or `off unused`) turns groups
-  off, `on browser` (or `on all`) back on, and the bare command shows
-  them. Groups: `browser`, `chrome`, `ios`, `charts`, `artifacts`,
-  `workflows`, `suggestions`. The prompt hook writes deny rules into the
-  main checkout's `.claude/settings.local.json` (never committed; the
-  owner's own rules are kept), which removes the tools from every chat,
-  hub and work chats alike, from its next start. Setup now asks which to
-  turn off. The README also says to keep `trimAt` well above the hub's
+  The bare command lists every tool group a desktop-app chat gets
+  (27 of them), numbered, on or off; `off 4 13-27`, `off artifacts ios`
+  or `off SendUserFile` turns groups or single tools off (`off unused`:
+  the rarely used extras), `on browser` (or `on all`) back on. The tools
+  chat-hub-core needs always stay on. The prompt hook writes deny rules
+  into the main checkout's `.claude/settings.local.json` (never
+  committed; the owner's own rules are kept), which removes the tools
+  from every chat, hub and work chats alike, from its next start. Setup
+  now shows the numbered list, suggests what to turn off and asks. The README also says to keep `trimAt` well above the hub's
   base context (about 88k on one large project).
 
 ## 0.3.34

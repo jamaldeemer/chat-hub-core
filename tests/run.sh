@@ -227,17 +227,23 @@ t "limit: runs when reached through a symlinked path" "$(node "$tmp/linked-root/
 rm "$tmp/linked-root"
 # /chat-hub-core:tools: deny rules in the main checkout's settings.local.json, owner's own rules kept
 tl() { printf '{"session_id":"u1","prompt":"/chat-hub-core:tools %s","cwd":"%s"}' "$1" "$(pwd)" | node "$root/hooks/on-prompt.mjs"; }
-printf '{"permissions":{"allow":["Bash(ls)"],"deny":["WebFetch"]},"model":"x"}\n' > .claude/settings.local.json
-t "tools: shows all on" "$(node "$root/hooks/tools.mjs" | grep -c 'Tools off: none; on: browser, chrome, ios')" 1
-t "tools: off from the prompt" "$(tl 'off browser ios' | grep -c '/tools: Saved.*off: browser, ios.*already done')" 1
+printf '{"permissions":{"allow":["Bash(ls)"],"deny":["Bash(rm *)"]},"model":"x"}\n' > .claude/settings.local.json
+t "tools: lists every group, numbered" "$(node "$root/hooks/tools.mjs" | grep -cE '^ ?[0-9]+\. ')" 27
+t "tools: names the always-on tools" "$(node "$root/hooks/tools.mjs" | grep -c '^Always on.*Bash.*SendMessage')" 1
+t "tools: off from the prompt" "$(tl 'off browser ios' | grep -c '/tools: Saved.*Off: browser, ios.*already done')" 1
 t "tools: server rules written" "$(grep -c '"mcp__Claude_Browser"\|"mcp__Claude_Code_iOS_Simulator"' .claude/settings.local.json)" 2
-t "tools: owner's own settings kept" "$(grep -c '"WebFetch"\|"Bash(ls)"\|"model"' .claude/settings.local.json)" 3
+t "tools: owner's own settings kept" "$(grep -c 'Bash(rm\|"Bash(ls)"\|"model"' .claude/settings.local.json)" 3
 t "tools: seen from another worktree" "$(git -c user.email=a@b -c user.name=t worktree add -q ../wt5 2>/dev/null; cd ../wt5 && node "$root/hooks/tools.mjs" off charts >/dev/null; cd - >/dev/null; git worktree remove --force ../wt5; grep -c '"mcp__visualize"' .claude/settings.local.json)" 1
 t "tools: nothing to change" "$(node "$root/hooks/tools.mjs" off ios | grep -c 'Nothing to change')" 1
-t "tools: on removes only ours" "$(node "$root/hooks/tools.mjs" on all >/dev/null; grep -c 'mcp__' .claude/settings.local.json; grep -c '"WebFetch"' .claude/settings.local.json)" "0
+t "tools: on removes only ours" "$(node "$root/hooks/tools.mjs" on all >/dev/null; grep -c 'mcp__' .claude/settings.local.json; grep -c 'Bash(rm' .claude/settings.local.json)" "0
 1"
-t "tools: off unused turns off every group" "$(node "$root/hooks/tools.mjs" off unused | grep -c 'on: none')" 1
-t "tools: unknown group refused" "$(node "$root/hooks/tools.mjs" off printer | grep -c 'Not changed: no group called "printer"')" 1
+t "tools: off unused keeps the browser" "$(node "$root/hooks/tools.mjs" off unused >/dev/null; grep -c '"Workflow"\|"mcp__Claude_Browser"' .claude/settings.local.json)" 1
+t "tools: off by number and range" "$(node "$root/hooks/tools.mjs" on all >/dev/null; node "$root/hooks/tools.mjs" off 4 1-2 >/dev/null; node "$root/hooks/tools.mjs" | grep -cE '^ ?[0-9]+\. off ')" 3
+t "tools: bad number refused" "$(node "$root/hooks/tools.mjs" off 99 | grep -c 'no group numbered 99')" 1
+t "tools: single tool off and listed" "$(node "$root/hooks/tools.mjs" off Foo >/dev/null; node "$root/hooks/tools.mjs" | grep -c '^Also off: .*Foo')" 1
+t "tools: part of a group shows part" "$(node "$root/hooks/tools.mjs" off SendUserFile ListAgents >/dev/null; node "$root/hooks/tools.mjs" | grep -c 'part agents')" 1
+t "tools: needed tools stay on" "$(node "$root/hooks/tools.mjs" off Bash mcp__ccd_session_mgmt__send_message | grep -c 'Not changed: chat-hub-core needs Bash, mcp__ccd_session_mgmt__send_message')" 1
+t "tools: odd word refused" "$(node "$root/hooks/tools.mjs" off "a/b" | grep -c "Not changed: \"a/b\" isn.t a group or tool name")" 1
 t "tools: nonsense refused" "$(node "$root/hooks/tools.mjs" maybe | grep -c 'Not changed: didn.t understand')" 1
 rm .claude/settings.local.json
 t "tools: no settings file yet, created" "$(node "$root/hooks/tools.mjs" off workflows >/dev/null; grep -c '"Workflow"' .claude/settings.local.json)" 1

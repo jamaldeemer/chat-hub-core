@@ -51,12 +51,14 @@ Only what you couldn't tell. Usually:
    print `1` (passed) or `0` (not passed), and fail or print nothing when it
    can't ask CI (never `0` on an error). Propose one from what you found.
 
-5. Tools the chats can turn off (multiSelect; every tool costs context
-   on every turn, the hub's most of all). Four options, marking
-   Recommended the ones this project shows no use for: "Browser"
-   (`browser chrome`; keep for a web UI), "iOS simulator" (`ios`; keep
-   for an iOS app), "Charts and artifacts" (`charts artifacts`),
-   "Workflows and suggestions" (`workflows suggestions`). Skip it on a
+5. Tools to turn off (every tool costs context on every turn, the hub's
+   most of all). Run `node "${CLAUDE_PLUGIN_ROOT}/hooks/tools.mjs"`
+   and show the owner its numbered list of every tool group as it is, then
+   which numbers you'd turn off for this project and why in a few words
+   (no web UI: `browser`; no iOS app: `ios`; the rarely used extras,
+   marked `unused` in the script, almost always). Ask in a second menu:
+   "Turn off <numbers>" (Recommended) / "Keep everything"; the owner can
+   type other numbers (e.g. `4, 13-27`) as their own answer. Skip it on a
    re-run unless the owner asks; `/chat-hub-core:tools` changes it later.
 
 Don't ask how chats start: `startMode` defaults to "ask" (the hub asks
@@ -95,9 +97,9 @@ hooks folder with its own pre-push, save ours there as `chat-hub-pre-push`
 and add a line to theirs that runs it.
 
 **Tools** the owner picked to turn off: run `node
-"${CLAUDE_PLUGIN_ROOT}/hooks/tools.mjs" off <groups>`. It writes
+"${CLAUDE_PLUGIN_ROOT}/hooks/tools.mjs" off <numbers>`. It writes
 `.claude/settings.local.json`, which your sandbox usually blocks; then put
-`/chat-hub-core:tools off <groups>` under "Left for you" (the owner types
+`/chat-hub-core:tools off <numbers>` under "Left for you" (the owner types
 it; the prompt hook writes it).
 
 **Level 2:** add `.claude/issues-to-check.md` to `.gitignore`.

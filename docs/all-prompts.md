@@ -60,12 +60,14 @@ Only what you couldn't tell. Usually:
    print `1` (passed) or `0` (not passed), and fail or print nothing when it
    can't ask CI (never `0` on an error). Propose one from what you found.
 
-5. Tools the chats can turn off (multiSelect; every tool costs context
-   on every turn, the hub's most of all). Four options, marking
-   Recommended the ones this project shows no use for: "Browser"
-   (`browser chrome`; keep for a web UI), "iOS simulator" (`ios`; keep
-   for an iOS app), "Charts and artifacts" (`charts artifacts`),
-   "Workflows and suggestions" (`workflows suggestions`). Skip it on a
+5. Tools to turn off (every tool costs context on every turn, the hub's
+   most of all). Run `node "${CLAUDE_PLUGIN_ROOT}/hooks/tools.mjs"`
+   and show the owner its numbered list of every tool group as it is, then
+   which numbers you'd turn off for this project and why in a few words
+   (no web UI: `browser`; no iOS app: `ios`; the rarely used extras,
+   marked `unused` in the script, almost always). Ask in a second menu:
+   "Turn off <numbers>" (Recommended) / "Keep everything"; the owner can
+   type other numbers (e.g. `4, 13-27`) as their own answer. Skip it on a
    re-run unless the owner asks; `/chat-hub-core:tools` changes it later.
 
 Don't ask how chats start: `startMode` defaults to "ask" (the hub asks
@@ -104,9 +106,9 @@ hooks folder with its own pre-push, save ours there as `chat-hub-pre-push`
 and add a line to theirs that runs it.
 
 **Tools** the owner picked to turn off: run `node
-"${CLAUDE_PLUGIN_ROOT}/hooks/tools.mjs" off <groups>`. It writes
+"${CLAUDE_PLUGIN_ROOT}/hooks/tools.mjs" off <numbers>`. It writes
 `.claude/settings.local.json`, which your sandbox usually blocks; then put
-`/chat-hub-core:tools off <groups>` under "Left for you" (the owner types
+`/chat-hub-core:tools off <numbers>` under "Left for you" (the owner types
 it; the prompt hook writes it).
 
 **Level 2:** add `.claude/issues-to-check.md` to `.gitignore`.
@@ -692,31 +694,31 @@ Without git they're written into `.claude/chat-hub.json`.
 ````markdown
 ---
 name: tools
-description: Show or change which heavy tools this project's chats load (Browser pane, iOS simulator, charts, Artifacts...), to cut every chat's context. Use when the owner types /chat-hub-core:tools (e.g. "/chat-hub-core:tools off browser ios", "/chat-hub-core:tools on all") or asks to turn tools off or on for this project.
+description: Show or change which tools this project's chats load (Browser pane, iOS simulator, charts, Artifacts, any tool), to cut every chat's context. Use when the owner types /chat-hub-core:tools (e.g. "/chat-hub-core:tools off 4 13-27", "/chat-hub-core:tools on browser") or asks to turn tools off or on for this project.
 ---
 
 # Tools
 
 The prompt hook has usually done it already: a "chat-hub-core /tools:"
-note came with the owner's prompt. Tell the owner what it says in one
-short reply and do nothing else for it.
+note came with the owner's prompt. Tell the owner what it says (show the
+list as it is, numbered) and do nothing else for it.
 
 If no such note came (the hook didn't run), run it yourself with the
 owner's words after the command:
-`node "${CLAUDE_PLUGIN_ROOT}/hooks/tools.mjs" <words>` (none to show what's
-off) and tell the owner its line. If your sandbox blocks the write, give
-the owner the command to type instead: `/chat-hub-core:tools <words>`.
+`node "${CLAUDE_PLUGIN_ROOT}/hooks/tools.mjs" <words>` and show the owner
+what it prints. If your sandbox blocks the write, give the owner the
+command to type instead: `/chat-hub-core:tools <words>`.
 
-- `/chat-hub-core:tools` shows which groups are off and on.
-- `/chat-hub-core:tools off browser ios` turns groups off; `off unused`
-  turns off every group.
+- `/chat-hub-core:tools` lists every tool group, numbered, on or off.
+- `/chat-hub-core:tools off 4 13-27` turns groups off by number, or by
+  name (`off artifacts ios`), or single tools (`off SendUserFile`);
+  `off unused` turns off the rarely used extras.
 - `/chat-hub-core:tools on browser` turns them back on; `on all` for
   every group.
 
-Groups: `browser` (Browser pane), `chrome` (Claude in Chrome), `ios` (iOS
-simulator), `charts` (inline charts and diagrams), `artifacts` (published
-pages), `workflows` (multi-agent scripts), `suggestions` (plugin and skill
-suggestions).
+The tools chat-hub-core needs (Bash, Read, Edit, Write, Skill,
+ToolSearch, AskUserQuestion, SendMessage, the app's session, task-list
+and host tools) always stay on.
 
 It writes deny rules in the project's `.claude/settings.local.json` (just
 the owner, never committed), which remove those tools from every chat,
@@ -822,7 +824,8 @@ From `hooks/limit.mjs`:
 From `hooks/tools.mjs`:
 
 ```js
-  '"off unused") to turn groups off, /chat-hub-core:tools on browser (or "on all") to turn them back on. Groups: ' +
+  'single tools; "off unused" for the rarely used extras) to turn them off, /chat-hub-core:tools on browser (or "on ' +
+  'all") to turn them back on.'
       'new set; restart an open chat for it to drop or get them.',
 ```
 
