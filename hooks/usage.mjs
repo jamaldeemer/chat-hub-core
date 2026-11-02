@@ -111,7 +111,7 @@ export const wrapUpText = (ctx, limit, cfg) =>
   'asks for (add each to "## Next" in your hub notes as a line starting "- After clear:", which the start note ' +
   'quotes back to you, and say it\'s noted for after the clear). ' +
   'Finish everything already in flight: a merge you have started (through its tests and commit), ' +
-  'closing every chat whose wrap-up report is in (close-chat.mjs, then ✅: never leave one at ⏳ for after the clear), ' +
+  'closing every chat whose wrap-up report is in (close-chat.mjs, then ✅: never leave one at ⏳ for after the clear or a later release), ' +
   'title changes you owe, replies to messages chats have sent you, and messages you said you would send. ' +
   'Until all of that is done, start each reply with the plain line "⚠️ Hub at ' + short(ctx) + ' tokens: wrapping up." Once it is, ' +
   'bring your hub notes up to date, then ' + bannerRule +
