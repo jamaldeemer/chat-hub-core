@@ -3,7 +3,7 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
-## Unreleased
+## 0.3.35
 
 - **Chats set their own title symbol:** a work chat now sets its own
   status symbol (🙋 🔨 ❓ ⏳ 🚀 🟢 🔴) the moment it changes, with the
