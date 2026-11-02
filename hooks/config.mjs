@@ -1,7 +1,7 @@
 // Shared helpers for chat-hub-core's hooks.
 import { execFileSync } from 'node:child_process'
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { basename, dirname } from 'node:path'
+import { existsSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs'
+import { basename, dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 // The project's settings (.claude/chat-hub.json): { cfg, error }. cfg is null when setup
@@ -157,6 +157,15 @@ export function setHub({ session = '', app = '', replace = false }) {
     writeFileSync('.claude/chat-hub.json', JSON.stringify({ ...cfg, hubSession: next.app || next.session }, null, 2) + '\n')
   }
   return replaced
+}
+
+// True when the file whose import.meta.url is given was run directly (node file.mjs), not imported.
+// Compares real paths: the script may be reached through a symlink (on macOS $TMPDIR is under
+// /var, which is /private/var), and a plain string compare would then say no and do nothing.
+export function isMain(url, argv1 = process.argv[1]) {
+  if (!argv1) return false
+  const real = p => { try { return realpathSync(p) } catch { return resolve(p) } }
+  return real(fileURLToPath(url)) === real(argv1)
 }
 
 // The plugin's own folder (the version this code is from) and the version in its plugin.json.

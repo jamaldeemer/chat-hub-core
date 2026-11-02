@@ -222,6 +222,9 @@ t "limit: 200 means 200k" "$(node "$root/hooks/limit.mjs" hub 200 | grep -c 'wra
 t "limit: too small refused" "$(node "$root/hooks/limit.mjs" 5k | grep -c 'Not changed.*outside')" 1
 t "limit: nonsense refused" "$(node "$root/hooks/limit.mjs" lots | grep -c 'Not changed.*isn.t a size')" 1
 t "limit: default goes back to the settings" "$(node "$root/hooks/limit.mjs" default | grep -c 'hub wraps up at 150k (from .claude/chat-hub.json); work chats are asked to stop at 100k (from')" 1
+ln -s "$root" "$tmp/linked-root"
+t "limit: runs when reached through a symlinked path" "$(node "$tmp/linked-root/hooks/limit.mjs" | grep -c 'hub wraps up at 150k')" 1
+rm "$tmp/linked-root"
 rm -rf .git/chat-hub; export TMPDIR="$oldtmp"
 echo '{"level":0,"done":["tests pass"]}' > .claude/chat-hub.json
 mkdir .githooks && touch .githooks/pre-push; echo '{"level":1}' > .claude/chat-hub.json
