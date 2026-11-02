@@ -241,9 +241,12 @@ A chat closes only when all of this holds, checked in this order:
    branch, all pushed; level 2 CI passed on its newest commit and no fix
    waiting for the owner's check), merges the branch into the release
    preview, runs the settings' `checks` on the merge (skipped when the
-   merge adds nothing to the branch: the chat's own run covered it), and
-   moves the preview only if they pass. Don't merge, test or look up the
-   folder yourself first. Level 0: `node
+   merge adds nothing to the branch: the chat's own run covered it; no
+   `checks`: the commands in backticks in `done`, else a default it
+   finds, and it says which it ran), and moves the preview only if they
+   pass. If the preview is checked out in your own folder, it merges
+   there too (your folder must have nothing uncommitted). Don't merge,
+   test or look up the folder yourself first. Level 0: `node
    "${CLAUDE_PLUGIN_ROOT}/hooks/close-check.mjs" <its folder>`. On any
    FAIL, tell the chat what failed; a merge clash is the chat's to
    resolve, not yours.

@@ -3,6 +3,27 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## 0.3.41
+
+- **close-chat merges in the hub's own folder:** when the hub's folder
+  has the release preview checked out, `hooks/close-chat.mjs` used to
+  stop ("merge there instead") and the hub merged by hand. Now it merges
+  there itself, by a fast-forward that moves the branch and the folder's
+  files together, after checking the folder has nothing uncommitted
+  (git also refuses to overwrite a local change). A preview checked out
+  in any other folder still stops.
+- **No `checks`, still checked:** with no `checks` in the settings,
+  close-chat used to stop. Now it runs the commands written in
+  backticks in `done` (`"tests pass (\`npm test\`)"`), else a default
+  it finds in the merge: package.json's lint, typecheck, test and build
+  scripts (with the package manager its lock file names), else
+  `tests/run.sh`, else `make test`; its PASS/FAIL line says which it
+  ran. The copy it checks borrows the project's `node_modules`, so
+  package scripts run there. Setup now always proposes and writes
+  `checks`.
+- **No leftover temp copies:** a failed check left its copy of the merge
+  in the temp folder; it's now removed on every exit.
+
 ## 0.3.39
 
 - **The usage line shows when a chat opens:** the line the owner sees

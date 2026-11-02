@@ -54,8 +54,12 @@ Only what you couldn't tell. Usually:
 3. What "done" means here (e.g. tests pass, it builds, docs updated, owner
    has seen it), and where follow-ups go (an existing backlog or to-do
    file, else `docs/backlog.md`). Offer what you found. Level 1+: the
-   command that runs those checks (e.g. `sh tests/run.sh`); the hub runs
-   it on each merge into the release preview.
+   command that runs those checks (e.g. `sh tests/run.sh`, or the
+   project's lint, test and build scripts joined with `&&`); the hub runs
+   it on each merge into the release preview. Always propose one from
+   what you found and write it as `checks`; without it, the hub falls
+   back to commands in backticks in `done`, else a guess (package.json's
+   lint/typecheck/test/build, `tests/run.sh`, `make test`).
 4. Level 2: the command that asks CI whether a commit passed. It must
    print `1` (passed) or `0` (not passed), and fail or print nothing when it
    can't ask CI (never `0` on an error). Propose one from what you found.
@@ -188,7 +192,7 @@ Don't commit.
   "titles": "code-first",           // "code-first" | "release-first" (ʀ07 3F · Title)
   "nextRelease": 1,                 // release the next finished work ships in
   "done": ["tests pass", "docs updated"],
-  "checks": "",                     // level 1+: command the hub runs on each merge into the preview
+  "checks": "",                     // level 1+: command the hub runs on each merge into the preview (always write it)
   "followups": "docs/backlog.md",   // where chats write follow-ups
   "startMode": "ask",               // "ask" (hub asks each time) | "plan" | "build" | "wait"
   "commitReminder": "",             // extra text shown before every commit
@@ -456,9 +460,12 @@ A chat closes only when all of this holds, checked in this order:
    branch, all pushed; level 2 CI passed on its newest commit and no fix
    waiting for the owner's check), merges the branch into the release
    preview, runs the settings' `checks` on the merge (skipped when the
-   merge adds nothing to the branch: the chat's own run covered it), and
-   moves the preview only if they pass. Don't merge, test or look up the
-   folder yourself first. Level 0: `node
+   merge adds nothing to the branch: the chat's own run covered it; no
+   `checks`: the commands in backticks in `done`, else a default it
+   finds, and it says which it ran), and moves the preview only if they
+   pass. If the preview is checked out in your own folder, it merges
+   there too (your folder must have nothing uncommitted). Don't merge,
+   test or look up the folder yourself first. Level 0: `node
    "${CLAUDE_PLUGIN_ROOT}/hooks/close-check.mjs" <its folder>`. On any
    FAIL, tell the chat what failed; a merge clash is the chat's to
    resolve, not yours.

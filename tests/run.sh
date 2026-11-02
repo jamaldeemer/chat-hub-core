@@ -360,7 +360,7 @@ t "close-chat: clash fails and names the file" "$(chw b2 'FAIL merge: clashes wi
 wk b3 g.txt three
 t "close-chat: merge that adds something runs the checks" "$(chw b3 'PASS checks: `test ! -e bad.txt` passed')" 1
 t "close-chat: then ready" "$(ch b3 | tail -1 | grep -c '^READY')" 1
-wk b4 bad.txt four; before=$(git rev-parse release)
+wk b4 bad.txt four; before=$(git rev-parse release); copies=$(ls "${TMPDIR:-/tmp}" | grep -c '^chat-hub-close-')
 t "close-chat: failing checks fail" "$(chw b4 'FAIL checks: .* failed on the merge')" 1
 t "close-chat: failing checks leave the preview alone" "$(git rev-parse release)" "$before"
 echo '{"level":1}' > .claude/chat-hub.json
@@ -369,8 +369,27 @@ git checkout -q -- .claude/chat-hub.json
 git branch b5 main
 t "close-chat: branch without a folder fails" "$(chw b5 'FAIL folder: no worktree has b5')" 1
 git worktree add -q ../rel release
-t "close-chat: preview checked out somewhere fails" "$(chw b3 'FAIL preview: release is checked out')" 1
+t "close-chat: preview checked out somewhere else fails" "$(chw b3 'FAIL preview: release is checked out at .*; run this there')" 1
 git worktree remove --force ../rel
+echo '{"level":1,"done":["passes (`test ! -e bad.txt`)"]}' > .claude/chat-hub.json
+wk b6 h.txt six
+t "close-chat: no checks runs the commands in done, and says so" "$(chw b6 'PASS checks: `test ! -e bad.txt` passed on the merge (no `checks` in the settings; ran the commands in `done`')" 1
+echo '{"level":1,"done":["tests pass"]}' > .claude/chat-hub.json
+git worktree add -q ../b7 -b b7 main && mkdir ../b7/tests && echo 'exit 0' > ../b7/tests/run.sh && git -C ../b7 add -A && git -C ../b7 -c user.email=a@b -c user.name=t commit -q -m b7 && git -C ../b7 push -q origin HEAD
+t "close-chat: no checks in settings or done runs a default from the merge" "$(chw b7 'PASS checks: `sh tests/run.sh` passed on the merge (no `checks` in the settings; ran the default (tests/run.sh)')" 1
+t "close-chat: no temp copies left behind" "$(ls "${TMPDIR:-/tmp}" | grep -c '^chat-hub-close-')" "$copies"
+git checkout -q -- .claude/chat-hub.json
+git checkout -q release
+wk b8 i.txt eight
+echo dirt >> f.txt
+t "close-chat: preview checked out here with changes fails" "$(chw b8 'FAIL preview: release is checked out here with 1 uncommitted')" 1
+git checkout -q -- f.txt
+out=$(ch b8)
+t "close-chat: preview checked out here merges here" "$(echo "$out" | grep -c 'PASS preview: release is checked out here')" 1
+t "close-chat: merging here is ready" "$(echo "$out" | tail -1 | grep -c '^READY to close b8')" 1
+t "close-chat: merging here updates the files" "$(cat i.txt 2>/dev/null)" eight
+t "close-chat: merging here leaves the folder clean" "$(git status --porcelain | wc -l | tr -d ' ')" 0
+git checkout -q main
 cd "$tmp/cc/repo"
 # run.mjs (the launcher) and the reload notice: two versions installed side by side
 cache="$tmp/cache/chat-hub-core"; mkdir -p "$cache"
