@@ -3,7 +3,7 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
-## Unreleased
+## 0.3.37
 
 - **Tools no chat uses are off by default:** a scan of 48 chats found
   the iOS simulator, Artifacts and the rarely used extras (groups 2, 4
