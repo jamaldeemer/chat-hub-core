@@ -3,6 +3,17 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## Unreleased (R23)
+
+- **`limit.mjs` works through a symlinked path:** run by hand from a path
+  that goes through a symlink (on macOS `/var` and `/tmp` are links to
+  `/private/var` and `/private/tmp`, and `$TMPDIR` is under `/var`), it used to print
+  nothing and change nothing. It now compares real paths to tell it was
+  run directly (`isMain` in `hooks/config.mjs`), so it works from any
+  path, and `tests/run.sh` no longer needs to be run from the real path
+  (`cd "$(pwd -P)"`). The prompt hook's `/chat-hub-core:limit` was never
+  affected.
+
 ## 0.3.33
 
 - **`/chat-hub-core:limit` changes the context limits as you go:**

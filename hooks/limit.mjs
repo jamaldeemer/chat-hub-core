@@ -9,8 +9,7 @@
 // git, written into .claude/chat-hub.json.
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname } from 'node:path'
-import { fileURLToPath } from 'node:url'
-import { limitsFile, loadConfig, readLimits } from './config.mjs'
+import { isMain, limitsFile, loadConfig, readLimits } from './config.mjs'
 import { DEFAULT_TRIM_AT, short } from './usage.mjs'
 
 export const LIMIT_USAGE = 'Type /chat-hub-core:limit to see the limits, /chat-hub-core:limit 200k for the hub, ' +
@@ -78,7 +77,7 @@ export function limitCommand(args = '', dir = process.cwd()) {
   return { ok: true, changed: true, text: show('Saved; every chat uses it from its next prompt. ') }
 }
 
-if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+if (isMain(import.meta.url)) {
   const r = limitCommand(process.argv.slice(2).join(' '))
   console.log(r.text)
   process.exit(r.ok ? 0 : 1)
