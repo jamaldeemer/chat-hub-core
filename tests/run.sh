@@ -180,6 +180,35 @@ t "start stats: new chat shows the version" "$(ss u9 "$tmp/none.jsonl" startup |
 t "start stats: resume shows the real numbers" "$(ss u1 "$tr" resume | grep -c "\"systemMessage\":\"chat-hub-core $ver · Context 200k · 3 turns · this chat ≈ 204k token-reads\"")" 1
 t "start stats: after a compact, no stale context" "$(ss u1 "$tr" compact | grep -c '"systemMessage":"[^"]*Context compacted · 3 turns')" 1
 t "start stats: Claude still gets the start note" "$(ss u9 "$tmp/none.jsonl" startup | grep -c 'additionalContext":"This project uses chat-hub-core')" 1
+# titles.mjs: the after-turn title check reads the app's custom-title.json next to the transcript.
+ttl() { mkdir -p "$tmp/$1"; printf '{"customTitle":"%s"}' "$2" > "$tmp/$1/custom-title.json"; }
+atb() { printf '{"session_id":"%s","transcript_path":"%s","cwd":"%s","stop_hook_active":%s}' "$1" "$tr" "$(pwd)" "${2:-false}" | node "$root/hooks/after-turn.mjs"; }
+ttl u1 '🔨  ʀ26~ 2F · More menu fixes'
+t "title check: a good title passes" "$(atb u1 | grep -c '"decision"')" 0
+t "title check: stats line still shown" "$(atb u1 | grep -c '"systemMessage":"chat-hub-core')" 1
+ttl u1 '❓ ʀ25+ 7F · (Gaps in the pieces)'
+t "title check: one space sent back" "$(atb u1 | grep -c '"decision":"block".*two spaces after the symbol, not 1.*e.g. \\"❓  ʀ25+ 7F')" 1
+t "title check: never twice in a row" "$(atb u1 true | grep -c '"decision"')" 0
+ttl u1 '🔨  R26~ 8E · Menus polish'
+t "title check: plain R sent back with the fix" "$(atb u1 | grep -c 'plain R.*e.g. \\"🔨  ʀ26~ 8E')" 1
+ttl u1 '🔨  3F · Fix menu (R7)'
+t "title check: code-first plain R too" "$(atb u1 | grep -c 'e.g. \\"🔨  3F · Fix menu (ʀ7)')" 1
+ttl u1 'ʀ25+ 9C · (Better examples)'
+t "title check: missing symbol sent back" "$(atb u1 | grep -c 'no status symbol')" 1
+ttl u1 '⚪  ʀ26~ 4F · Performance regression'
+t "title check: work chat on ⚪ sent back" "$(atb u1 | grep -c '⚪ is only for talk chats and the hub')" 1
+ttl u1 '⚪  ᴢ N12 · Product positioning'
+t "title check: talk chat keeps ⚪" "$(atb u1 | grep -c '"decision"')" 0
+ttl u1 'M6 Mac Mini uses'
+t "title check: app-made title left alone" "$(atb u1 | grep -c '"decision"')" 0
+t "title check: no title file, nothing checked" "$(atb u7 | grep -c '"decision"')" 0
+echo '{"level":0,"hubSession":"u1"}' > .claude/chat-hub.json
+ttl u1 '⚪  object_creator HUB · ʀ25+ (4)'
+t "title check: hub keeps ⚪" "$(atb u1 | grep -c '"decision"')" 0
+echo '{"level":0,"stats":false}' > .claude/chat-hub.json
+ttl u1 '❓ ʀ25+ 7F · x'
+t "title check: runs with stats off" "$(atb u1 | grep -c '"decision":"block"')" 1
+rm -rf "$tmp/u1"
 echo '{"level":0,"trimAt":150000}' > .claude/chat-hub.json
 node "$root/hooks/set-hub.mjs" --session u1 --replace >/dev/null
 op() { printf '{"session_id":"%s","prompt":"hi","cwd":"%s"}' "$1" "$(pwd)" | node "$root/hooks/on-prompt.mjs"; }
@@ -554,6 +583,9 @@ t "titles: set the moment status changes" "$(grep -c 'Set it yourself the moment
 t "titles: hub told chats set their own" "$(grep -c '\*\*Chats set their own symbol\*\*' "$root/skills/hub/SKILL.md")" 1
 t "question: closing lines aren't questions" "$(grep -c 'a closing "anything else?" isn.t one' "$root/skills/work-chat/SKILL.md")" 1
 t "titles: failed rename falls back to a message" "$(grep -c 'If the rename fails, tell the hub the status' "$root/skills/work-chat/SKILL.md")" 1
+t "titles: work chat sets 🔨 as it starts work" "$(grep -c 'it": set 🔨 and go straight to work' "$root/skills/work-chat/SKILL.md")" 1
+t "titles: hub starts chats with the whole title" "$(grep -c 'Start a chat with its whole title' "$root/skills/hub/SKILL.md")" 1
+t "titles: hub told the app's notes show old titles" "$(grep -c 'never updates them' "$root/skills/hub/SKILL.md")" 1
 t "titles: README says chats set their own" "$(grep -c 'Each chat sets its own symbol the moment its status changes' "$root/README.md")" 1
 cd "$tmp"
 rm -rf "$tmp"; exit $fail

@@ -445,6 +445,13 @@ Two styles, set by `titles` in the settings:
   code-first ones just drop the tag (`⚪  A4 · Compare slicers`). They close when their last message isn't
   waiting on the owner and any follow-ups are written down.
 
+Start a chat with its whole title (`⚪`, two spaces, tag, code, name):
+the app keeps showing the title a chat started with in its notes ("The
+session \"…\" you started finished a turn"), in message headers and in
+the chat's own "This session is …" line, and never updates them. Those
+are old: before you report or change a title, read the real one (list
+the sessions).
+
 Update titles yourself when you start, retag or close a chat, and after a
 release, and your own title's open count with them when it changes.
 Your own merges into the release branch keep git's wording.
@@ -598,15 +605,19 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
   spaces. Set it yourself the moment your status changes, in the same
   turn: read your title (`get_session self`), swap only that character,
   and set it (`set_session_title` with `self`), keeping the rest
-  exactly; the hub owns the rest (tag, code, name). No message to the
-  hub for it. If the rename fails, tell the hub the status in one line
-  instead ("asking for OK", "question for owner: <topic>", "working
-  again", "pushed") and it sets it.
+  exactly, two spaces after the symbol included; the hub owns the
+  rest (tag, code, name). No message to the hub for it. A hook checks
+  your title after each turn and sends you back to fix a missing
+  symbol, one space, a plain `R` tag or ⚪ on a work chat.
+  If the rename fails, tell the hub the status in one line instead
+  ("asking for OK", "question for owner: <topic>", "working again",
+  "pushed") and it sets it.
   - 🙋 you're asking the owner for an OK (commit, merge or push).
   - ⏳ the owner said yes: committing and pushing; and when you send
     your wrap-up report.
-  - 🔨 working, nothing waiting on the owner: after a no, an answered
-    question, or "More changes".
+  - 🔨 working, nothing waiting on the owner: as you start work (your
+    first turn with "Build it", or when the owner says go), after a
+    no, an answered question, or "More changes".
   - ❓ you end a turn on a question to the owner that isn't an OK, in
     plain text too ("should I add X?", "A or B?", a plan to approve,
     "waiting for instructions"); a closing "anything else?" isn't one.
@@ -622,9 +633,9 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
 - **Start mode:** your brief's **Start:** line. "Plan first": look
   around, send the owner a short plan (what's there, the approach, a few
   lines), set ❓, and change nothing until the owner says go. "Build
-  it": go straight to work. "Just open": read your brief and these
-  rules, start the dev server if the settings' `devServer.command` is
-  set, say in one line you're ready (with its address if you started
+  it": set 🔨 and go straight to work. "Just open": read your brief
+  and these rules, start the dev server if the settings'
+  `devServer.command` is set, say in one line you're ready (with its address if you started
   it), set ❓, and look at or change nothing else until the owner says
   what to do.
 - **Commit messages** start with your chat's code: `3F: Fix the menu`.
@@ -915,7 +926,7 @@ From `hooks/usage.mjs`:
 From `hooks/after-turn.mjs`:
 
 ```js
-process.stdout.write(JSON.stringify({ systemMessage: statsLine(s) }))
+  if (s.turns) out.systemMessage = statsLine(s)
 ```
 
 From `githooks/pre-push` (shown when a push to main is refused):
