@@ -209,7 +209,12 @@ Two styles, set by `titles` in the settings:
   below): a report in means the close happens now, even while wrapping
   up; it never waits for a clear. Backstop, on every wake (and first
   thing after a clear): close any chat whose wrap-up report is in and
-  that isn't ✅ yet.
+  that isn't ✅ yet. Level 2, on the same wakes while any chat shows
+  🚀: run `node "${CLAUDE_PLUGIN_ROOT}/hooks/ci-status.mjs"` (one line
+  per chat branch: CI passed, not passed yet, or not pushed) and message
+  each 🚀 chat whose head passed, once per commit: "CI passed on <sha>:
+  set 🟢 and ask the owner more or wrap up." A clear stops a chat's own
+  CI watcher, so it may not know.
 - **Talk chats** (questions, research, planning; no code to ship): no
   release tag, no branch or worktree, never retagged at a release.
   They start with `⚪` like other chats and keep it (except ❓ while
@@ -327,7 +332,9 @@ next status change, or the sidebar shows old and new symbols mixed.
 - `ci.passed` is a command that says whether CI passed on a commit
   (`SHA=<sha> sh -c "<command>"`). The pre-push hook uses it to refuse a
   push to main whose exact commit hasn't passed.
-- Watch CI only while a run is in flight.
+- Watch CI only while a run is in flight. `ci-status.mjs` (Titles
+  backstop) gives every chat branch's CI state in one call; use it for
+  `## Waiting` in your notes too.
 - If CI can't run at all (no runner, billing, an outage; not a test
   failure), say so and ask the owner whether to merge on the jobs that
   did pass. Never decide that yourself.

@@ -95,7 +95,8 @@ export const wrapUpText = (ctx, limit) =>
 const workText = ctx =>
   `⚠️ STOP: this chat's context is ${short(ctx)} tokens, and every turn re-reads all of it. When you reach a ` +
   'natural stopping point, write down where you are (in your branch\'s notes or a commit) and tell the owner, ' +
-  `starting your reply with "⚠️ This chat is at ${short(ctx)} tokens: please clear it or wrap it up." Repeat that line in every reply until cleared.`
+  `starting your reply with "⚠️ This chat is at ${short(ctx)} tokens: please clear it or wrap it up." Repeat that line in every reply until cleared. ` +
+  'Don\'t promise to check CI after the clear: the start note checks it for you.'
 
 // Past the limit: the note comes on every prompt, and once on a tool call when the chat first
 // crosses it. Resets once the context drops below 80% of the limit (after a clear).
