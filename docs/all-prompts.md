@@ -200,7 +200,7 @@ Don't commit.
   "trimAtWork": 0,                  // optional: the same for work chats (0 = off)
                                   // (/chat-hub-core:limit overrides both, in .git/chat-hub/limits.json)
   "notesMaxBytes": 6000,            // optional: hub notes size that prompts a rewrite as one snapshot (0 = off)
-  "stats": true                     // optional: false hides the after-turn stats line
+  "stats": true                     // optional: false hides the usage line (after each turn and at start)
 }
 ```
 
@@ -884,10 +884,14 @@ From `hooks/usage.mjs`:
   `starting your reply with "⚠️ This chat is at ${short(ctx)} tokens: please clear it or wrap it up." Repeat that line in every reply until cleared.`
 ```
 
-From `hooks/after-turn.mjs`:
+From `hooks/usage.mjs` (`statsLine`: the owner's usage line, shown by `hooks/after-turn.mjs` after every
+turn and by `hooks/session-start.mjs` when a chat opens):
 
 ```js
-  systemMessage: `chat-hub-core ${pluginVersion()} · Context ${short(s.context)} · ${s.turns} turns · this chat ≈ ${short(s.reads)} token-reads`,
+  const parts = [`chat-hub-core ${pluginVersion()}`]
+  if (!s.turns) parts.push('new chat')
+  else parts.push(compacted ? 'Context compacted' : `Context ${short(s.context)}`, `${s.turns} turns`,
+    `this chat ≈ ${short(s.reads)} token-reads`)
 ```
 
 From `githooks/pre-push` (shown when a push to main is refused):

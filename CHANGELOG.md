@@ -3,6 +3,19 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## 0.3.39
+
+- **The usage line shows when a chat opens:** the line the owner sees
+  after every turn ("chat-hub-core <version> · Context … · … turns · …")
+  now also shows at the start of a chat, before any message, from the
+  start hook's `systemMessage` (the app shows it as "SessionStart
+  says: …"; Claude never sees it). A new or cleared chat has had no
+  turns yet, so it shows the version and "new chat"; a resumed chat
+  shows its real numbers; after a compact it says "Context compacted"
+  rather than the old size. Both hooks build the line with the same
+  helper (`statsLine` in `hooks/usage.mjs`), and `"stats": false` hides
+  both.
+
 ## 0.3.38
 
 - **An update shows just "Updated":** after a plugin update, each open

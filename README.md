@@ -333,8 +333,9 @@ something is wrong (a broken settings file, no hub, a hub it can't
 reach), chats stop and tell you rather than guess.
 
 **Token use.** After every turn you see one line, e.g. `Context 182k ·
-312 turns · this chat ≈ 41M token-reads` (Claude doesn't see it; set
-`"stats": false` to hide it). Every turn re-reads the whole context, so
+312 turns · this chat ≈ 41M token-reads`, and the same line when a chat
+opens, before any message (a new or cleared chat shows the version and
+"new chat"; Claude doesn't see it; set `"stats": false` to hide it). Every turn re-reads the whole context, so
 long chats, the hub above all, cost the most. When the hub passes
 `trimAt` (default 135k tokens) it wraps up: it takes on no new work
 (anything new you or a chat ask for goes in its notes as an
