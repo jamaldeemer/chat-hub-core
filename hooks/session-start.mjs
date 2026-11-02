@@ -42,6 +42,9 @@ if (error) {
     ((p => p ? ' ' + p : '')(notesProblem(c, notesFile))) +
     (later.length ? ` Your notes' "## Next" has work you put off until after the clear; do it first, before anything new, ` +
       `then delete each line from the notes: ${later.map(l => `"${l.slice(0, 120)}"`).join('; ')}.` : '') : ''
+  // Owner-deleted chats send the hub no event: recount and prune on start.
+  const recount =
+    " Then list sessions (include archived): drop chats the owner deleted from your notes and fix your title's open count if it's wrong."
   const app = hostApp()
   let who
   if (hub.app && app && app === hub.app) {
@@ -52,7 +55,7 @@ if (error) {
       try { setHub({ session: me, app: hub.app }) } catch (e) { rec = ` (Couldn't re-record your session ID: ${e.message}; run ${setHubCmd} --session ${me} --app ${hub.app}.)` }
     }
     who = `This chat is the hub (the app gives this chat the hub's address, ${hub.app}): load the chat-hub-core:hub skill now; ` +
-      `never the work-chat skill.${rec}` + notes
+      `never the work-chat skill.${rec}` + notes + recount
   } else if (hub.app && app) {
     who = `This chat is a work chat (its app address is ${app}; the hub is ${hub.app}): load the chat-hub-core:work-chat ` +
       `skill now and only ever message ${hub.app}.`
@@ -60,12 +63,12 @@ if (error) {
     // In the desktop app, record the hub's app address here too when it's missing.
     let added = false
     if (!hub.app && app) { try { setHub({ app }); added = true } catch {} }
-    who = 'This chat is the hub: load the chat-hub-core:hub skill now.' + notes +
+    who = 'This chat is the hub: load the chat-hub-core:hub skill now.' + notes + recount +
       (hub.app || added ? '' : ` Work chats can't message you yet: look up this session's own details with your session tools (its id starts with local_) and run ${setHubCmd} --app <that id>.`)
   } else if (hub.app) {
     who = `This project's hub is app session ${hub.app}. Look up this session's own details with your session tools: ` +
       `if its id is ${hub.app}, this chat is the hub (it was restarted or cleared): load the chat-hub-core:hub skill now and ` +
-      `run ${setHubCmd} --session <this chat's session ID, below> --app ${hub.app}.${notes ? ' Then' + notes.replace(' Your notes exist:', ' (your notes exist)') : ''} Otherwise this is a work chat: ` +
+      `run ${setHubCmd} --session <this chat's session ID, below> --app ${hub.app}.${notes ? ' Then' + notes.replace(' Your notes exist:', ' (your notes exist)') : ''}${recount} Otherwise this is a work chat: ` +
       `load the chat-hub-core:work-chat skill now and only ever message ${hub.app}.`
   } else if (hub.session) {
     who = `This chat is a work chat: load the chat-hub-core:work-chat skill now. This project's hub is session ${hub.session}; ` +

@@ -51,9 +51,10 @@ waiting on your push), 🚀 (release in CI), 🟢 (CI passed, push to main),
 🔴 (CI failed), ❓ (question for you); ⚪ again once main has it.
 Its title ends with the number of chats still open for that release, in
 parentheses: `⚪  Hub · ʀ07 (6)`. Talk chats and ✅ chats don't count;
-`(0)` means the release's work is all done. The hub updates it only
-when it retitles a chat anyway (starting, retagging, ✅, closing) and
-after a release.
+`(0)` means the release's work is all done. The hub sets it whenever it
+retitles a chat (starting, retagging, ✅, closing) and after a release,
+and recounts each time it wakes, so a chat you close or delete yourself
+is caught too; it only retitles itself when the count is wrong.
 
 ## Flow
 

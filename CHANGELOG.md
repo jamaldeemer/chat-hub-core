@@ -24,6 +24,22 @@ Each version is a git tag (`v0.1.0`). Projects pin a tag in
   - the hub starts a chat with its whole title, and reads real titles
     from the session list, not from the app's notes.
 
+## 0.3.40
+
+- **The hub recounts when it wakes:** the app sends the hub nothing when
+  the owner closes or deletes a chat, so the open count `(n)` in the
+  hub's title went stale. The hub now recounts on every wake (an event,
+  an owner prompt, a start, after a clear), from a session list it's
+  taking anyway or one list (archived included), and retitles itself only
+  when the count is wrong. The old "never retitle yourself just for the
+  count" rule is gone.
+- **The hub's notes drop deleted chats:** the same list checks
+  `## Open chats` in the notes, which now keep each chat's session id: a
+  chat whose id is gone is dropped (matched on session id, never title),
+  and one whose branch isn't on main or the release preview is named to
+  the owner once. Without the app's session tools both checks are
+  skipped. The hub's start note says to do this first thing.
+
 ## 0.3.39
 
 - **The usage line shows when a chat opens:** the line the owner sees
