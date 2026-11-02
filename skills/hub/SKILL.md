@@ -213,6 +213,13 @@ Two styles, set by `titles` in the settings:
   code-first ones just drop the tag (`⚪  A4 · Compare slicers`). They close when their last message isn't
   waiting on the owner and any follow-ups are written down.
 
+Start a chat with its whole title (`⚪`, two spaces, tag, code, name):
+the app keeps showing the title a chat started with in its notes ("The
+session \"…\" you started finished a turn"), in message headers and in
+the chat's own "This session is …" line, and never updates them. Those
+are old: before you report or change a title, read the real one (list
+the sessions).
+
 Update titles yourself when you start, retag or close a chat, and after a
 release, and your own title's open count with them when it changes.
 Your own merges into the release branch keep git's wording.

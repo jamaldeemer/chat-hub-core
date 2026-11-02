@@ -3,6 +3,27 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## 0.3.41
+
+- **Titles keep their symbol and tag:** object_creator's hub saw titles
+  with no symbol, ⚪ on started work chats and a plain `R` around a
+  clear. Neither a clear nor the app resets titles (every cleared chat
+  kept its own); the odd titles were all the ones the hub passed when it
+  started each chat, which the app keeps quoting in its notes and
+  message headers and never updates. Real problems found: work chats
+  never set 🔨 when they started work, so they stayed ⚪; and one chat
+  dropped a space when it swapped its symbol. Now:
+  - the after-turn hook reads the chat's title (`custom-title.json`
+    beside its transcript) and, if the symbol is missing, has one space
+    after it, the tag has a plain `R` or a work chat is on ⚪, sends
+    the chat back once to fix it (`decision: block`, never twice in a
+    row; `hooks/titles.mjs`). Talk chats and the hub keep ⚪; titles
+    that don't look like ours, and chats outside the desktop app, aren't
+    checked;
+  - work chats set 🔨 as they start work ("Build it": at once);
+  - the hub starts a chat with its whole title, and reads real titles
+    from the session list, not from the app's notes.
+
 ## 0.3.39
 
 - **The usage line shows when a chat opens:** the line the owner sees

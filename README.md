@@ -291,6 +291,15 @@ stands apart from the code; the digits, `~` and `+` stay plain. Older
 titles with a plain `R` still count as the same release, and the hub
 writes `ʀ` the next time it sets them.
 
+After every turn a hook reads the chat's own title (the app keeps it in
+`custom-title.json` beside the chat's transcript, also across a clear)
+and sends the chat back once to fix it if the symbol is missing, has one
+space after it instead of two, the tag has a plain `R`, or a work chat
+is still on ⚪. The app's notes about a chat ("The session "…" you
+started finished a turn") and its message headers always show the title
+the chat started with, so the hub reads real titles from the session
+list instead.
+
 Chats in the coming release (the one in the hub's title) have their name,
 the part after the code, in parentheses, so that release's work stands
 out: `🔨  ʀ24~ 9A · (Colour palette review)` next to
