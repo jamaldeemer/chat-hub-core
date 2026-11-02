@@ -804,7 +804,7 @@ From `hooks/session-start.mjs`:
       'Become the hub only if the owner runs /chat-hub-core:hub here.'
       '"No hub is recorded; type /chat-hub-core:hub in the chat that should be the hub." Until one is recorded, ' +
       'don\'t message any chat as the hub and don\'t guess one by its name.'
-  say('SessionStart', `This project uses chat-hub-core ${pluginVersion()} (level ${c.level}). ${who}${mine}${guard}${off}`)
+  say('SessionStart', `This project uses chat-hub-core ${pluginVersion()} (level ${c.level}). ${who}${mine}${guard}${off}`, stats)
 ```
 
 From `hooks/on-prompt.mjs`:
@@ -866,6 +866,7 @@ if (nudge) say('PreToolUse', nudge)
 From `hooks/usage.mjs`:
 
 ```js
+    `this chat ≈ ${short(s.reads)} token-reads`)
   `⚠️ WRAP UP: this chat's context is ${short(ctx)} tokens, past its limit of ${short(limit)}, and every turn ` +
   're-reads all of it. Take on no new work: no new chats or releases, and nothing new the owner or a chat ' +
   'asks for (add each to "## Next" in your hub notes as a line starting "- After clear:", which the start note ' +
@@ -884,14 +885,10 @@ From `hooks/usage.mjs`:
   `starting your reply with "⚠️ This chat is at ${short(ctx)} tokens: please clear it or wrap it up." Repeat that line in every reply until cleared.`
 ```
 
-From `hooks/usage.mjs` (`statsLine`: the owner's usage line, shown by `hooks/after-turn.mjs` after every
-turn and by `hooks/session-start.mjs` when a chat opens):
+From `hooks/after-turn.mjs`:
 
 ```js
-  const parts = [`chat-hub-core ${pluginVersion()}`]
-  if (!s.turns) parts.push('new chat')
-  else parts.push(compacted ? 'Context compacted' : `Context ${short(s.context)}`, `${s.turns} turns`,
-    `this chat ≈ ${short(s.reads)} token-reads`)
+process.stdout.write(JSON.stringify({ systemMessage: statsLine(s) }))
 ```
 
 From `githooks/pre-push` (shown when a push to main is refused):
