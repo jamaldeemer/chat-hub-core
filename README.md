@@ -15,8 +15,9 @@ one **hub** chat in charge.
   Git hooks block rebases, commits on main or without your OK, and edits
   to another chat's folder.
 - **Releases built in.** Finished work gathers on a `release` preview
-  branch; a close check confirms each chat is committed, pushed, merged
-  and (with CI) green.
+  branch; one command merges, tests and checks each chat before it closes.
+- **Light on context.** A usage line after every turn, a hub that wraps
+  itself up at a limit you set, and unused tools off by default.
 - **No lock-in.** Works with any git host, CI or framework. Start with
   chats only; add branches and CI later.
 
@@ -49,12 +50,6 @@ More: [Levels in detail](#levels-in-detail).
 The hub's own title uses ⚪ normally, and during a release 🙋 (built,
 waiting on your push), 🚀 (release in CI), 🟢 (CI passed, push to main),
 🔴 (CI failed), ❓ (question for you); ⚪ again once main has it.
-Its title ends with the number of chats still open for that release, in
-parentheses: `⚪  Hub · ʀ07 (6)`. Talk chats and ✅ chats don't count;
-`(0)` means the release's work is all done. The hub sets it whenever it
-retitles a chat (starting, retagging, ✅, closing) and after a release,
-and recounts each time it wakes, so a chat you close or delete yourself
-is caught too; it only retitles itself when the count is wrong.
 
 ## Flow
 
@@ -76,6 +71,23 @@ flowchart LR
   M --> D["✅"]
 ```
 
+The same flow, as one chat's title in the sidebar (level 1):
+
+```
+⚪  ʀ12 E4 · (Add CSV export)   the hub starts it
+🔨  ʀ12 E4 · (Add CSV export)   it starts work
+❓  ʀ12 E4 · (Add CSV export)   "Comma or semicolon?"
+🔨  ʀ12 E4 · (Add CSV export)   you answer
+🙋  ʀ12 E4 · (Add CSV export)   OK to commit? (a menu)
+⏳  ʀ12 E4 · (Add CSV export)   you click "Yes, commit"
+🟢  ʀ12 E4 · (Add CSV export)   pushed: anything more, or wrap up?
+⏳  ʀ12 E4 · (Add CSV export)   you click "Wrap up"
+✅  ʀ12 E4 · (Add CSV export)   merged, tested, ready to close
+```
+
+The chat sets every symbol itself the moment it changes; the hub sets
+only ⚪ and ✅.
+
 The hub during a release:
 
 ```mermaid
@@ -93,7 +105,7 @@ Who sets each one and when: [Title symbols](#title-symbols).
 ## Example sidebar
 
 ```
-⚪  Hub · ʀ07 (6)
+⚪  Hub · ʀ07 (8)
 🙋  ʀ07 3F · (Fix menu spacing)
 ❓  ʀ07 A4 · (Add CSV export)
 ⏳  ʀ07 C2 · (Rename settings keys)
@@ -107,9 +119,94 @@ Who sets each one and when: [Title symbols](#title-symbols).
 ⚪  ᴢ A6 · Compare libraries
 ```
 
-`3F`, `A4`… are chat codes (they also start commit messages), `ʀ07` is the
-release the work ships in, names in parentheses are in the coming release
-(`ʀ08` work isn't yet), and small-caps `ᴢ` marks a talk chat with no code to ship.
+How to read it:
+
+- `3F`, `A4`… are **chat codes**; they also start commit messages
+  (`3F: Fix the menu`).
+- `ʀ07` is the **release** the work ships in. The small-caps `ʀ` keeps it
+  apart from the code.
+- **Names in parentheses** are in the coming release; `ʀ08` work isn't
+  yet, so `Bulk rename` has none.
+- `ᴢ` marks a **talk chat**: a chat for questions or research, with no
+  code to ship. Talk chats sort last.
+- `(8)` on the hub is **how many chats are left** for its release: the
+  nine `ʀ07` chats minus ✅ C9. Talk chats, later releases and ✅ chats
+  don't count; `(0)` means the release's work is all done.
+
+### The hub's count as a release goes by
+
+```
+⚪  Hub · ʀ12 (3)   three chats left for ʀ12
+⚪  Hub · ʀ12 (2)   E4 got ✅
+⚪  Hub · ʀ12 (1)   you deleted A5 yourself
+🙋  Hub · ʀ12 (0)   all done; release built, waiting on your push
+⚪  Hub · ʀ13 (2)   main has it; on to the next release
+```
+
+You don't tell the hub when you close or delete a chat yourself: it
+recounts every time it wakes and fixes its title only if the count is
+wrong.
+
+After a release, chats for the new coming release get their names in
+parentheses, in the same batch as the retag:
+
+```
+🔨  ʀ13 F2 · Bulk rename      while ʀ12 is the coming release
+🔨  ʀ13 F2 · (Bulk rename)    once ʀ12 has shipped
+```
+
+## Commands
+
+Type these in any chat of the project. Each answers in one short reply.
+
+| Command | Does |
+|---|---|
+| `/chat-hub-core:setup` | sets the project up, or changes its level or answers |
+| `/chat-hub-core:hub replace` | makes this chat the hub |
+| `/chat-hub-core:limit` | shows or changes when the hub (and work chats) wrap up |
+| `/chat-hub-core:tools` | shows or changes which tools every chat loads |
+| `/chat-hub-core:version` | shows this project's version and whether a newer one is out |
+
+What they look like:
+
+```
+> /chat-hub-core:limit
+Context limits: hub wraps up at 135k (default); work chats have no limit
+(default). At its limit the hub can't start chats or releases; at 155k (20k
+more, hardStopAfter) it can only write its notes until cleared.
+
+> /chat-hub-core:limit 200k
+Saved; every chat uses it from its next prompt. Context limits: hub wraps up
+at 200k (set with /chat-hub-core:limit); work chats have no limit (default). …
+
+> /chat-hub-core:version
+This project runs chat-hub-core 0.3.40. Newer: 0.3.41 is out (newest tag on
+GitHub). To update every project, run: sh ~/.claude/plugins/marketplaces/chat-hub/scripts/update-all.sh
+
+> /chat-hub-core:tools
+Tools for every chat in this project:
+ 1. on   browser: Browser pane (keep for a web UI) (mcp__Claude_Browser)
+ 2. off  ios: iOS simulator (keep for an iOS app) (mcp__Claude_Code_iOS_Simulator)
+ 3. on   charts: inline charts and diagrams (mcp__visualize, …)
+ 4. off  artifacts: Artifacts (published pages) (Artifact, ArtifactComments, ArtifactData)
+ …
+27. off  worktrees: switching worktrees (EnterWorktree, ExitWorktree)
+```
+
+More on each: [limits](#context-and-limits), [tools](#turning-off-tools).
+
+## Starting a chat
+
+When you ask the hub for something, it asks how the chat should start:
+
+- **Plan first:** the chat looks around, sends you a short plan, sets ❓
+  and waits for your go.
+- **Build it:** straight to work (🔨); it stops only for the commit OK.
+- **Just open:** it starts the dev server if `devServer` is set, says
+  it's ready, and waits for your instructions.
+
+Set `startMode` in `.claude/chat-hub.json` to `"plan"`, `"build"` or
+`"wait"` to skip the question (`"ask"` is the default).
 
 ## Install
 
@@ -149,23 +246,13 @@ Setup writes only inside your project, and only after you say yes:
   in its checkout if needed (`core.hooksPath`, which git doesn't commit).
 - Level 2: one line in `.gitignore`.
 
-Optional setting `startMode`: "ask" (default) has the hub ask you before
-each chat whether it should **plan first** (look around, send a short
-plan, wait for your go), **build it** (go straight to work, stop only
-for the commit OK) or **just open** (start the dev server if
-`devServer` is set, say it's ready, wait for your instructions);
-"plan", "build" or "wait" skips the question.
-
 Commit them and anyone who clones the project gets the same setup (they
 only repeat steps 1–2). Run setup again to change level or other answers.
 
 ## Updating
 
 **Which version am I on?** Type `/chat-hub-core:version` in any chat of
-any project. It says which chat-hub-core version that project runs and
-whether a newer one is out (the newest `v*` tag on GitHub, or the
-marketplace copy when GitHub can't be reached), with the update command
-below if it is.
+any project (example under [Commands](#commands)).
 
 When a new version is out, update every project that has the plugin at
 once:
@@ -184,17 +271,11 @@ cd path/to/your-project
 claude plugin update chat-hub-core@chat-hub
 ```
 
-Open chats don't need a restart. Their hooks run through a small
-launcher (`hooks/run.mjs`) that always runs the version the project has
-installed now, and on its next prompt each chat is told to read its new
-rules. All you see is one line from the app, "Updated" ("Updated:
-restart this chat" when the update changes which hooks run); the chat
-reads its new rules quietly and doesn't talk about it.
-(Chats started on 0.3.20 or earlier don't have the launcher yet: restart
-those once after moving to 0.3.21.) Run setup again if the CHANGELOG says
-to. Projects you don't update stay on the version they have. Each chat's
-stats line starts with the version its hooks are running; `claude plugin
-list` shows each project's.
+Open chats don't need a restart. All you see is one line from the app,
+"Updated" ("Updated: restart this chat" when the update changes which
+hooks run); the chat reads its new rules quietly. Run setup again if the
+CHANGELOG says to. Projects you don't update stay on the version they
+have.
 
 ## Levels in detail
 
@@ -287,27 +368,22 @@ only ⚪ (starting a chat), ✅ (closing it) and the rest of every title.
 | 🔴 | CI failed | its CI run fails | 2 |
 | ✅ | Ready to close | the hub: the chat's wrap-up passes the close check | all |
 
+A hook checks each chat's title after every turn and sends it back once
+to fix a missing symbol, one space instead of two, a plain `R` tag or ⚪
+on a work chat that has started ([details](docs/how-it-works.md#the-title-check)).
+
+### Release tags and names
+
 The release tag's letter is small-caps `ʀ` (`ʀ07`, `(ʀ7)`), so it
 stands apart from the code; the digits, `~` and `+` stay plain. Older
 titles with a plain `R` still count as the same release, and the hub
 writes `ʀ` the next time it sets them.
 
-After every turn a hook reads the chat's own title (the app keeps it in
-`custom-title.json` beside the chat's transcript, also across a clear)
-and sends the chat back once to fix it if the symbol is missing, has one
-space after it instead of two, the tag has a plain `R`, or a work chat
-is still on ⚪. The app's notes about a chat ("The session "…" you
-started finished a turn") and its message headers always show the title
-the chat started with, so the hub reads real titles from the session
-list instead.
-
 Chats in the coming release (the one in the hub's title) have their name,
 the part after the code, in parentheses, so that release's work stands
 out: `🔨  ʀ24~ 9A · (Colour palette review)` next to
 `🙋  ʀ25+ F2 · Staging download buttons`. Talk chats and the hub's own
-title don't get them. After a release the hub adds them to the chats
-now in the new coming release, in the same batch as the retag; a chat
-retagged to a later release loses them.
+title don't get them. A chat retagged to a later release loses them.
 
 A title is about 40 characters at most, everything included (symbol,
 tag, code, name, parentheses), so the sidebar doesn't cut it off; the
@@ -316,157 +392,161 @@ hub shortens the name to fit when it starts or retitles a chat.
 Release first pads the number to two digits, so an alphabetical sort
 groups chats by release, and talk chats (`ᴢ `) sort last. With tick-tock,
 `~` releases are fixes and `+` releases features; the hub's title shows
-the soonest next release (`⚪  Hub · ʀ15+ (2)`). The hub also keeps notes in
-git's own folder (`.git/chat-hub/hub-notes.md`), so a restart or a clear
-loses nothing. In the desktop app the start hook knows the hub by its app
-address, which a clear doesn't change, so a cleared hub is told it's the
-hub outright (and its new session ID recorded) instead of having to work
-it out.
+the soonest next release (`⚪  Hub · ʀ15+ (2)`).
 
-## How it works
+## Context and limits
 
-The rules are three skills: `setup`, `hub`, `work-chat`. A start-of-chat
-hook tells each chat which to load, and which chat is the hub: the hub
-records itself in git's own folder (never committed) by two IDs, Claude's
-session ID and the desktop app's address, so every chat and worktree sees
-it at once, can message it, and it stays the hub after a restart. Your
-project gets a settings file,
-`.claude/chat-hub.json` (level, release style, what "done" means, the
-command that runs your checks, the CI command), and a three-line note in CLAUDE.md. At level 1+, a guard hook
-refuses a few things outright instead of trusting chats to remember:
-committing on main, rebasing, editing another chat's folder, and (any
-level) commit messages without a code or without your OK: a work chat
-must ask with a menu (AskUserQuestion, "Yes, commit" / "Not yet"), and
-the hook checks the chat's transcript for a yes since its last commit
-(`"okMenu": false` turns this off where there's no menu tool). When
-something is wrong (a broken settings file, no hub, a hub it can't
-reach), chats stop and tell you rather than guess.
+Every turn re-reads the chat's whole context, so long chats, the hub above
+all, cost the most. After every turn (and when a chat opens) you see one
+line the chat itself never sees:
 
-**Token use.** After every turn you see one line, e.g. `Context 182k ·
-312 turns · this chat ≈ 41M token-reads`, and the same line when a chat
-opens, before any message (a new or cleared chat shows the version and
-"new chat"; Claude doesn't see it; set `"stats": false` to hide it). Every turn re-reads the whole context, so
-long chats, the hub above all, cost the most. When the hub passes
-`trimAt` (default 135k tokens) it wraps up: it takes on no new work
-(anything new you or a chat ask for goes in its notes as an
-"After clear:" line, which the start note quotes back to it after the
-clear), finishes what it already has in flight (a merge it
-started, closing every chat whose wrap-up report is in, titles it owes,
-replies to chats, messages it promised), brings
-its notes up to date, and only then asks you to clear it, so a clear
-never lands in the middle of a step. Until then each reply starts
-"⚠️ Hub at …: wrapping up", then a boxed "SAFE TO CLEAR: type /clear"
-banner. The hub never asks you about clearing
-(no question or buttons: a button can't clear a chat); you just type
-`/clear` in the hub chat. Work chats get a similar reminder past `trimAtWork`,
-if set: stop at a natural point, note where they are, then the same banner.
+```
+chat-hub-core 0.3.41 · Context 182k · 312 turns · this chat ≈ 41M token-reads
+chat-hub-core 0.3.41 · new chat
+```
 
-**The hub's limit is a hard stop,** in two stages, so it can't drift on
-when asked for "just one more thing". At `trimAt` a hook refuses new
-work: starting a chat and building a release (a new tag, a `Release`
-commit, making or resetting the release branch); finishing work
-(close-chat, merges, titles, messages, notes) still runs. `hardStopAfter`
-past it (default 20k tokens; set it in `.claude/chat-hub.json`) the hook
-refuses every tool except reading and writing the hub's notes, and every
-reply shows the banner. Each refusal says how to get past it: you type
-`/chat-hub-core:limit <higher>` or `/chat-hub-core:limit off`. The hub
-can't do that itself: the hook also refuses its attempts to change the
-limit, the settings, the hub record or its usage counts. A clear, or a
-limit above its context, lifts both stages. Work chats are never
+Set `"stats": false` in `.claude/chat-hub.json` to hide it.
+
+**The hub wraps up at its limit** (`trimAt`, default 135k tokens). It
+takes on nothing new (it notes new requests for after the clear),
+finishes what's in flight, saves its notes, and only then asks you to
+clear it. Each reply starts with:
+
+```
+⚠️ Hub at 141k tokens: wrapping up.
+```
+
+and once it's done:
+
+```
+╔════════════════════════════════════╗
+║   ✅  SAFE TO CLEAR: type /clear   ║
+╚════════════════════════════════════╝
+```
+
+There's no button for it (a button can't clear a chat): you type `/clear`
+in the hub chat, and the hub picks up from its notes. Work chats get the
+same lines past `trimAtWork`, if set.
+
+**It's a hard stop, in two stages,** so the hub can't drift on for "just
+one more thing":
+
+| Context | The hub can't |
+|---|---|
+| past `trimAt` (135k) | start chats or build a release; finishing work (closing chats, merges, titles, messages, notes) still runs |
+| `hardStopAfter` more (155k) | do anything but read and write its notes |
+
+Only you can lift it, with `/chat-hub-core:limit <higher>` or
+`/chat-hub-core:limit off`; a clear lifts it too. Work chats are never
 stopped.
 
-**Changing the limits as you go.** Type `/chat-hub-core:limit 200k` in any
-chat to move the hub's limit, `/chat-hub-core:limit work 100k` (or
-`work off`) for work chats, `/chat-hub-core:limit` to see both and where
-they come from, `/chat-hub-core:limit default` to go back to the settings.
-Every chat uses the new limit from its next prompt, no restart. It's kept
-in git's own folder (`.git/chat-hub/limits.json`, next to the hub record),
-so every worktree sees it and it's never committed; it wins over `trimAt`
-and `trimAtWork` in `.claude/chat-hub.json`. Raise the hub's limit while
-it's wrapping up and it carries on as normal.
+**Change the limits as you go** with `/chat-hub-core:limit`, no restart:
+
+| Command | Does |
+|---|---|
+| `/chat-hub-core:limit` | shows both limits and where they come from |
+| `/chat-hub-core:limit 200k` | moves the hub's limit |
+| `/chat-hub-core:limit work 100k` | sets work chats' limit (`work off` turns it off) |
+| `/chat-hub-core:limit default` | goes back to the settings |
+
+Every chat uses the new limit from its next prompt, and it wins over
+`trimAt` and `trimAtWork`. Raise the hub's limit while it's wrapping up
+and it carries on as normal. Set `hardStopAfter` in
+`.claude/chat-hub.json` to move the second stage (default 20k).
 
 **Set the limit well above the hub's base.** A fresh hub already holds
 its tools, skills list, CLAUDE.md and its own rules before you say
-anything: about 88k tokens on one large project. Measure yours (the stats
-line after the hub's first turn) and keep `trimAt` comfortably above it,
-or the hub wraps up almost as soon as it starts.
+anything: about 88k tokens on one large project. Check the stats line
+after the hub's first turn and keep `trimAt` comfortably above it, or the
+hub wraps up almost as soon as it starts.
 
-**Turning off tools a project doesn't use.** Every tool a chat has costs
-context on every turn, the hub's most of all, and most chats never touch
-the Browser pane, the iOS simulator or Artifacts (about 12k tokens on its
-own). The iOS simulator, Artifacts and the rarely used extras (groups 2,
-4 and 13–27, about 15k tokens a chat) are **off by default**: the first
-chat after setup or an update turns them off once and says so (new chats
-start without them). Turn one back on with `/chat-hub-core:tools on ios`
-and it stays on. Setup shows the numbered list and asks about the rest;
-change it any time with `/chat-hub-core:tools`:
+## Turning off tools
+
+Every tool a chat has costs context on every turn, and most chats never
+touch the Browser pane, the iOS simulator or Artifacts (about 12k tokens
+on its own). The iOS simulator, Artifacts and the rarely used extras
+(groups 2, 4 and 13–27, about 15k tokens a chat) are **off by default**:
+the first chat after setup or an update turns them off once and says so.
+Setup asks about the rest.
 
 | Command | Does |
 |---|---|
 | `/chat-hub-core:tools` | lists every tool group, numbered, on or off |
 | `/chat-hub-core:tools off 4 13-27` | turns groups off by number, name (`off artifacts ios`) or single tool (`off SendUserFile`); `off unused`: the rarely used extras |
-| `/chat-hub-core:tools on browser` | turns them back on (`on all`: every group) |
+| `/chat-hub-core:tools on browser` | turns them back on (`on all`: every group); it stays on |
 
-The groups cover every tool a desktop-app chat gets (Browser pane, iOS
-simulator, charts, Artifacts, helper agents, web search, Workflows,
-scheduling, layout, plan mode and so on); the tools chat-hub-core itself
-needs (Bash, Read, Edit, Write, Skill, messaging and the app's session
-tools) always stay on. It writes deny rules into the project's
-`.claude/settings.local.json` (just you, never committed): a denied tool
-is removed from the chat entirely, not just blocked. In the desktop app,
-worktree chats read the main checkout's settings, so the hub and work
-chats always get the same set. New chats load it; restart an open chat
-to drop or get them. Which default groups were already turned off is
-kept in `.git/chat-hub/tools.json`, so each is turned off only once. Since an off tool is invisible, every chat's start
-note names what's off in one line, so a chat that needs one asks you to
-type `/chat-hub-core:tools on <name>`. Tools you never use anywhere can go in your own
-`~/.claude/settings.json` the same way (`"permissions": {"deny":
-["mcp__visualize"]}`), and plugins you don't use in a project can be
-turned off there with `"enabledPlugins": {"<plugin>": false}`, which also
-shortens the skills list every chat carries.
+The tools chat-hub-core itself needs (Bash, Read, Edit, Write, Skill,
+messaging and the app's session tools) always stay on. New chats load the
+change; restart an open chat to drop or get them. An off tool is
+invisible, so every chat's start note names what's off:
 
-**Hub notes.** The hub keeps one current snapshot of its notes under fixed
-headings, edited in place. If they gain other `## ` headings (dated or
-"checkpoint" blocks) or pass `notesMaxBytes` (default 6000; 0 = off), a
-hook tells the hub to rewrite them before anything else. A closed (✅)
-chat is dropped from the notes as soon as the hub tells you about it, so
-the hub never reminds you of chats you've already deleted; the same hook
-flags any ✅ line left in the notes.
+```
+Tools turned off in this project: ios, artifacts, chrome, workflows, …
+If you need one, ask the owner to type `/chat-hub-core:tools on <name>`
+(then restart this chat).
+```
 
-A chat is marked ✅ (ready to close) only after it sends
-a fixed wrap-up report and the hub's `close-check` confirms its folder is
-committed, pushed, merged into the release preview and (level 2) green;
-you archive it. At level 1+ the hub does all of that with one command,
-`hooks/close-chat.mjs <branch>`: it merges the branch into the preview,
-runs your `checks` command on the merge (skipped when the merge adds
-nothing to the branch, since the chat already ran them; with no `checks`,
-it runs commands written in backticks in `done`, else lint/typecheck/test/build
-from package.json, `tests/run.sh` or `make test`, and says which), runs the close
-check, and prints READY or FAIL, so ✅ comes in the same turn. If the hub's own
-folder has the preview checked out, it merges there (a fast-forward, only with
-nothing uncommitted in it).
+Where the rules are kept, and turning tools off for all your projects:
+[details](docs/how-it-works.md#limits-and-tools-where-theyre-kept).
 
-**A finished chat closes at once.** The hub closes a chat as soon as its
-wrap-up report is in, even when its work ships in a later release: the
-branch waits in the release preview, not in an open chat at ⏳ (there is
-no "parked" state; a problem found later is a new chat). As a backstop,
-the hub's prompt hook remembers each report it sees (`**Wrap-up · C7**`)
-and, on every later wake and after a clear, reminds the hub to close any
-of those chats whose title still shows ⏳ (it reads the titles from the
-app's `custom-title.json` files for the project's folders). A chat that
-moved on (✅, or back to 🔨 after a failed close) is forgotten.
+## Closing a chat
 
-**CI after a clear (level 2).** A chat at 🚀 watches its run in the
-background, and a clear or restart stops that watcher. The start note then
-asks `ci.passed` about the chat's pushed head and tells it what to do (🟢
-and ask "more or wrap up?", or look at the run and watch it again), so it
-doesn't sit at 🚀 waiting for a prompt. As a backstop, the hub runs
-`hooks/ci-status.mjs` on every wake while any chat shows 🚀 (one line per
-chat branch: CI passed, not passed yet, or not pushed) and tells each 🚀
-chat whose head passed.
+A finished chat closes at once: as soon as its wrap-up report is in, even
+if its work ships in a later release (the branch waits in the `release`
+preview, not in an open chat at ⏳). The hub closes it with one command
+(level 1+), `hooks/close-chat.mjs <branch>`: it merges the branch into
+the `release` preview, runs your checks on the merge, and checks the chat
+is committed, pushed, merged and (level 2) green. ✅ comes in the same
+turn:
 
-Nothing in the plugin names a git host, CI service or
-framework.
+```
+PASS folder: …/worktrees/add-csv
+PASS uncommitted: nothing
+PASS branch: claude/add-csv
+PASS pushed: all of it, to origin/claude/add-csv
+PASS checks: `sh tests/run.sh` passed on the merge
+PASS merge: claude/add-csv merged into release (4f2a9c1)
+PASS merged: in the release preview (release)
+READY to close claude/add-csv (if the report is complete and nothing waits on the owner).
+```
+
+If anything fails it says what, and leaves the preview as it was:
+
+```
+FAIL merge: clashes with release in src/export.ts; the chat merges release and resolves it
+FAIL: claude/add-csv can't close yet (…).
+```
+
+The checks are your `checks` setting; without one, the commands in
+backticks in `done`, else a default it finds (package.json scripts,
+`tests/run.sh` or `make test`), and it says which it ran. You archive the
+chat once it's ✅. If the hub ever leaves a reported chat at ⏳, a hook
+reminds it on its next wake, also after a clear.
+
+**CI after a clear (level 2).** A chat at 🚀 that gets cleared or
+restarted loses the watcher it had on CI, so its start note says what CI
+says about its pushed head:
+
+```
+CI passed on your pushed branch head 4f2a9c1. If your title still shows 🚀,
+set 🟢 now and ask the owner "Anything more, or should I wrap up?" (menu).
+```
+
+The hub also checks every 🚀 chat when it wakes, as a backstop.
+
+## How it works
+
+The rules are three skills (`setup`, `hub`, `work-chat`), and hooks make
+sure the important ones hold: no commit without your OK (a menu yes,
+checked in the chat's transcript), no commits on main, no rebases, no
+edits in another chat's folder, titles in the right shape. The hub keeps
+its notes in git's own folder, so a restart or a clear loses nothing.
+When something is wrong (a broken settings file, no hub, a hub it can't
+reach), chats stop and tell you rather than guess.
+
+Nothing in the plugin names a git host, CI service or framework.
+
+All the details: [docs/how-it-works.md](docs/how-it-works.md).
 
 ## Working on the plugin
 

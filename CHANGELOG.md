@@ -3,6 +3,24 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## 0.3.43
+
+- **README with examples:** every feature from 0.3.17 on now has a short
+  example: one chat's title from ⚪ to ✅, the hub's open count through a
+  release, names gaining parentheses after a release, and what
+  `/chat-hub-core:limit`, `/tools` and `/version`, the stats line, the
+  wrap-up lines and SAFE TO CLEAR banner, `close-chat.mjs` and the
+  CI-after-a-clear note print. New sections: Commands (all five in one
+  table), Starting a chat (plan first, build it, just open), Context and
+  limits (with the two hard-stop stages as a table), Turning off tools,
+  Closing a chat (a finished chat closes at once). The example sidebar's
+  hub count is now `(8)`, which matches its chats.
+- **`docs/how-it-works.md`:** the details moved out of the README (the
+  guard and title-check hooks, the hub's recount and notes, the hard
+  stop, close-chat step by step and its ⏳ backstop, `ci-status.mjs`,
+  where limits and tool rules are kept, updates without a restart), so
+  the README stays short.
+
 ## 0.3.42
 
 - **The hub's limit is a hard stop:** past `trimAt` the hub only got a
