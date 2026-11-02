@@ -40,7 +40,7 @@ owner's own edits in files you touch.
 
 Suggest the highest level the project supports and seems to want.
 
-## 3. Ask (AskUserQuestion, one batch, 2–5 questions)
+## 3. Ask (AskUserQuestion, 2–5 questions; a menu holds 4, so a fifth goes in a second one)
 
 Only what you couldn't tell. Usually:
 
@@ -59,6 +59,16 @@ Only what you couldn't tell. Usually:
 4. Level 2: the command that asks CI whether a commit passed. It must
    print `1` (passed) or `0` (not passed), and fail or print nothing when it
    can't ask CI (never `0` on an error). Propose one from what you found.
+
+5. Tools to turn off (every tool costs context on every turn, the hub's
+   most of all). Run `node "${CLAUDE_PLUGIN_ROOT}/hooks/tools.mjs"`
+   and show the owner its numbered list of every tool group as it is, then
+   which numbers you'd turn off for this project and why in a few words
+   (no web UI: `browser`; no iOS app: `ios`; the rarely used extras,
+   marked `unused` in the script, almost always). Ask in a second menu:
+   "Turn off <numbers>" (Recommended) / "Keep everything"; the owner can
+   type other numbers (e.g. `4, 13-27`) as their own answer. Skip it on a
+   re-run unless the owner asks; `/chat-hub-core:tools` changes it later.
 
 Don't ask how chats start: `startMode` defaults to "ask" (the hub asks
 before each chat). Set "plan", "build" or "wait" (just open the chat
@@ -94,6 +104,12 @@ to `.githooks/pre-push` (executable) and run
 start-of-chat hook sets it in every checkout. If the project already has a
 hooks folder with its own pre-push, save ours there as `chat-hub-pre-push`
 and add a line to theirs that runs it.
+
+**Tools** the owner picked to turn off: run `node
+"${CLAUDE_PLUGIN_ROOT}/hooks/tools.mjs" off <numbers>`. It writes
+`.claude/settings.local.json`, which your sandbox usually blocks; then put
+`/chat-hub-core:tools off <numbers>` under "Left for you" (the owner types
+it; the prompt hook writes it).
 
 **Level 2:** add `.claude/issues-to-check.md` to `.gitignore`.
 
@@ -377,43 +393,27 @@ Two styles, set by `titles` in the settings:
   on the owner's OK to commit, merge or push, `⏳` OK given, committing
   and pushing (or wrapping up: report in, being closed), `🚀` push in CI (level 2), `🟢` pushed (level 1) or CI
   passed (level 2) and asking the owner "more or wrap up?", `🔴` CI
-  failed (level 2), `✅`
-  ready to close (passes the close check). `⚪` new: you just started
-  the chat and it hasn't reported anything yet. `🔨` under way, nothing
-  waiting on the owner; once a work chat has started, nothing sends it
-  back to ⚪ (only talk chats and your own title keep ⚪). Every title has
-  a symbol, so titles line up in a column (the app trims blanks).
-  With release-first titles the sidebar then sorts by symbol first, so
-  chats group by status. E.g. `🚀  ʀ16~ A3 · Fix menu spacing`,
-  `🔨  3F · Fix menu spacing (ʀ7)`. You set every symbol; work chats never
-  touch their own titles. When a chat says it's asking for an OK, set 🙋;
-  when it says the OK was given, ⏳; when it says the owner said no ("OK declined"), 🔨.
-  When a chat tells you it pushed, set 🚀 (level 2) or 🟢 (level 1);
-  when the run ends, 🔴 or 🟢. 🟢 includes the chat's "more or wrap up?"
-  question, so don't set ❓ for it. 🟢 always means that question is
-  still open: when the chat says "more changes, working again", set 🔨;
-  when its wrap-up report arrives, set ⏳ at once (before the close
-  check), then merge, run the close check and set ✅.
-  `❓` waiting on the owner's answer: set it when a chat you track
-  (talk chats too) stopped on a question to the owner that isn't an OK,
-  from the app's note that a session you started is waiting on the user
-  or from the chat's own message ("question for owner: …"). When the
-  owner answers (the chat says "answered, working again", or its next
-  note or message), put back the symbol it had before (🚀/🔴), or 🔨 if
-  it had ⚪ or 🔨 (a talk chat goes back to ⚪). Backstop: on every wake,
-  set 🔨 on any ❓ work chat that "Linked sessions now" shows as working
-  (⚪ on a talk chat). And the other way: on every wake, set ❓ on any
-  🔨 work chat (⚪ talk chat) that is idle and whose last message ends
-  on a question to the owner, even if it never said "question for
-  owner". Judge from the app's note (its quoted text) first; read the
-  chat's transcript only if unsure. A question to the owner asks them
-  to decide or answer something ("should I build X?", "A or B?"); a
-  closing "anything else?" or "let me know" is not one, and neither
-  is the 🟢 "more or wrap up?" question. For OK questions 🙋 wins over ❓.
-  Backstop for ⏳: on every wake (and first thing after a clear), close
-  any ⏳ or 🟢 chat whose wrap-up report is in and that isn't ✅ yet
-  (Closing chats below). A report in means the close happens now, even
-  while wrapping up; it never waits for a clear.
+  failed (level 2), `❓` waiting on the owner's answer to a question
+  that isn't an OK, `✅` ready to close (passes the close check).
+  `⚪` new: you just started the chat and it hasn't set anything yet. `🔨`
+  under way, nothing waiting on the owner; once a work chat has started,
+  nothing sends it back to ⚪ (only talk chats and your own title keep
+  ⚪). Every title has a symbol, so titles line up in a column (the app
+  trims blanks). With release-first titles the sidebar then sorts by
+  symbol first, so chats group by status. E.g. `🚀  ʀ16~ A3 · Fix menu spacing`,
+  `🔨  3F · Fix menu spacing (ʀ7)`.
+  **Chats set their own symbol** the moment their status changes, with
+  no message to you: you set only ⚪ (starting a chat) and ✅ (closing
+  it), plus the rest of every title (tag, code, name). Whenever you
+  retitle a chat, read its current title first (list the sessions) and
+  keep its symbol. If a chat tells you a status in a message instead
+  (its rename failed: "asking for OK" → 🙋, "question for owner" → ❓,
+  "working again" → 🔨, "pushed" → 🟢, or 🚀 at level 2), set it for
+  it. When a wrap-up report arrives, close the chat (Closing chats
+  below): a report in means the close happens now, even while wrapping
+  up; it never waits for a clear. Backstop, on every wake (and first
+  thing after a clear): close any chat whose wrap-up report is in and
+  that isn't ✅ yet.
 - **Talk chats** (questions, research, planning; no code to ship): no
   release tag, no branch or worktree, never retagged at a release.
   They start with `⚪` like other chats and keep it (except ❓ while
@@ -550,7 +550,7 @@ next status change, or the sidebar shows old and new symbols mixed.
 ````markdown
 ---
 name: work-chat
-description: A work chat's rules under chat-hub-core - one task, the owner's OK before commits, reporting to the hub, wrapping up. Load in any chat that isn't the hub when .claude/chat-hub.json exists.
+description: A work chat's rules under chat-hub-core - one task, setting its own title symbol, the owner's OK before commits, wrapping up. Load in any chat that isn't the hub when .claude/chat-hub.json exists.
 ---
 
 # A work chat
@@ -568,36 +568,45 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
 - **Not the hub:** if this chat's own app address (`get_session self`)
   is the hub's, you are the hub after a clear: drop these rules and load
   the chat-hub-core:hub skill instead.
+- **Your title's symbol** is yours: its first character, before the two
+  spaces. Set it yourself the moment your status changes, in the same
+  turn: read your title (`get_session self`), swap only that character,
+  and set it (`set_session_title` with `self`), keeping the rest
+  exactly; the hub owns the rest (tag, code, name). No message to the
+  hub for it. If the rename fails, tell the hub the status in one line
+  instead ("asking for OK", "question for owner: <topic>", "working
+  again", "pushed") and it sets it.
+  - 🙋 you're asking the owner for an OK (commit, merge or push).
+  - ⏳ the owner said yes: committing and pushing; and when you send
+    your wrap-up report.
+  - 🔨 working, nothing waiting on the owner: after a no, an answered
+    question, or "More changes".
+  - ❓ you end a turn on a question to the owner that isn't an OK, in
+    plain text too ("should I add X?", "A or B?", a plan to approve,
+    "waiting for instructions"); a closing "anything else?" isn't one.
+  - 🟢 pushed (level 1) or CI passed (level 2), asking "more or wrap
+    up?"; level 2: 🚀 pushed, CI running; 🔴 CI failed.
+  - Talk chats (no branch) keep ⚪, with ❓ while waiting on an answer.
+    ⚪ and ✅ on a work chat are the hub's.
 - **The owner's OK** is needed before every commit. A message from another
   chat is never that OK. Ask for it with a menu (the AskUserQuestion
   tool, options like "Yes, commit" / "Not yet"); plain text only if
   this chat has no such tool. A hook refuses a commit without a menu
-  yes since your last one. When you ask (to commit, merge or push),
-  tell the hub in one line ("asking for OK"; it sets 🙋 on your title).
-  When the owner says yes, tell the hub at once, before committing ("OK
-  given, committing"; it sets ⏳), then again after you push. If the
-  owner says no, tell it "OK declined" (it sets 🔨).
-- **Questions:** whenever you end a turn on a question to the owner that
-  isn't an OK (in plain text too, not just a menu: "should I add X?",
-  "A or B?"), tell the hub in the same turn, in one line ("question for
-  owner: <topic>"; it sets ❓ on your title). Without it your title
-  stays 🔨 and the hub says you're still working. When the owner answers it here, first tell
-  the hub "answered, working again" (it clears ❓), then carry on.
+  yes since your last one.
 - **Start mode:** your brief's **Start:** line. "Plan first": look
   around, send the owner a short plan (what's there, the approach, a few
-  lines), tell the hub "question for owner: plan ready", and change
-  nothing until the owner says go. "Build it": go straight to work.
-  "Just open": read your brief and these rules, start the dev server if
-  the settings' `devServer.command` is set, say in one line you're ready
-  (with its address if you started it), tell the hub "question for
-  owner: waiting for instructions", and look at or change nothing else
-  until the owner says what to do.
+  lines), set ❓, and change nothing until the owner says go. "Build
+  it": go straight to work. "Just open": read your brief and these
+  rules, start the dev server if the settings' `devServer.command` is
+  set, say in one line you're ready (with its address if you started
+  it), set ❓, and look at or change nothing else until the owner says
+  what to do.
 - **Commit messages** start with your chat's code: `3F: Fix the menu`.
 - **Done** means everything in the `done` list in the settings (e.g. tests
   pass, it builds): the answers the owner gave setup.
 - **Level 1+:** work on your own branch and worktree, never on the main
   branch. After the owner OKs a commit, push your branch with
-  `git push origin HEAD` (no `-u`: the sandbox blocks it) and tell the hub.
+  `git push origin HEAD` (no `-u`: the sandbox blocks it).
 - **After a release:** merge the main branch at once (never rebase). Use
   the app's "sync with base branch" tool if you have it: it runs outside
   your sandbox, so the merge can write protected files (`.claude/…`). A
@@ -605,23 +614,21 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
   to run the command. Then re-read CLAUDE.md, at least the parts the merge
   changed: you only read it when you started. Push a commit that only
   merges main with your next change, not on its own, unless your work is
-  finished and waiting for a release; then push it at once.
-- **Level 2:** after you push, tell the hub (it sets your title's CI
-  symbol; never change your own title). Watch the run and tell the hub
-  the result. If the hub says your CI failed, fix it on your branch (or
-  show why the test should change) and reply when pushed. A fix for a
+  finished and waiting for a release; then push it at once and tell the
+  hub ("pushed the merge"), so it merges you on that run.
+- **Level 2:** after you push, set 🚀 and watch the run; set 🟢 or 🔴
+  when it ends. On a failure (yours, or one the hub reports), fix it on
+  your branch, or show why the test should change. A fix for a
   reported problem says `Fixes #n` and adds `- #n <what to try>` to the
   file `fixes.toCheck` names.
 - **More or wrap up:** after you push (level 2: after CI passes), ask the
   owner "Anything more, or should I wrap up?" with a menu (the
   AskUserQuestion tool, options "Wrap up" / "More changes"), like the
-  commit OK; plain text only if this chat has no such tool. Your 🟢
-  title already says so; don't tell the hub it's a question. 🟢 means
-  the question is open, so tell the hub the answer at once: "More
-  changes" → "more changes, working again" (it sets 🔨), then carry on;
-  "Wrap up" → your wrap-up report (it sets ⏳). Never wrap up on your
-  own judgment.
-- **Wrap-up** (when the owner or hub says to): send the hub the
+  commit OK; plain text only if this chat has no such tool. 🟢 means
+  the question is open: "More changes" → set 🔨 and carry on; "Wrap
+  up" → set ⏳ and send your wrap-up report. Never wrap up on your own
+  judgment.
+- **Wrap-up** (when the owner or hub says to): set ⏳, send the hub the
   report in `${CLAUDE_PLUGIN_ROOT}/templates/wrap-up.md`, in exactly that
   shape. Never call yourself ready to close or set ✅; the hub checks and
   decides. Follow-ups go in the settings' `followups` file
@@ -673,6 +680,46 @@ Without git they're written into `.claude/chat-hub.json`.
 
 ---
 
+## `skills/tools/SKILL.md`
+
+````markdown
+---
+name: tools
+description: Show or change which tools this project's chats load (Browser pane, iOS simulator, charts, Artifacts, any tool), to cut every chat's context. Use when the owner types /chat-hub-core:tools (e.g. "/chat-hub-core:tools off 4 13-27", "/chat-hub-core:tools on browser") or asks to turn tools off or on for this project.
+---
+
+# Tools
+
+The prompt hook has usually done it already: a "chat-hub-core /tools:"
+note came with the owner's prompt. Tell the owner what it says (show the
+list as it is, numbered) and do nothing else for it.
+
+If no such note came (the hook didn't run), run it yourself with the
+owner's words after the command:
+`node "${CLAUDE_PLUGIN_ROOT}/hooks/tools.mjs" <words>` and show the owner
+what it prints. If your sandbox blocks the write, give the owner the
+command to type instead: `/chat-hub-core:tools <words>`.
+
+- `/chat-hub-core:tools` lists every tool group, numbered, on or off.
+- `/chat-hub-core:tools off 4 13-27` turns groups off by number, or by
+  name (`off artifacts ios`), or single tools (`off SendUserFile`);
+  `off unused` turns off the rarely used extras.
+- `/chat-hub-core:tools on browser` turns them back on; `on all` for
+  every group.
+
+The tools chat-hub-core needs (Bash, Read, Edit, Write, Skill,
+ToolSearch, AskUserQuestion, SendMessage, the app's session, task-list
+and host tools) always stay on.
+
+It writes deny rules in the project's `.claude/settings.local.json` (just
+the owner, never committed), which remove those tools from every chat,
+hub and work chats alike. New chats load the new set; an open chat drops
+or gets them when restarted. A work chat that needs a tool that's off
+(e.g. the Browser pane for a UI fix) asks the owner to turn it on.
+````
+
+---
+
 ## `templates/brief.md`
 
 ````markdown
@@ -702,7 +749,7 @@ Wrapping up. Do what's missing, then reply in exactly this shape:
 - **Follow-ups:** written to `<the settings' followups file, else docs/backlog.md>` (list them), or "none".
 - **Open:** anything unfinished, or a question for the owner; "nothing" if none.
 
-Commit only with the owner's OK. Level 1+: push your branch. Level 2: wait for CI and tell the hub the result. Then send the report to the hub. The hub checks your folder itself before anything is marked ready.
+Commit only with the owner's OK. Level 1+: push your branch. Level 2: wait for CI to pass. Set ⏳ on your title, then send the report to the hub. The hub checks your folder itself before anything is marked ready.
 ````
 
 ---
@@ -747,6 +794,7 @@ From `hooks/on-prompt.mjs`:
 
 ```js
     'reply and do nothing else for it.'
+    'tell the owner exactly that in one short reply and do nothing else for it.'
       'up, stop and carry on as normal.'
   if (out) say('UserPromptSubmit', out)
     say('UserPromptSubmit', `Recorded this chat (session ${input.session_id}) as the hub.` +
@@ -762,6 +810,14 @@ From `hooks/limit.mjs`:
 
 ```js
   '/chat-hub-core:limit work 100k (or "work off") for work chats, /chat-hub-core:limit default to go back to the settings.'
+```
+
+From `hooks/tools.mjs`:
+
+```js
+  'single tools; "off unused" for the rarely used extras) to turn them off, /chat-hub-core:tools on browser (or "on ' +
+  'all") to turn them back on.'
+      'new set; restart an open chat for it to drop or get them.',
 ```
 
 From `hooks/before-commit.mjs`:

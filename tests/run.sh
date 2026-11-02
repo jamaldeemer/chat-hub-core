@@ -225,6 +225,29 @@ t "limit: default goes back to the settings" "$(node "$root/hooks/limit.mjs" def
 ln -s "$root" "$tmp/linked-root"
 t "limit: runs when reached through a symlinked path" "$(node "$tmp/linked-root/hooks/limit.mjs" | grep -c 'hub wraps up at 150k')" 1
 rm "$tmp/linked-root"
+# /chat-hub-core:tools: deny rules in the main checkout's settings.local.json, owner's own rules kept
+tl() { printf '{"session_id":"u1","prompt":"/chat-hub-core:tools %s","cwd":"%s"}' "$1" "$(pwd)" | node "$root/hooks/on-prompt.mjs"; }
+printf '{"permissions":{"allow":["Bash(ls)"],"deny":["Bash(rm *)"]},"model":"x"}\n' > .claude/settings.local.json
+t "tools: lists every group, numbered" "$(node "$root/hooks/tools.mjs" | grep -cE '^ ?[0-9]+\. ')" 27
+t "tools: names the always-on tools" "$(node "$root/hooks/tools.mjs" | grep -c '^Always on.*Bash.*SendMessage')" 1
+t "tools: off from the prompt" "$(tl 'off browser ios' | grep -c '/tools: Saved.*Off: browser, ios.*already done')" 1
+t "tools: server rules written" "$(grep -c '"mcp__Claude_Browser"\|"mcp__Claude_Code_iOS_Simulator"' .claude/settings.local.json)" 2
+t "tools: owner's own settings kept" "$(grep -c 'Bash(rm\|"Bash(ls)"\|"model"' .claude/settings.local.json)" 3
+t "tools: seen from another worktree" "$(git -c user.email=a@b -c user.name=t worktree add -q ../wt5 2>/dev/null; cd ../wt5 && node "$root/hooks/tools.mjs" off charts >/dev/null; cd - >/dev/null; git worktree remove --force ../wt5; grep -c '"mcp__visualize"' .claude/settings.local.json)" 1
+t "tools: nothing to change" "$(node "$root/hooks/tools.mjs" off ios | grep -c 'Nothing to change')" 1
+t "tools: on removes only ours" "$(node "$root/hooks/tools.mjs" on all >/dev/null; grep -c 'mcp__' .claude/settings.local.json; grep -c 'Bash(rm' .claude/settings.local.json)" "0
+1"
+t "tools: off unused keeps the browser" "$(node "$root/hooks/tools.mjs" off unused >/dev/null; grep -c '"Workflow"\|"mcp__Claude_Browser"' .claude/settings.local.json)" 1
+t "tools: off by number and range" "$(node "$root/hooks/tools.mjs" on all >/dev/null; node "$root/hooks/tools.mjs" off 4 1-2 >/dev/null; node "$root/hooks/tools.mjs" | grep -cE '^ ?[0-9]+\. off ')" 3
+t "tools: bad number refused" "$(node "$root/hooks/tools.mjs" off 99 | grep -c 'no group numbered 99')" 1
+t "tools: single tool off and listed" "$(node "$root/hooks/tools.mjs" off Foo >/dev/null; node "$root/hooks/tools.mjs" | grep -c '^Also off: .*Foo')" 1
+t "tools: part of a group shows part" "$(node "$root/hooks/tools.mjs" off SendUserFile ListAgents >/dev/null; node "$root/hooks/tools.mjs" | grep -c 'part agents')" 1
+t "tools: needed tools stay on" "$(node "$root/hooks/tools.mjs" off Bash mcp__ccd_session_mgmt__send_message | grep -c 'Not changed: chat-hub-core needs Bash, mcp__ccd_session_mgmt__send_message')" 1
+t "tools: odd word refused" "$(node "$root/hooks/tools.mjs" off "a/b" | grep -c "Not changed: \"a/b\" isn.t a group or tool name")" 1
+t "tools: nonsense refused" "$(node "$root/hooks/tools.mjs" maybe | grep -c 'Not changed: didn.t understand')" 1
+rm .claude/settings.local.json
+t "tools: no settings file yet, created" "$(node "$root/hooks/tools.mjs" off workflows >/dev/null; grep -c '"Workflow"' .claude/settings.local.json)" 1
+rm .claude/settings.local.json
 rm -rf .git/chat-hub; export TMPDIR="$oldtmp"
 echo '{"level":0,"done":["tests pass"]}' > .claude/chat-hub.json
 mkdir .githooks && touch .githooks/pre-push; echo '{"level":1}' > .claude/chat-hub.json
@@ -364,14 +387,14 @@ touch "$vd/fail-update"
 t "update-all: a failed update fails the run" "$(ua >/dev/null; echo $?)" 1
 rm "$vd/fail-update"
 
-t "skills: answered line in work chat" "$(grep -c 'answered, working again' "$root/skills/work-chat/SKILL.md")" 1
+t "titles: work chat sets its own symbol" "$(grep -c 'set it (`set_session_title` with `self`)' "$root/skills/work-chat/SKILL.md")" 1
 t "skills: OK asked with a menu" "$(grep -c 'Ask for it with a menu' "$root/skills/work-chat/SKILL.md")" 1
 t "skills: more or wrap up asked with a menu" "$(grep -c 'should I wrap up?" with a menu' "$root/skills/work-chat/SKILL.md")" 1
 t "skills: menu has Wrap up / More changes" "$(grep -c 'options \"Wrap up\" / \"More changes\"' "$root/skills/work-chat/SKILL.md")" 1
-t "skills: chat tells the hub the more answer" "$(grep -c '"more changes, working again" (it sets 🔨)' "$root/skills/work-chat/SKILL.md")" 1
-t "skills: hub drops 🟢 on the report" "$(grep -c 'report arrives, set ⏳ at once' "$root/skills/hub/SKILL.md")" 1
+t "titles: More changes sets 🔨" "$(grep -c '"More changes" → set 🔨' "$root/skills/work-chat/SKILL.md")" 1
+t "titles: hub closes when the report arrives" "$(grep -c 'When a wrap-up report arrives, close the chat' "$root/skills/hub/SKILL.md")" 1
 t "skills: hub expects the Wrap up menu answer" "$(grep -c 'should I wrap up?" menu' "$root/skills/hub/SKILL.md")" 1
-t "skills: answered line in hub" "$(grep -c 'answered, working again' "$root/skills/hub/SKILL.md")" 1
+t "titles: hub keeps a chat's symbol when retitling" "$(grep -c 'keep its symbol' "$root/skills/hub/SKILL.md")" 1
 t "start modes: Just open in hub" "$(grep -c '\*\*Just open:\*\*' "$root/skills/hub/SKILL.md")" 1
 t "start modes: wait is a startMode value" "$(grep -c '"plan", "build" or "wait"' "$root/skills/hub/SKILL.md")" 1
 t "start modes: work chat handles Just open" "$(grep -c '"Just open": read your brief' "$root/skills/work-chat/SKILL.md")" 1
@@ -417,20 +440,20 @@ t "titles: no one-space title examples left" "$(cat "$root/skills/hub/SKILL.md" 
 
 t "symbols: no rule sends a work chat back to ⚪" "$(cat "$root/skills/hub/SKILL.md" "$root/skills/work-chat/SKILL.md" "$root/README.md" | grep -E '(set|sets|back to|→|no,) ⚪|\(⚪/|⚪/🔨' | grep -vc 'talk chat')" 0
 t "symbols: ⚪ means new in the hub" "$(grep -c '`⚪` new: you just started' "$root/skills/hub/SKILL.md")" 1
-t "symbols: hub sets 🔨 after more, declined OK, answer, backstop" "$(grep -cE 'working again", set 🔨|said no \("OK declined"\), 🔨|or 🔨 if$|set 🔨 on any ❓ work chat' "$root/skills/hub/SKILL.md")" 4
-t "symbols: work chat names 🔨 for more and declined" "$(grep -cE '\(it sets 🔨\)' "$root/skills/work-chat/SKILL.md")" 2
+t "titles: hub sets it when a chat's rename failed" "$(grep -c 'its rename failed' "$root/skills/hub/SKILL.md")" 1
+t "titles: work chat swaps only the symbol" "$(grep -c 'swap only that character' "$root/skills/work-chat/SKILL.md")" 1
 t "symbols: README legend has 🔨" "$(grep -c '^| 🔨 | Under way' "$root/README.md")" 2
 t "symbols: no 🟡 or 🤔 left (now 🙋 and ❓)" "$(cat "$root/skills/hub/SKILL.md" "$root/skills/work-chat/SKILL.md" "$root/skills/setup/SKILL.md" "$root/README.md" "$root/docs/all-prompts.md" "$root"/hooks/*.mjs | grep -E '🟡|🤔' | grep -vc '🟡 → 🙋')" 0
 t "symbols: README legend has 🙋 and ❓" "$(grep -cE '^\| (🙋 \| Waiting on your OK|❓ \| Waiting on your answer)' "$root/README.md")" 4
 t "symbols: hub's release built is 🙋" "$(grep -c '`🙋` release built, waiting on the owner' "$root/skills/hub/SKILL.md")" 1
-t "symbols: work chat names 🙋 and ❓" "$(grep -cE 'it sets 🙋 on your title|it sets ❓ on your title|it clears ❓' "$root/skills/work-chat/SKILL.md")" 3
+t "symbols: work chat names 🙋 and ❓" "$(grep -cE '^  - (🙋|❓) ' "$root/skills/work-chat/SKILL.md")" 2
 t "symbols: hub retitles open chats after a symbol rename" "$(grep -c 'retitle every$' "$root/skills/hub/SKILL.md")" 1
 t "symbols: rename retitle is one batch" "$(grep -c 'batch of title calls (your own title too)' "$root/skills/hub/SKILL.md")" 1
-t "question: work chat tells the hub in plain text too" "$(grep -c 'in plain text too, not just a menu' "$root/skills/work-chat/SKILL.md")" 1
-t "question: work chat tells the hub in the same turn" "$(grep -c 'tell the hub in the same turn' "$root/skills/work-chat/SKILL.md")" 1
-t "question: hub backstop sets ❓ on an idle 🔨 chat" "$(grep -c 'set ❓ on any$' "$root/skills/hub/SKILL.md")" 1
-t "question: backstop reads the note before the transcript" "$(grep -c "read the$" "$root/skills/hub/SKILL.md")" 1
-t "question: backstop skips closing lines and the 🟢 question" "$(grep -cE 'closing "anything else\?" or "let me know" is not one|is the 🟢 "more or wrap up\?" question' "$root/skills/hub/SKILL.md")" 2
-t "question: README names the hub's ❓ backstop" "$(grep -c 'hub sees an idle 🔨 chat whose last message asks you' "$root/README.md")" 1
+t "question: plain-text questions set ❓ too" "$(grep -c 'plain text too ("should I add X?"' "$root/skills/work-chat/SKILL.md")" 1
+t "titles: set the moment status changes" "$(grep -c 'Set it yourself the moment your status changes' "$root/skills/work-chat/SKILL.md")" 1
+t "titles: hub told chats set their own" "$(grep -c '\*\*Chats set their own symbol\*\*' "$root/skills/hub/SKILL.md")" 1
+t "question: closing lines aren't questions" "$(grep -c 'a closing "anything else?" isn.t one' "$root/skills/work-chat/SKILL.md")" 1
+t "titles: failed rename falls back to a message" "$(grep -c 'If the rename fails, tell the hub the status' "$root/skills/work-chat/SKILL.md")" 1
+t "titles: README says chats set their own" "$(grep -c 'Each chat sets its own symbol the moment its status changes' "$root/README.md")" 1
 cd "$tmp"
 rm -rf "$tmp"; exit $fail

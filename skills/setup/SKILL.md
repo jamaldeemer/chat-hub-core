@@ -31,7 +31,7 @@ owner's own edits in files you touch.
 
 Suggest the highest level the project supports and seems to want.
 
-## 3. Ask (AskUserQuestion, one batch, 2–5 questions)
+## 3. Ask (AskUserQuestion, 2–5 questions; a menu holds 4, so a fifth goes in a second one)
 
 Only what you couldn't tell. Usually:
 
@@ -50,6 +50,16 @@ Only what you couldn't tell. Usually:
 4. Level 2: the command that asks CI whether a commit passed. It must
    print `1` (passed) or `0` (not passed), and fail or print nothing when it
    can't ask CI (never `0` on an error). Propose one from what you found.
+
+5. Tools to turn off (every tool costs context on every turn, the hub's
+   most of all). Run `node "${CLAUDE_PLUGIN_ROOT}/hooks/tools.mjs"`
+   and show the owner its numbered list of every tool group as it is, then
+   which numbers you'd turn off for this project and why in a few words
+   (no web UI: `browser`; no iOS app: `ios`; the rarely used extras,
+   marked `unused` in the script, almost always). Ask in a second menu:
+   "Turn off <numbers>" (Recommended) / "Keep everything"; the owner can
+   type other numbers (e.g. `4, 13-27`) as their own answer. Skip it on a
+   re-run unless the owner asks; `/chat-hub-core:tools` changes it later.
 
 Don't ask how chats start: `startMode` defaults to "ask" (the hub asks
 before each chat). Set "plan", "build" or "wait" (just open the chat
@@ -85,6 +95,12 @@ to `.githooks/pre-push` (executable) and run
 start-of-chat hook sets it in every checkout. If the project already has a
 hooks folder with its own pre-push, save ours there as `chat-hub-pre-push`
 and add a line to theirs that runs it.
+
+**Tools** the owner picked to turn off: run `node
+"${CLAUDE_PLUGIN_ROOT}/hooks/tools.mjs" off <numbers>`. It writes
+`.claude/settings.local.json`, which your sandbox usually blocks; then put
+`/chat-hub-core:tools off <numbers>` under "Left for you" (the owner types
+it; the prompt hook writes it).
 
 **Level 2:** add `.claude/issues-to-check.md` to `.gitignore`.
 

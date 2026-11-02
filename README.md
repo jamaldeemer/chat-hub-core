@@ -261,19 +261,22 @@ reports anything: after that it shows 🔨 whenever nothing waits on you.
 
 ### Title symbols
 
-The hub sets every symbol; work chats never change their own titles.
+Each chat sets its own symbol the moment its status changes, so the
+sidebar is never behind and the hub isn't woken for it; the hub sets
+only ⚪ (starting a chat), ✅ (closing it) and the rest of every title.
+(If a chat's rename ever fails, it tells the hub, which sets it.)
 
-| Symbol | Meaning | Set by the hub when | Level |
+| Symbol | Meaning | Set when | Level |
 |---|---|---|---|
-| ⚪ | New: the chat hasn't reported anything yet (also talk chats, the hub) | it starts the chat | all |
-| 🔨 | Under way, nothing waiting on you | you answer "More changes" (the chat says "more changes, working again"), you decline an OK ("OK declined"), or you answer a ❓ question the chat asked while it showed ⚪ or 🔨 | all |
-| 🙋 | Waiting on your OK to commit, merge or push | the chat says "asking for OK" | all |
-| ❓ | Waiting on your answer to a question (not an OK) | the app says the chat is waiting on you, the chat says "question for owner", or the hub sees an idle 🔨 chat whose last message asks you something (not a closing "anything else?"); the old symbol comes back once you answer (the chat says "answered, working again", or the hub sees it working again) | all |
-| ⏳ | OK given, committing and pushing; or wrapping up (report in, being closed) | the chat says "OK given, committing", or its wrap-up report arrives | all |
-| 🚀 | Push in CI | the chat says it pushed | 2 |
-| 🟢 | Pushed (level 1) or CI passed (level 2); the chat is asking "Anything more, or should I wrap up?" in a menu ("Wrap up" / "More changes"); it changes as soon as you answer, so 🟢 always means the question is open | the chat says it pushed / the CI run passes | 1+ |
-| 🔴 | CI failed | the CI run fails | 2 |
-| ✅ | Ready to close | the chat's wrap-up passes the close check | all |
+| ⚪ | New: the chat hasn't set anything yet (also talk chats, the hub) | the hub starts the chat | all |
+| 🔨 | Under way, nothing waiting on you | the chat starts work, you answer "More changes", decline an OK, or answer its question | all |
+| 🙋 | Waiting on your OK to commit, merge or push | the chat asks you for an OK | all |
+| ❓ | Waiting on your answer to a question (not an OK) | the chat ends a turn on a question to you (not a closing "anything else?"), a plan to approve, or "waiting for instructions" | all |
+| ⏳ | OK given, committing and pushing; or wrapping up (report in, being closed) | you say yes to an OK, or the chat sends its wrap-up report | all |
+| 🚀 | Push in CI | the chat pushes | 2 |
+| 🟢 | Pushed (level 1) or CI passed (level 2); the chat is asking "Anything more, or should I wrap up?" in a menu ("Wrap up" / "More changes"); it changes as soon as you answer, so 🟢 always means the question is open | the chat pushes / its CI run passes | 1+ |
+| 🔴 | CI failed | its CI run fails | 2 |
+| ✅ | Ready to close | the hub: the chat's wrap-up passes the close check | all |
 
 The release tag's letter is small-caps `ʀ` (`ʀ07`, `(ʀ7)`), so it
 stands apart from the code; the digits, `~` and `+` stay plain. Older
@@ -348,6 +351,39 @@ in git's own folder (`.git/chat-hub/limits.json`, next to the hub record),
 so every worktree sees it and it's never committed; it wins over `trimAt`
 and `trimAtWork` in `.claude/chat-hub.json`. Raise the hub's limit while
 it's wrapping up and it carries on as normal.
+
+**Set the limit well above the hub's base.** A fresh hub already holds
+its tools, skills list, CLAUDE.md and its own rules before you say
+anything: about 88k tokens on one large project. Measure yours (the stats
+line after the hub's first turn) and keep `trimAt` comfortably above it,
+or the hub wraps up almost as soon as it starts.
+
+**Turning off tools a project doesn't use.** Every tool a chat has costs
+context on every turn, the hub's most of all, and most chats never touch
+the Browser pane, the iOS simulator or Artifacts (about 12k tokens on its
+own). Setup shows a numbered list of every tool group, suggests which to
+turn off and asks; change it any time with `/chat-hub-core:tools`:
+
+| Command | Does |
+|---|---|
+| `/chat-hub-core:tools` | lists every tool group, numbered, on or off |
+| `/chat-hub-core:tools off 4 13-27` | turns groups off by number, name (`off artifacts ios`) or single tool (`off SendUserFile`); `off unused`: the rarely used extras |
+| `/chat-hub-core:tools on browser` | turns them back on (`on all`: every group) |
+
+The groups cover every tool a desktop-app chat gets (Browser pane, iOS
+simulator, charts, Artifacts, helper agents, web search, Workflows,
+scheduling, layout, plan mode and so on); the tools chat-hub-core itself
+needs (Bash, Read, Edit, Write, Skill, messaging and the app's session
+tools) always stay on. It writes deny rules into the project's
+`.claude/settings.local.json` (just you, never committed): a denied tool
+is removed from the chat entirely, not just blocked. In the desktop app,
+worktree chats read the main checkout's settings, so the hub and work
+chats always get the same set. New chats load it; restart an open chat
+to drop or get them. Tools you never use anywhere can go in your own
+`~/.claude/settings.json` the same way (`"permissions": {"deny":
+["mcp__visualize"]}`), and plugins you don't use in a project can be
+turned off there with `"enabledPlugins": {"<plugin>": false}`, which also
+shortens the skills list every chat carries.
 
 **Hub notes.** The hub keeps one current snapshot of its notes under fixed
 headings, edited in place. If they gain other `## ` headings (dated or

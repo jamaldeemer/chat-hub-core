@@ -12,6 +12,31 @@ chats from its notes, though the notes said to check first).
 
 ## Next
 
+- **Tell chats to merge main after a release by hook, not hub message
+  (4A follow-up).** Today the hub messages every open chat after a
+  release. A start or prompt hook could notice main moved past the
+  chat's branch and tell it to merge, saving one message and hub turn
+  per open chat per release.
+- **Rewrite the hub skill tighter (4A follow-up).** `skills/hub/SKILL.md`
+  is about 19.4k characters (about 5k tokens) after 4A; aim for 4k
+  without losing a rule. The ❓/🔨 backstops and title-message rules are
+  gone; titles, notes and releases still read long.
+- **Confirm `/chat-hub-core:tools` removes the app's own tools (4A).**
+  Deny rules removing Claude Code's own tools from context is
+  documented; for the desktop app's built-in servers (Browser pane, iOS
+  simulator, visualize, the ccd_* tools) it isn't. After R24, turn some
+  off in object_creator (`off 2 4 13-27`) and check a fresh chat's tool
+  list. Also check the app's prompt text about Artifacts and browsers
+  goes too.
+- **Turn off unused skill plugins per project (4A).** The skills list is
+  about 6.5k tokens; the Anthropic bundles (docx, pptx, xlsx, pdf…)
+  likely drop with `enabledPlugins: {"<plugin>": false}`. Find the
+  plugin's name and add it to `/chat-hub-core:tools` or the README.
+- **Maybe block heavy tools in the hub only (4A idea).** object_creator's
+  hub used the Browser pane about 140 times. A hook knows which chat is
+  the hub and could refuse Browser/Edit-on-project-files there, so the
+  hub delegates. Saves no tokens; enforces the hub's role.
+
 - **Check that `Z ` talk chats still sort last with `ʀ` tags (F6,
   R21).** With release-first titles, a locale sort (JS `localeCompare`)
   puts `⚪  ʀ07 …` before `⚪  Z A6 …`, as before. A plain codepoint sort
