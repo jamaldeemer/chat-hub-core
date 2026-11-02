@@ -3,7 +3,7 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
-## Unreleased (R23)
+## 0.3.34
 
 - **`limit.mjs` works through a symlinked path:** run by hand from a path
   that goes through a symlink (on macOS `/var` and `/tmp` are links to

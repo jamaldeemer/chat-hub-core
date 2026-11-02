@@ -2,7 +2,7 @@
   "level": 1,
   "releases": "plain",
   "titles": "release-first",
-  "nextRelease": 23,
+  "nextRelease": 24,
   "checks": "sh tests/run.sh",
   "done": ["tests pass (tests/run.sh)", "CHANGELOG updated", "docs updated", "owner has seen it"],
   "followups": "docs/backlog.md",
