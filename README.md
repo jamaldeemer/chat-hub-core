@@ -385,7 +385,9 @@ tools) always stay on. It writes deny rules into the project's
 is removed from the chat entirely, not just blocked. In the desktop app,
 worktree chats read the main checkout's settings, so the hub and work
 chats always get the same set. New chats load it; restart an open chat
-to drop or get them. Tools you never use anywhere can go in your own
+to drop or get them. Since an off tool is invisible, every chat's start
+note names what's off in one line, so a chat that needs one asks you to
+type `/chat-hub-core:tools on <name>`. Tools you never use anywhere can go in your own
 `~/.claude/settings.json` the same way (`"permissions": {"deny":
 ["mcp__visualize"]}`), and plugins you don't use in a project can be
 turned off there with `"enabledPlugins": {"<plugin>": false}`, which also

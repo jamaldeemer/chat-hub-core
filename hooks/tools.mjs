@@ -93,6 +93,19 @@ const summary = deny => {
   return `Off: ${off.length ? off.join(', ') : 'none'}.`
 }
 
+// For the start note: one line naming what's off (whole groups by name, other tools singly)
+// and how to get one back; '' when nothing is off or the file can't be read.
+export function offNote(dir = process.cwd()) {
+  let deny
+  try { deny = readSettings(settingsFile(dir)).permissions?.deny } catch { return '' }
+  if (!Array.isArray(deny)) return ''
+  const groups = Object.keys(GROUPS).filter(g => isOff(deny, g))
+  const inGroups = new Set(groups.flatMap(g => GROUPS[g].rules))
+  const names = [...groups, ...deny.filter(r => toolName(r) && !inGroups.has(r))]
+  return names.length ? `Tools turned off in this project: ${names.join(', ')}. If you need one, ask the owner to type ` +
+    '`/chat-hub-core:tools on <name>` (then restart this chat).' : ''
+}
+
 // Returns { ok, changed, text }. `dir` is the chat's folder.
 export function toolsCommand(args = '', dir = process.cwd()) {
   const words = String(args).trim().split(/[\s,]+/).filter(Boolean)

@@ -86,6 +86,10 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
 - **Plugin update:** when a note says chat-hub-core was updated, read
   the rules file it names before anything else; it replaces these rules.
   Restart only if the note says to.
+- **Tools turned off:** if the start note lists tools turned off in
+  this project and your task needs one, ask the owner to type
+  `/chat-hub-core:tools on <name>` and restart this chat; don't work
+  around it.
 - **Dev server:** start it with the settings' `devServer.command` (in
   the background, or the browser pane's dev-server tool where you have
   it). Keep exactly two browser tabs on it, yours first, then
