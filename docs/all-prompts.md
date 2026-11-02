@@ -253,11 +253,14 @@ how many open chats are tagged for that release and not yet ✅, e.g.
 and chats tagged for a later release don't count; any other symbol
 does (so it counts the not-✅ chats whose names are in parentheses).
 At none, show `(0)`: the release's work is all done or closed.
-Leave the count out if `releases` is "none" (no suffix). Change the
-count only in a turn where you already set a title that changes it
-(starting, retagging, setting ✅ on or closing a chat, and after a
-release), in the same batch of title calls; never retitle yourself just
-for the count. Only ever change the symbol and that
+Leave the count out if `releases` is "none" (no suffix). When you set a
+title that changes the count (starting, retagging, setting ✅ on or
+closing a chat, and after a release), set it in the same batch of title
+calls. The owner also closes and deletes chats, and nothing tells you,
+so **recount on every wake** (an event, an owner prompt, a start, after
+a clear): use a session list you're taking anyway, else take one
+(include archived), count as above, and retitle yourself only if your
+count is wrong. Only ever change the symbol and that
 suffix (the suffix when it's missing or after a release, the count as
 above); never change or suggest changing the rest. During a release set your own symbol:
 `🙋` release built, waiting on the owner's push; `🚀` CI running on the
@@ -276,7 +279,12 @@ snapshot, edited in place under exactly these headings: `## Me` (app
 address, title, folder, dev server), `## Next` (next code, `nextRelease`),
 `## Shipped` (the last 2 releases only), `## Preview` (what's merged, as
 commits), `## Waiting` (branch, commit, CI, blocker), `## Open chats` (by
-release: code, title, branch, what they wait on), `## Plans`, `## Gotchas`.
+release: code, session id, title, branch, what they wait on), `## Plans`, `## Gotchas`.
+The wake's session list keeps them true too: a chat under `## Open
+chats` whose session id isn't in it was deleted by the owner, so drop
+it (match on session id, never title). If its branch isn't on main or
+the release preview, tell the owner once (code, branch) as you drop it.
+Without the app's session tools, skip this check and the recount.
 Never add dated, "Latest", "Checkpoint" or "before a clear" blocks, even in
 a hurry; history lives in git. A closed (✅) chat leaves the notes the
 moment you set ✅: no list of ✅ chats, and no ✅ anywhere in the file. A
@@ -796,9 +804,10 @@ From `hooks/session-start.mjs`:
     '(running /chat-hub-core:setup again rewrites it).')
   say('SessionStart', "chat-hub-core is installed but this project isn't set up. If the owner asks about chats, hubs or releases, suggest /chat-hub-core:setup.")
       `then delete each line from the notes: ${later.map(l => `"${l.slice(0, 120)}"`).join('; ')}.` : '') : ''
+    " Then list sessions (include archived): drop chats the owner deleted from your notes and fix your title's open count if it's wrong."
       `skill now and only ever message ${hub.app}.`
       `if its id is ${hub.app}, this chat is the hub (it was restarted or cleared): load the chat-hub-core:hub skill now and ` +
-      `run ${setHubCmd} --session <this chat's session ID, below> --app ${hub.app}.${notes ? ' Then' + notes.replace(' Your notes exist:', ' (your notes exist)') : ''} Otherwise this is a work chat: ` +
+      `run ${setHubCmd} --session <this chat's session ID, below> --app ${hub.app}.${notes ? ' Then' + notes.replace(' Your notes exist:', ' (your notes exist)') : ''}${recount} Otherwise this is a work chat: ` +
       `load the chat-hub-core:work-chat skill now and only ever message ${hub.app}.`
       'only ever message that session (if the app won\'t accept that ID, ask the owner which chat is the hub). ' +
       'Become the hub only if the owner runs /chat-hub-core:hub here.'
