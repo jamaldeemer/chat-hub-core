@@ -62,12 +62,14 @@ Only what you couldn't tell. Usually:
 
 5. Tools to turn off (every tool costs context on every turn, the hub's
    most of all). Run `node "${CLAUDE_PLUGIN_ROOT}/hooks/tools.mjs"`
-   and show the owner its numbered list of every tool group as it is, then
-   which numbers you'd turn off for this project and why in a few words
-   (no web UI: `browser`; no iOS app: `ios`; the rarely used extras,
-   marked `unused` in the script, almost always). Ask in a second menu:
-   "Turn off <numbers>" (Recommended) / "Keep everything"; the owner can
-   type other numbers (e.g. `4, 13-27`) as their own answer. Skip it on a
+   and show the owner its numbered list of every tool group as it is.
+   `ios` (2), `artifacts` (4) and the rarely used extras (13–27) are off
+   by default: the hooks turn them off on the first prompt after setup,
+   so don't ask about them; say so in one line. Suggest any other numbers
+   to turn off and why in a few words (no web UI: `browser`), or one to
+   keep on (an iOS app: `on 2`). Ask in a second menu: "Turn off
+   <numbers>" (Recommended) / "Keep the defaults"; the owner can type
+   other numbers (e.g. `1`, or `on 2`) as their own answer. Skip it on a
    re-run unless the owner asks; `/chat-hub-core:tools` changes it later.
 
 Don't ask how chats start: `startMode` defaults to "ask" (the hub asks
@@ -105,11 +107,12 @@ start-of-chat hook sets it in every checkout. If the project already has a
 hooks folder with its own pre-push, save ours there as `chat-hub-pre-push`
 and add a line to theirs that runs it.
 
-**Tools** the owner picked to turn off: run `node
-"${CLAUDE_PLUGIN_ROOT}/hooks/tools.mjs" off <numbers>`. It writes
-`.claude/settings.local.json`, which your sandbox usually blocks; then put
-`/chat-hub-core:tools off <numbers>` under "Left for you" (the owner types
-it; the prompt hook writes it).
+**Tools** the owner picked to turn off (or on, from the defaults): run
+`node "${CLAUDE_PLUGIN_ROOT}/hooks/tools.mjs" off <numbers>` (or `on
+<numbers>`). It writes `.claude/settings.local.json`, which your sandbox
+usually blocks; then put `/chat-hub-core:tools off <numbers>` under "Left
+for you" (the owner types it; the prompt hook writes it). Nothing to do
+for the defaults.
 
 **Level 2:** add `.claude/issues-to-check.md` to `.gitignore`.
 
@@ -512,7 +515,8 @@ which chats just became ✅ and why the others can't close yet.
 Open chats pick up a new version on their own: their hooks run the
 newly installed version, and on its next prompt each chat (you too) is
 told to read its new rules file, and to restart only if the update
-needs it. Don't message the chats about it. When the owner asks how to
+needs it. The app shows the owner "Updated" in each chat; say nothing
+about the update yourself. Don't message the chats about it. When the owner asks how to
 update, give them `sh ~/.claude/plugins/marketplaces/chat-hub/scripts/update-all.sh`
 (every project at once; they run it, your sandbox can't).
 
@@ -635,7 +639,12 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
   (`docs/backlog.md` if it isn't set).
 - **Plugin update:** when a note says chat-hub-core was updated, read
   the rules file it names before anything else; it replaces these rules.
-  Restart only if the note says to.
+  The app already showed the owner "Updated", so say nothing about the
+  update. Restart only if the note says to.
+- **Tools turned off:** if the start note lists tools turned off in
+  this project and your task needs one, ask the owner to type
+  `/chat-hub-core:tools on <name>` and restart this chat; don't work
+  around it.
 - **Dev server:** start it with the settings' `devServer.command` (in
   the background, or the browser pane's dev-server tool where you have
   it). Keep exactly two browser tabs on it, yours first, then
@@ -707,6 +716,10 @@ command to type instead: `/chat-hub-core:tools <words>`.
 - `/chat-hub-core:tools on browser` turns them back on; `on all` for
   every group.
 
+Off by default in every project: `ios` (2), `artifacts` (4) and the
+rarely used extras (13–27). The start and prompt hooks turn each off
+once and record it; one the owner turns back on stays on.
+
 The tools chat-hub-core needs (Bash, Read, Edit, Write, Skill,
 ToolSearch, AskUserQuestion, SendMessage, the app's session, task-list
 and host tools) always stay on.
@@ -714,8 +727,10 @@ and host tools) always stay on.
 It writes deny rules in the project's `.claude/settings.local.json` (just
 the owner, never committed), which remove those tools from every chat,
 hub and work chats alike. New chats load the new set; an open chat drops
-or gets them when restarted. A work chat that needs a tool that's off
-(e.g. the Browser pane for a UI fix) asks the owner to turn it on.
+or gets them when restarted. A chat can't see an off tool, so its start
+note names what's off in one line; a chat that needs one (e.g. the
+Browser pane for a UI fix) asks the owner to type
+`/chat-hub-core:tools on <name>`.
 ````
 
 ---
@@ -759,10 +774,12 @@ Commit only with the owner's OK. Level 1+: push your branch. Level 2: wait for C
 From `hooks/config.mjs`:
 
 ```js
-export function say(event, text) {
+export function say(event, text, shown) {
+  process.stdout.write(JSON.stringify({ ...(shown && { systemMessage: shown }),
       `read ${PLUGIN_ROOT}/skills/${skill}/SKILL.md in full with the Read tool: it replaces the ${skill} rules you loaded ` +
-      '(loading the skill again may give the old copy). Then carry on.' +
-        'your next stopping point (terminal: exit, then `claude --continue`; desktop app: quit and reopen the app).' : '')
+      '(loading the skill again may give the old copy). Then carry on with the prompt. The app already showed the owner ' +
+      `"${shown}", so say nothing about the update, the version or the new rules: no line, no summary.` +
+        'to restart this chat (terminal: exit, then `claude --continue`; desktop app: quit and reopen the app).' : '')
     `snapshot under only these headings: ${NOTES_SECTIONS.map(s => `"## ${s}"`).join(', ')}. Merge what's still true into ` +
     'those sections, keep only the last 2 shipped releases, drop closed chats and old history (git keeps it), and add no ' +
     'dated, "Latest" or checkpoint blocks.' : ''
@@ -787,7 +804,7 @@ From `hooks/session-start.mjs`:
       'Become the hub only if the owner runs /chat-hub-core:hub here.'
       '"No hub is recorded; type /chat-hub-core:hub in the chat that should be the hub." Until one is recorded, ' +
       'don\'t message any chat as the hub and don\'t guess one by its name.'
-  say('SessionStart', `This project uses chat-hub-core ${pluginVersion()} (level ${c.level}). ${who}${mine}${guard}`)
+  say('SessionStart', `This project uses chat-hub-core ${pluginVersion()} (level ${c.level}). ${who}${mine}${guard}${off}`)
 ```
 
 From `hooks/on-prompt.mjs`:
@@ -795,8 +812,10 @@ From `hooks/on-prompt.mjs`:
 ```js
     'reply and do nothing else for it.'
     'tell the owner exactly that in one short reply and do nothing else for it.'
+    'in one short reply and do nothing else for it.'
+  if (!cfg) say('UserPromptSubmit', limitNote)
       'up, stop and carry on as normal.'
-  if (out) say('UserPromptSubmit', out)
+  if (out) say('UserPromptSubmit', out, rules?.shown)
     say('UserPromptSubmit', `Recorded this chat (session ${input.session_id}) as the hub.` +
       ` Now add your app address so work chats can message you: look up this session's own details with your` +
       ` session tools (its id starts with local_) and run: ${setHubCmd} --app <that id>`)
@@ -817,6 +836,9 @@ From `hooks/tools.mjs`:
 ```js
   'single tools; "off unused" for the rarely used extras) to turn them off, /chat-hub-core:tools on browser (or "on ' +
   'all") to turn them back on.'
+    '`/chat-hub-core:tools on <name>` (then restart this chat).' : ''
+  `this project's new chats: ${turned.join(', ')} (this chat still has them until restarted). The owner can turn ` +
+  'any back on with `/chat-hub-core:tools on <name>`.' : ''
       'new set; restart an open chat for it to drop or get them.',
 ```
 

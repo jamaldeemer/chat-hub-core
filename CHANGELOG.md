@@ -3,6 +3,15 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## Unreleased
+
+- **An update shows just "Updated":** after a plugin update, each open
+  chat used to tell the owner about it in its own words. The prompt hook
+  now hands the app a `systemMessage`, so the app itself shows one line,
+  "Updated" ("Updated: restart this chat" when hooks.json changed), and
+  the model still gets the note to re-read its rules file but is told to
+  say nothing about the update. The hub and work-chat rules say the same.
+
 ## 0.3.37
 
 - **Tools no chat uses are off by default:** a scan of 48 chats found

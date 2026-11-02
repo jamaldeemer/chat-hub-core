@@ -85,7 +85,8 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
   (`docs/backlog.md` if it isn't set).
 - **Plugin update:** when a note says chat-hub-core was updated, read
   the rules file it names before anything else; it replaces these rules.
-  Restart only if the note says to.
+  The app already showed the owner "Updated", so say nothing about the
+  update. Restart only if the note says to.
 - **Tools turned off:** if the start note lists tools turned off in
   this project and your task needs one, ask the owner to type
   `/chat-hub-core:tools on <name>` and restart this chat; don't work

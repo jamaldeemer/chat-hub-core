@@ -47,8 +47,9 @@ if (!m && cfg) {
     limitNote += ' No WRAP UP note came with this prompt, so you are under the hub\'s limit: if you were wrapping ' +
       'up, stop and carry on as normal.'
   }
-  const out = [limitNote, defaults, rulesNotice({ session: input.session_id, isHub }), nudge].filter(Boolean).join(' ')
-  if (out) say('UserPromptSubmit', out)
+  const rules = rulesNotice({ session: input.session_id, isHub })
+  const out = [limitNote, defaults, rules?.text, nudge].filter(Boolean).join(' ')
+  if (out) say('UserPromptSubmit', out, rules?.shown)
 }
 if (m && input.session_id && cfg) {
   try {
