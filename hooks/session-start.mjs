@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url'
 import { dirname } from 'node:path'
 import { statsLine, updateUsage } from './usage.mjs'
 import { applyDefaults, defaultsNote, offNote } from './tools.mjs'
+import { closeBackstop } from './wrapups.mjs'
 import { afterClearItems, ciState, hookInput, hostApp, hubAddress, hubNotesFile, loadConfig, notesProblem, pluginVersion, pushState, readHub, say, setHub } from './config.mjs'
 
 const setHubCmd = `node "${dirname(fileURLToPath(import.meta.url))}/set-hub.mjs"`
@@ -63,7 +64,8 @@ if (error) {
       `then delete each line from the notes: ${later.map(l => `"${l.slice(0, 120)}"`).join('; ')}.` : '') : ''
   // Owner-deleted chats send the hub no event: recount and prune on start.
   const recount =
-    " Then list sessions (include archived): drop chats the owner deleted from your notes and fix your title's open count if it's wrong."
+    " Then list sessions (include archived): drop chats the owner deleted from your notes and fix your title's open count if it's wrong." +
+    ((b => b ? ' ' + b : '')(closeBackstop({ transcript: input.transcript_path })))
   const app = hostApp()
   let who
   if (hub.app && app && app === hub.app) {

@@ -247,3 +247,13 @@ Findings 1–3 shipped in 0.3.4. Still open:
   `../wt3`) beside its own temp folder, so a run that was stopped leaves
   them in `$TMPDIR` and every later run fails "shared hub: seen from
   another worktree". Make them inside `$tmp`.
+
+## Found while building C7 (2026-11-02)
+
+- **Hooks can read empty input from a slow pipe:** `hookInput()` reads
+  stdin in one `readFileSync(0)`. Fed from a slow writer (`node -e … |`),
+  about 1 run in 20 got nothing, so the hook saw no session and said
+  nothing. C7's tests now pass the input through a file. Check whether
+  Claude Code's own hook runs can hit it, and if so read stdin until EOF.
+- `scripts/all-prompts.sh` leaves out `hooks/titles.mjs`, so the title
+  check's note isn't in `docs/all-prompts.md`.

@@ -13,7 +13,7 @@ out=docs/all-prompts.md
     printf '````\n'
   done
   printf '\n---\n\n## Hook messages (text the hooks add to a chat)\n'
-  for f in hooks/config.mjs hooks/session-start.mjs hooks/on-prompt.mjs hooks/limit.mjs hooks/tools.mjs hooks/before-commit.mjs hooks/guard.mjs hooks/usage.mjs hooks/after-turn.mjs; do
+  for f in hooks/config.mjs hooks/session-start.mjs hooks/on-prompt.mjs hooks/limit.mjs hooks/tools.mjs hooks/before-commit.mjs hooks/guard.mjs hooks/usage.mjs hooks/wrapups.mjs hooks/after-turn.mjs; do
     printf '\nFrom `%s`:\n\n```js\n' "$f"
     grep -hE "say\(|deny\(|systemMessage|^ *['\`\"].*[a-z].*['\`\"] *[+,)]? *$|^ *\? \`|^ *: \`" "$f" | grep -v '^ *//' || true
     printf '```\n'

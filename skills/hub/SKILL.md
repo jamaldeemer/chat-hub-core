@@ -207,9 +207,14 @@ Two styles, set by `titles` in the settings:
   "working again" → 🔨, "pushed" → 🟢, or 🚀 at level 2), set it for
   it. When a wrap-up report arrives, close the chat (Closing chats
   below): a report in means the close happens now, even while wrapping
-  up; it never waits for a clear. Backstop, on every wake (and first
-  thing after a clear): close any chat whose wrap-up report is in and
-  that isn't ✅ yet. Level 2, on the same wakes while any chat shows
+  up and even when its work ships in a later release; it never waits
+  for a clear or a release. There is no "parked" state: a finished chat
+  is merged into the release preview and set ✅ at once, and a problem
+  found later is a new chat. Backstop, on every wake (and first thing
+  after a clear): close any chat whose wrap-up report is in and that
+  isn't ✅ yet. A hook remembers each report and reminds you ("close
+  backstop") while that chat's title still shows ⏳: close it then and
+  there, before anything else. Level 2, on the same wakes while any chat shows
   🚀: run `node "${CLAUDE_PLUGIN_ROOT}/hooks/ci-status.mjs"` (one line
   per chat branch: CI passed, not passed yet, or not pushed) and message
   each 🚀 chat whose head passed, once per commit: "CI passed on <sha>:
@@ -273,6 +278,10 @@ A chat closes only when all of this holds, checked in this order:
 3. **Nothing waiting:** its last message doesn't wait on the owner, and
    `Open` in its report is "nothing" or written to the followups file.
 
+Close as soon as the report is in, whichever release the chat is tagged
+for: never hold a finished chat at ⏳ for a later release. Its branch
+waits in the release preview, not in an open chat.
+
 Then, right after that READY, in one step: set ✅ at the start of its
 title, tell the owner once that it can be deleted, and delete it from your notes. Don't mention it
 again: you keep no list of ✅ chats, so you can't remind the owner of one
@@ -287,6 +296,8 @@ which chats just became ✅ and why the others can't close yet.
 - Keep a **release preview**: a local `branches.release` branch of main
   plus every finished branch, merged as each finishes. Finished = its
   wrap-up report is in; until then don't merge it, even if pushed.
+  Once it is, merge it (close it) at once, even when it's tagged for a
+  later release; choosing what ships happens at release time.
   `close-chat.mjs` does the merge and runs the `checks` on it. If your
   sandbox can't write a merge (protected files), give the owner the exact command to run; never work around it.
 - **Offer to ship:** as soon as a merge into the preview passes the

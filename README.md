@@ -432,6 +432,16 @@ check, and prints READY or FAIL, so ✅ comes in the same turn. If the hub's own
 folder has the preview checked out, it merges there (a fast-forward, only with
 nothing uncommitted in it).
 
+**A finished chat closes at once.** The hub closes a chat as soon as its
+wrap-up report is in, even when its work ships in a later release: the
+branch waits in the release preview, not in an open chat at ⏳ (there is
+no "parked" state; a problem found later is a new chat). As a backstop,
+the hub's prompt hook remembers each report it sees (`**Wrap-up · C7**`)
+and, on every later wake and after a clear, reminds the hub to close any
+of those chats whose title still shows ⏳ (it reads the titles from the
+app's `custom-title.json` files for the project's folders). A chat that
+moved on (✅, or back to 🔨 after a failed close) is forgotten.
+
 **CI after a clear (level 2).** A chat at 🚀 watches its run in the
 background, and a clear or restart stops that watcher. The start note then
 asks `ci.passed` about the chat's pushed head and tells it what to do (🟢
