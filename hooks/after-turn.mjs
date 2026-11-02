@@ -5,6 +5,7 @@
 import { hookInput, isHubChat, readConfig, readHub } from './config.mjs'
 import { statsLine, updateUsage } from './usage.mjs'
 import { titleNote } from './titles.mjs'
+import { withPace } from './pace.mjs'
 
 const input = hookInput()
 const cfg = readConfig(input.cwd || process.cwd())
@@ -12,7 +13,7 @@ if (!cfg || !input.session_id) process.exit(0)
 const out = {}
 if (cfg.stats !== false) {
   const s = updateUsage(input.session_id, input.transcript_path)
-  if (s.turns) out.systemMessage = statsLine(s)
+  if (s.turns) out.systemMessage = withPace(statsLine(s), cfg)
 }
 if (!input.stop_hook_active) {
   let workChat = true

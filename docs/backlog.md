@@ -257,3 +257,4 @@ Findings 1–3 shipped in 0.3.4. Still open:
   Claude Code's own hook runs can hit it, and if so read stdin until EOF.
 - `scripts/all-prompts.sh` leaves out `hooks/titles.mjs`, so the title
   check's note isn't in `docs/all-prompts.md`.
+- Pace line in the terminal: a statusline script could save the same plan numbers (its JSON input has `rate_limits`), so CLI users get the pace with no get_usage calls. Claude Code plugins can't set `statusLine`, so it would need the owner to add it to settings.

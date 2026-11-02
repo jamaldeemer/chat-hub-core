@@ -200,11 +200,13 @@ Don't commit.
   "ci": { "passed": "" },           // level 2: command with $SHA; prints 1 or 0, fails if it can't ask
   "fixes": { "toCheck": ".claude/issues-to-check.md" }, // level 2
   "devServer": { "command": "" },   // optional: chats started with "Just open" run it
-  "trimAt": 135000,                 // optional: hub context (tokens) at which it wraps up, then asks to be cleared
+  "trimAt": 135000,                 // optional: hub context (tokens) at which it wraps up (no new chats or releases)
+  "hardStopAfter": 20000,           // optional: tokens past trimAt at which the hub can only write its notes
   "trimAtWork": 0,                  // optional: the same for work chats (0 = off)
                                   // (/chat-hub-core:limit overrides both, in .git/chat-hub/limits.json)
   "notesMaxBytes": 6000,            // optional: hub notes size that prompts a rewrite as one snapshot (0 = off)
-  "stats": true                     // optional: false hides the usage line (after each turn and at start)
+  "stats": true,                    // optional: false hides the usage line (after each turn and at start)
+  "pace": true                      // optional: false hides the weekly plan-usage pace under it
 }
 ```
 
@@ -325,19 +327,28 @@ turns × context size, and it's usually most of a project's usage.
 - **When a "⚠️ WRAP UP" note says you're past your limit** (`trimAt`,
   default 135k, or what the owner set with `/chat-hub-core:limit`; if a
   new limit puts you back under it, stop wrapping up), wrap up, so a clear never lands in the middle of a step:
-  - **No new work:** no new chats or releases. Anything new the
+  - **No new work:** no new chats or releases; the guard hook now
+    refuses both (the app's start-session tool, a new tag, a `Release`
+    commit, making or resetting the release branch). Anything new the
     owner or a chat asks for goes under "## Next" in your notes as a
     line starting `- After clear:` (the start note quotes those lines
     back to you after the clear); say it's noted for after the clear.
-  - **Finish what's in flight:** a merge or release you've started
-    (through its tests and commit), closing every chat whose wrap-up
+  - **Finish what's in flight:** a merge you've started (through its
+    tests and commit), closing every chat whose wrap-up
     report is in (`close-chat.mjs`, then ✅; never leave one at ⏳ for
     after the clear), title changes you owe, replies to messages chats
     have sent you, messages you said you'd send.
-  - **Then** bring your notes up to date and start every reply until
-    you're cleared with the line the note gives you, which tells the
-    owner to type `/clear` in this chat. Never carry on past it as if it
-    weren't there.
+  - **While that's going on,** start each reply with the plain
+    "⚠️ Hub at …: wrapping up." line. **Then** bring your notes up to
+    date and start every reply until you're cleared with the boxed
+    "SAFE TO CLEAR: type /clear" banner the note gives you, in a code
+    block. Never carry on past it as if it weren't there.
+  - **Hard stop:** `hardStopAfter` (default 20k) past the limit, the
+    hook refuses every tool except Read, Edit and Write on your notes.
+    Bring them up to date and show the banner; nothing else is left.
+  - **Only the owner lifts a stop**, with `/chat-hub-core:limit <higher>`
+    or `off`. Never change the limit, the settings, the hub record or
+    the usage counts yourself; the hook refuses those too.
   - **Never ask about clearing:** no question, menu or buttons ("Clear
     the hub now?", "Cleared it"). A button only sends words back; it
     can't clear a chat, and once the chat is cleared nothing is left to
@@ -720,7 +731,10 @@ short reply and do nothing else for it.
 If no such note came (the hook didn't run), run it yourself with the
 owner's words after the command:
 `node "${CLAUDE_PLUGIN_ROOT}/hooks/limit.mjs" <words>` (none to show the
-limits) and tell the owner its one line.
+limits) and tell the owner its one line. Only ever for the owner's own
+`/chat-hub-core:limit`: never to lift a stop you're under. Past its
+limit the hub can't run it at all (the guard refuses it); if the hook
+didn't run then, tell the owner so.
 
 - `/chat-hub-core:limit` shows both limits and where each comes from.
 - `/chat-hub-core:limit 200k` (or `hub 200k`) sets the hub's (`trimAt`).
@@ -733,6 +747,11 @@ They're kept in git's shared folder (`.git/chat-hub/limits.json`, beside
 the hub record), so every chat in every worktree uses them from its next
 prompt; they override `.claude/chat-hub.json` and are never committed.
 Without git they're written into `.claude/chat-hub.json`.
+
+The hub's limit is a hard stop in two stages: at it, the hub can't start
+chats or build releases; `hardStopAfter` (in the settings, default 20k)
+past it, it can only read and write its notes until cleared. A new
+limit above its context (or `off`) lifts both at once.
 ````
 
 ---
@@ -877,6 +896,7 @@ From `hooks/limit.mjs`:
 
 ```js
   '/chat-hub-core:limit work 100k (or "work off") for work chats, /chat-hub-core:limit default to go back to the settings.'
+      'more, hardStopAfter) it can only write its notes until cleared.' : ''
 ```
 
 From `hooks/tools.mjs`:
@@ -908,6 +928,12 @@ From `hooks/guard.mjs`:
           'this chat? Ask in plain text; the owner can turn this check off with "okMenu": false in .claude/chat-hub.json.')
       deny(`${file} is in another chat's folder (${owner}). Only edit files in your own worktree (${own}); ` +
         'ask the hub if that chat needs a change.')
+      deny(`${at}, and only the owner can change the limit. ${OVERRIDE}`)
+      deny(`HARD STOP: ${at} by more than its stop margin. Every tool is refused except Read, Edit and Write on ` +
+        `your hub notes (${notes || 'hub-notes.md: none without git'}). Bring them up to date if they aren't, then start ` +
+        `every reply with this banner as its own code block:\n\`\`\`\n${SAFE_BANNER}\n\`\`\`\n${OVERRIDE}`)
+    const newWork = why => deny(`${at}, so no new work: ${why} Finish what's in flight, put this under "## Next" ` +
+      `in your hub notes as "- After clear: …" and tell the owner it's noted for after the clear. ${OVERRIDE}`)
 if (nudge) say('PreToolUse', nudge)
 ```
 
@@ -915,22 +941,27 @@ From `hooks/usage.mjs`:
 
 ```js
     `this chat ≈ ${short(s.reads)} token-reads`)
+  'or /chat-hub-core:limit off. Never try to change the limit, the hub record or the usage counts yourself.'
+  '╔════════════════════════════════════╗\n' +
+  '║   ✅  SAFE TO CLEAR: type /clear   ║\n' +
+  'exactly:\n```\n' + SAFE_BANNER + '\n```\n'
   `⚠️ WRAP UP: this chat's context is ${short(ctx)} tokens, past its limit of ${short(limit)}, and every turn ` +
-  're-reads all of it. Take on no new work: no new chats or releases, and nothing new the owner or a chat ' +
+  're-reads all of it. Take on no new work: no new chats or releases (the hooks now refuse both), and nothing new the owner or a chat ' +
   'asks for (add each to "## Next" in your hub notes as a line starting "- After clear:", which the start note ' +
   'quotes back to you, and say it\'s noted for after the clear). ' +
-  'Finish everything already in flight: a merge or release you have started (through its tests and commit), ' +
+  'Finish everything already in flight: a merge you have started (through its tests and commit), ' +
   'closing every chat whose wrap-up report is in (close-chat.mjs, then ✅: never leave one at ⏳ for after the clear or a later release), ' +
   'title changes you owe, replies to messages chats have sent you, and messages you said you would send. ' +
-  'Until all of that is done, start each reply with "⚠️ Hub at ' + short(ctx) + ' tokens: wrapping up." Once it is, ' +
-  'bring your hub notes up to date, then start every reply until you\'re cleared with ' +
-  '"⚠️ Wrapped up, notes saved. Type /clear in this chat to clear it." ' +
+  'Until all of that is done, start each reply with the plain line "⚠️ Hub at ' + short(ctx) + ' tokens: wrapping up." Once it is, ' +
+  `At ${short(limit + hardStopAfter(cfg))} tokens the hooks refuse every tool but your notes, so finish soon. ` +
   'Never ask the owner about clearing: no question, menu or buttons (a button can\'t clear a chat, and a ' +
   'cleared chat has nothing left to answer). In the desktop app, end the turn with a wrap-up recap only, ' +
-  'no ask or actions.'
-  `⚠️ STOP: this chat's context is ${short(ctx)} tokens, and every turn re-reads all of it. When you reach a ` +
-  'natural stopping point, write down where you are (in your branch\'s notes or a commit) and tell the owner, ' +
-  `starting your reply with "⚠️ This chat is at ${short(ctx)} tokens: please clear it or wrap it up." Repeat that line in every reply until cleared. ` +
+  `⛔ HARD STOP: this chat's context is ${short(ctx)} tokens, well past its limit of ${short(limit)}. Every tool ` +
+  `is refused except reading and writing your hub notes (${notes || 'hub-notes.md'}) with Read, Edit or Write. ` +
+  'If they aren\'t up to date, bring them up to date now (anything unfinished goes under "## Next" as ' +
+  `⚠️ STOP: this chat's context is ${short(ctx)} tokens, and every turn re-reads all of it. Get to a ` +
+  'natural stopping point and write down where you are (in your branch\'s notes or a commit); until then start each ' +
+  `reply with the plain line "⚠️ This chat is at ${short(ctx)} tokens: wrapping up." Once it's written down, tell the owner, ` +
   'Don\'t promise to check CI after the clear: the start note checks it for you.'
 ```
 
@@ -945,10 +976,18 @@ From `hooks/wrapups.mjs`:
     `Close it now, before anything else: ${howToClose}`)
 ```
 
+From `hooks/pace.mjs`:
+
+```js
+    'Usage pace: call the get_usage session tool once this turn, alongside your other work ' +
+    '(load it with ToolSearch "select:mcp__ccd_session_mgmt__get_usage" if it isn\'t loaded). A hook ' +
+    'saves the plan numbers for the owner\'s pace line; don\'t mention it or the numbers.'
+```
+
 From `hooks/after-turn.mjs`:
 
 ```js
-  if (s.turns) out.systemMessage = statsLine(s)
+  if (s.turns) out.systemMessage = withPace(statsLine(s), cfg)
 ```
 
 From `githooks/pre-push` (shown when a push to main is refused):

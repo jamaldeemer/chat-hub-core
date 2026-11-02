@@ -196,7 +196,8 @@ Don't commit.
   "trimAtWork": 0,                  // optional: the same for work chats (0 = off)
                                   // (/chat-hub-core:limit overrides both, in .git/chat-hub/limits.json)
   "notesMaxBytes": 6000,            // optional: hub notes size that prompts a rewrite as one snapshot (0 = off)
-  "stats": true                     // optional: false hides the usage line (after each turn and at start)
+  "stats": true,                    // optional: false hides the usage line (after each turn and at start)
+  "pace": true                      // optional: false hides the weekly plan-usage pace under it
 }
 ```
 

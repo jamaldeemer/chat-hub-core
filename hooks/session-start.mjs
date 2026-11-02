@@ -5,6 +5,7 @@ import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname } from 'node:path'
 import { statsLine, updateUsage } from './usage.mjs'
+import { withPace } from './pace.mjs'
 import { applyDefaults, defaultsNote, offNote } from './tools.mjs'
 import { closeBackstop } from './wrapups.mjs'
 import { afterClearItems, ciState, hookInput, hostApp, hubAddress, hubNotesFile, loadConfig, notesProblem, pluginVersion, pushState, readHub, say, setHub } from './config.mjs'
@@ -105,6 +106,6 @@ if (error) {
   const off = [offNote(), defaultsNote(applyDefaults())].filter(Boolean).map(t => ' ' + t).join('')
   // The owner's usage line: a new or cleared chat has no turns yet, so it shows the version.
   const stats = c.stats === false || !me ? '' :
-    statsLine(updateUsage(me, input.transcript_path), { compacted: input.source === 'compact' })
+    withPace(statsLine(updateUsage(me, input.transcript_path), { compacted: input.source === 'compact' }), c)
   say('SessionStart', `This project uses chat-hub-core ${pluginVersion()} (level ${c.level}). ${who}${mine}${guard}${off}`, stats)
 }
