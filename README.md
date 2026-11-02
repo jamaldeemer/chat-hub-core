@@ -160,6 +160,12 @@ only repeat steps 1–2). Run setup again to change level or other answers.
 
 ## Updating
 
+**Which version am I on?** Type `/chat-hub-core:version` in any chat of
+any project. It says which chat-hub-core version that project runs and
+whether a newer one is out (the newest `v*` tag on GitHub, or the
+marketplace copy when GitHub can't be reached), with the update command
+below if it is.
+
 When a new version is out, update every project that has the plugin at
 once:
 

@@ -3,6 +3,15 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## Unreleased
+
+- **`/chat-hub-core:version` shows the version:** type it in any chat of
+  any project to see which chat-hub-core version that project runs
+  (from Claude's `installed_plugins.json`) and whether a newer one is out
+  (the newest `v*` tag on GitHub, or the marketplace copy when GitHub
+  can't be reached), with the update command if it is. The prompt hook
+  answers it, so it costs one short reply; it works before setup too.
+
 ## 0.3.35
 
 - **Chats set their own title symbol:** a work chat now sets its own

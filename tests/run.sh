@@ -386,6 +386,20 @@ t "update-all: dry run runs nothing" "$(wc -c < "$clog" | tr -d ' ')" 0
 touch "$vd/fail-update"
 t "update-all: a failed update fails the run" "$(ua >/dev/null; echo $?)" 1
 rm "$vd/fail-update"
+# /chat-hub-core:version: installed version from the plugins file, newest from origin's v* tags
+mo="$tmp/mkt-origin"; mk="$tmp/mkt"; g() { git -c user.email=a@b -c user.name=t "$@"; }
+git init -q -b main "$mo" && mkdir "$mo/.claude-plugin" && echo '{"version":"0.3.21"}' > "$mo/.claude-plugin/plugin.json"
+(cd "$mo" && g add -A && g commit -q -m one && g tag v0.3.9 && g tag v0.3.21 && g tag v0.3.10 && g tag notes) && git clone -q "$mo" "$mk"
+vv() { (cd "$vd" && CHAT_HUB_PLUGINS_FILE="$pf" CHAT_HUB_MARKETPLACE="$1" node "$root/hooks/version.mjs"); }
+t "version: installed from the plugins file" "$(vv "$mk" | grep -c '^This project runs chat-hub-core 0.3.20\.')" 1
+t "version: newest tag, numeric order" "$(vv "$mk" | grep -c 'Newer: 0.3.21 is out (newest tag on GitHub).*update-all.sh')" 1
+(cd "$mo" && g tag v0.3.20 HEAD >/dev/null; git tag -d v0.3.21 v0.3.10 >/dev/null)
+t "version: up to date" "$(vv "$mk" | grep -c "That's the newest (newest tag on GitHub)")" 1
+(cd "$mk" && git remote set-url origin "$tmp/no-such-origin")
+t "version: no GitHub, marketplace copy" "$(vv "$mk" | grep -c 'Newer: 0.3.21 is out (marketplace copy; GitHub not reached)')" 1
+t "version: no marketplace" "$(vv "$tmp/nope" | grep -c "Couldn't find the newest version")" 1
+t "version: from the prompt" "$(cd "$vd" && echo '{"session_id":"v1","prompt":"/chat-hub-core:version"}' | CHAT_HUB_PLUGINS_FILE="$pf" CHAT_HUB_MARKETPLACE="$mk" node "$root/hooks/on-prompt.mjs" | grep -c '/version: This project runs chat-hub-core 0.3.20.*Tell the owner')" 1
+t "version: from the prompt before setup" "$(cd "$mo"; echo '{"session_id":"v1","prompt":"/chat-hub-core:version"}' | CHAT_HUB_MARKETPLACE="$mk" node "$root/hooks/on-prompt.mjs" | grep -c '/version: This project runs')" 1
 
 t "titles: work chat sets its own symbol" "$(grep -c 'set it (`set_session_title` with `self`)' "$root/skills/work-chat/SKILL.md")" 1
 t "skills: OK asked with a menu" "$(grep -c 'Ask for it with a menu' "$root/skills/work-chat/SKILL.md")" 1

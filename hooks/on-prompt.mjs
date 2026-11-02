@@ -7,6 +7,7 @@ import { HubTaken, hookInput, isHubChat, readConfig, readHub, say, setHub } from
 import { trimNudge } from './usage.mjs'
 import { limitCommand } from './limit.mjs'
 import { toolsCommand } from './tools.mjs'
+import { versionCommand } from './version.mjs'
 import { rulesNotice } from './config.mjs'
 
 const setHubCmd = `node "${dirname(fileURLToPath(import.meta.url))}/set-hub.mjs"`
@@ -30,6 +31,12 @@ const tm = prompt.match(/^\/chat-hub-core:tools\b(.*)$/s)
 if (tm && cfg) {
   limitNote = `chat-hub-core /tools: ${toolsCommand(tm[1], input.cwd || process.cwd()).text} This is already done: ` +
     'tell the owner exactly that in one short reply and do nothing else for it.'
+}
+// /chat-hub-core:version: the installed and newest versions. Works before setup too.
+if (/^\/chat-hub-core:version\b/.test(prompt)) {
+  limitNote = `chat-hub-core /version: ${versionCommand(input.cwd || process.cwd()).text} Tell the owner exactly that ` +
+    'in one short reply and do nothing else for it.'
+  if (!cfg) say('UserPromptSubmit', limitNote)
 }
 if (!m && cfg) {
   const isHub = isHubChat(readHub(cfg), input.session_id)
