@@ -3,6 +3,16 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## Unreleased
+
+- **The start note says which tools are off:** a tool turned off with
+  `/chat-hub-core:tools` vanishes from every chat, so a chat asked to do
+  something it did couldn't tell why. When tools are off, every chat's
+  start note (hub and work chats) now names them in one line (whole
+  groups by name, other tools singly) and says to ask the owner to type
+  `/chat-hub-core:tools on <name>`; nothing is added when none are off.
+  The work-chat rules say to ask rather than work around it.
+
 ## 0.3.36
 
 - **`/chat-hub-core:version` shows the version:** type it in any chat of

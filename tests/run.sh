@@ -228,6 +228,7 @@ rm "$tmp/linked-root"
 # /chat-hub-core:tools: deny rules in the main checkout's settings.local.json, owner's own rules kept
 tl() { printf '{"session_id":"u1","prompt":"/chat-hub-core:tools %s","cwd":"%s"}' "$1" "$(pwd)" | node "$root/hooks/on-prompt.mjs"; }
 printf '{"permissions":{"allow":["Bash(ls)"],"deny":["Bash(rm *)"]},"model":"x"}\n' > .claude/settings.local.json
+t "start note: no tools off, no line" "$(echo '{}' | node "$root/hooks/session-start.mjs" | grep -c 'turned off')" 0
 t "tools: lists every group, numbered" "$(node "$root/hooks/tools.mjs" | grep -cE '^ ?[0-9]+\. ')" 27
 t "tools: names the always-on tools" "$(node "$root/hooks/tools.mjs" | grep -c '^Always on.*Bash.*SendMessage')" 1
 t "tools: off from the prompt" "$(tl 'off browser ios' | grep -c '/tools: Saved.*Off: browser, ios.*already done')" 1
@@ -242,6 +243,7 @@ t "tools: off by number and range" "$(node "$root/hooks/tools.mjs" on all >/dev/
 t "tools: bad number refused" "$(node "$root/hooks/tools.mjs" off 99 | grep -c 'no group numbered 99')" 1
 t "tools: single tool off and listed" "$(node "$root/hooks/tools.mjs" off Foo >/dev/null; node "$root/hooks/tools.mjs" | grep -c '^Also off: .*Foo')" 1
 t "tools: part of a group shows part" "$(node "$root/hooks/tools.mjs" off SendUserFile ListAgents >/dev/null; node "$root/hooks/tools.mjs" | grep -c 'part agents')" 1
+t "start note: names the tools that are off" "$(echo '{}' | node "$root/hooks/session-start.mjs" | grep -c 'Tools turned off in this project: browser, ios, artifacts, files, Foo, ListAgents\. If you need one, ask the owner to type `/chat-hub-core:tools on <name>`')" 1
 t "tools: needed tools stay on" "$(node "$root/hooks/tools.mjs" off Bash mcp__ccd_session_mgmt__send_message | grep -c 'Not changed: chat-hub-core needs Bash, mcp__ccd_session_mgmt__send_message')" 1
 t "tools: odd word refused" "$(node "$root/hooks/tools.mjs" off "a/b" | grep -c "Not changed: \"a/b\" isn.t a group or tool name")" 1
 t "tools: nonsense refused" "$(node "$root/hooks/tools.mjs" maybe | grep -c 'Not changed: didn.t understand')" 1

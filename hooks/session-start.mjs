@@ -3,6 +3,7 @@ import { execFileSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname } from 'node:path'
+import { offNote } from './tools.mjs'
 import { afterClearItems, hookInput, hostApp, hubAddress, hubNotesFile, loadConfig, notesProblem, pluginVersion, readHub, say, setHub } from './config.mjs'
 
 const setHubCmd = `node "${dirname(fileURLToPath(import.meta.url))}/set-hub.mjs"`
@@ -73,5 +74,6 @@ if (error) {
       'don\'t message any chat as the hub and don\'t guess one by its name.'
   }
   const mine = me ? ` This chat's session ID is ${me}.` : ''
-  say('SessionStart', `This project uses chat-hub-core ${pluginVersion()} (level ${c.level}). ${who}${mine}${guard}`)
+  const off = (t => t ? ' ' + t : '')(offNote())
+  say('SessionStart', `This project uses chat-hub-core ${pluginVersion()} (level ${c.level}). ${who}${mine}${guard}${off}`)
 }

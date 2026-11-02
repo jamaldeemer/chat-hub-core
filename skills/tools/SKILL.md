@@ -29,5 +29,7 @@ and host tools) always stay on.
 It writes deny rules in the project's `.claude/settings.local.json` (just
 the owner, never committed), which remove those tools from every chat,
 hub and work chats alike. New chats load the new set; an open chat drops
-or gets them when restarted. A work chat that needs a tool that's off
-(e.g. the Browser pane for a UI fix) asks the owner to turn it on.
+or gets them when restarted. A chat can't see an off tool, so its start
+note names what's off in one line; a chat that needs one (e.g. the
+Browser pane for a UI fix) asks the owner to type
+`/chat-hub-core:tools on <name>`.
