@@ -8,6 +8,8 @@
 //   node tools.mjs off artifacts ios        turn groups (or single tools) off
 //   node tools.mjs on browser SendUserFile  turn them back on
 //   "off unused": the rarely used extras; "on all": every group back on
+// Some groups are off by default (DEFAULT_OFF): the start and prompt hooks turn each one off once
+// per project, and record it, so a group the owner turns back on stays on.
 import { execFileSync } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { basename, dirname } from 'node:path'
@@ -44,6 +46,10 @@ export const GROUPS = {
   planmode: { label: 'plan mode', rules: ['EnterPlanMode', 'ExitPlanMode'], unused: true },
   worktrees: { label: 'switching worktrees', rules: ['EnterWorktree', 'ExitWorktree'], unused: true },
 }
+// Off by default in every project: the iOS simulator, Artifacts and the rarely used extras.
+// Never used in a scan of 48 chats; about 15k tokens a chat.
+export const DEFAULT_OFF = ['ios', 'artifacts', ...Object.keys(GROUPS).filter(g => GROUPS[g].unused)]
+
 // What chat-hub-core itself needs: never turned off.
 export const REQUIRED = ['Bash', 'Read', 'Edit', 'Write', 'Skill', 'ToolSearch', 'AskUserQuestion', 'SendMessage',
   'mcp__ccd_session_mgmt', 'mcp__ccd_session__start_session', 'mcp__ccd_turn', 'mcp__ccd_host']
@@ -66,6 +72,13 @@ export function projectRoot(dir = process.cwd()) {
 
 export const settingsFile = (dir = process.cwd()) => `${projectRoot(dir)}/.claude/settings.local.json`
 
+// Which default-off groups were already applied here: next to the hub record in git's shared
+// folder (every worktree sees it, never committed); in .claude/ without git.
+export function defaultsFile(dir = process.cwd()) {
+  const root = projectRoot(dir)
+  return existsSync(`${root}/.git`) ? `${root}/.git/chat-hub/tools.json` : `${root}/.claude/chat-hub-tools.json`
+}
+
 function readSettings(f) {
   if (!existsSync(f)) return {}
   const o = JSON.parse(readFileSync(f, 'utf8'))
@@ -84,6 +97,8 @@ function list(deny) {
   })
   const extra = deny.filter(r => toolName(r) && !known.has(r))
   if (extra.length) lines.push(`Also off: ${extra.join(', ')}`)
+  const n = g => Object.keys(GROUPS).indexOf(g) + 1
+  lines.push(`Off by default (turned on again only by you): ${DEFAULT_OFF.map(g => `${n(g)}. ${g}`).join(', ')}`)
   lines.push(`Always on (chat-hub-core needs them): ${REQUIRED.join(', ')}`)
   return lines.join('\n')
 }
@@ -105,6 +120,42 @@ export function offNote(dir = process.cwd()) {
   return names.length ? `Tools turned off in this project: ${names.join(', ')}. If you need one, ask the owner to type ` +
     '`/chat-hub-core:tools on <name>` (then restart this chat).' : ''
 }
+
+// Turn off each DEFAULT_OFF group not applied here yet, and record it, so it happens once: a
+// group the owner turned back on (or on before this ran: "on" records it too) stays on. Returns
+// the groups it turned off ([] when none, or when a file can't be read or written).
+export function applyDefaults(dir = process.cwd()) {
+  const rf = defaultsFile(dir)
+  let applied = []
+  try { if (existsSync(rf)) applied = JSON.parse(readFileSync(rf, 'utf8')).applied || [] } catch { return [] }
+  if (!Array.isArray(applied)) return []
+  const todo = DEFAULT_OFF.filter(g => !applied.includes(g))
+  if (!todo.length) return []
+  const f = settingsFile(dir)
+  let s
+  try { s = readSettings(f) } catch { return [] }
+  const deny = Array.isArray(s.permissions?.deny) ? s.permissions.deny : []
+  const turned = todo.filter(g => !isOff(deny, g))
+  const add = [...new Set(turned.flatMap(g => GROUPS[g].rules))].filter(r => !deny.includes(r))
+  try {
+    if (add.length) {
+      mkdirSync(dirname(f), { recursive: true })
+      writeFileSync(f, JSON.stringify({ ...s, permissions: { ...(s.permissions || {}), deny: [...deny, ...add] } }, null, 2) + '\n')
+    }
+    record(rf, [...applied, ...todo])
+  } catch { return [] }
+  return turned
+}
+
+function record(rf, applied) {
+  mkdirSync(dirname(rf), { recursive: true })
+  writeFileSync(rf, JSON.stringify({ applied: [...new Set(applied)] }, null, 2) + '\n')
+}
+
+// One line for a chat when applyDefaults turned groups off; '' when it didn't.
+export const defaultsNote = turned => turned.length ? `chat-hub-core turned these tool groups off by default for ` +
+  `this project's new chats: ${turned.join(', ')} (this chat still has them until restarted). The owner can turn ` +
+  'any back on with `/chat-hub-core:tools on <name>`.' : ''
 
 // Returns { ok, changed, text }. `dir` is the chat's folder.
 export function toolsCommand(args = '', dir = process.cwd()) {
@@ -137,6 +188,16 @@ export function toolsCommand(args = '', dir = process.cwd()) {
     return { ok: false, changed: false, text: `Not changed: chat-hub-core needs ${[...new Set(needed)].join(', ')}, so it stays on.` }
   }
 
+  if (mode === 'on') {
+    // A default-off group turned on (whole or in part) counts as applied: it stays on.
+    const on = DEFAULT_OFF.filter(g => GROUPS[g].rules.some(r => rules.includes(r)))
+    if (on.length) {
+      const rf = defaultsFile(dir)
+      let applied = []
+      try { if (existsSync(rf)) applied = JSON.parse(readFileSync(rf, 'utf8')).applied || [] } catch {}
+      try { if (on.some(g => !applied.includes(g))) record(rf, [...(Array.isArray(applied) ? applied : []), ...on]) } catch {}
+    }
+  }
   const next = mode === 'off' ? [...deny, ...[...new Set(rules)].filter(r => !deny.includes(r))] : deny.filter(r => !rules.includes(r))
   if (next.length === deny.length && next.every((r, i) => r === deny[i])) return { ok: true, changed: false, text: `Nothing to change. ${summary(deny)}` }
   const perms = { ...(s.permissions || {}), deny: next }

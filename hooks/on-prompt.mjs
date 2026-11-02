@@ -6,7 +6,7 @@ import { dirname } from 'node:path'
 import { HubTaken, hookInput, isHubChat, readConfig, readHub, say, setHub } from './config.mjs'
 import { trimNudge } from './usage.mjs'
 import { limitCommand } from './limit.mjs'
-import { toolsCommand } from './tools.mjs'
+import { applyDefaults, defaultsNote, toolsCommand } from './tools.mjs'
 import { versionCommand } from './version.mjs'
 import { rulesNotice } from './config.mjs'
 
@@ -28,6 +28,8 @@ if (lm && cfg) {
 // /chat-hub-core:tools [off|on <groups>]: which heavy tools chats load. Writes the project's
 // .claude/settings.local.json, which the chat's sandbox can't.
 const tm = prompt.match(/^\/chat-hub-core:tools\b(.*)$/s)
+// Default-off tool groups, once per project; here too so a project set up mid-chat gets them.
+const defaults = cfg ? defaultsNote(applyDefaults(input.cwd || process.cwd())) : ''
 if (tm && cfg) {
   limitNote = `chat-hub-core /tools: ${toolsCommand(tm[1], input.cwd || process.cwd()).text} This is already done: ` +
     'tell the owner exactly that in one short reply and do nothing else for it.'
@@ -45,7 +47,7 @@ if (!m && cfg) {
     limitNote += ' No WRAP UP note came with this prompt, so you are under the hub\'s limit: if you were wrapping ' +
       'up, stop and carry on as normal.'
   }
-  const out = [limitNote, rulesNotice({ session: input.session_id, isHub }), nudge].filter(Boolean).join(' ')
+  const out = [limitNote, defaults, rulesNotice({ session: input.session_id, isHub }), nudge].filter(Boolean).join(' ')
   if (out) say('UserPromptSubmit', out)
 }
 if (m && input.session_id && cfg) {
