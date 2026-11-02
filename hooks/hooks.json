@@ -59,6 +59,15 @@
             "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/run.mjs\" notes-check"
           }
         ]
+      },
+      {
+        "matcher": "mcp__ccd_session_mgmt__get_usage",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/run.mjs\" plan-usage"
+          }
+        ]
       }
     ]
   }

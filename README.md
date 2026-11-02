@@ -342,6 +342,17 @@ the hook checks the chat's transcript for a yes since its last commit
 something is wrong (a broken settings file, no hub, a hub it can't
 reach), chats stop and tell you rather than guess.
 
+**Weekly pace.** Under that line, the desktop app also shows how your plan
+usage is going, e.g. `Week 78% used · 57% of week gone · 21 ahead · runs out
+~Tue 5pm · 7%/day lasts the week · 5h 23%`. "21 ahead" means you've used 21
+points more than an even pace; "runs out" is when you'd hit 100% at this
+week's rate so far ("lasts the week" if you won't), and "%/day" is what you can
+spend each day and still reach the reset. Hooks can't read plan usage, so the
+numbers come from the app's `get_usage` tool: a hook saves each result any chat
+gets, and the hub is asked to call it once an hour (one small tool call, no
+extra turn). Numbers over an hour old show their age, e.g. `(2h old)`. Set
+`"pace": false` to hide it (`"stats": false` hides both lines).
+
 **Token use.** After every turn you see one line, e.g. `Context 182k ·
 312 turns · this chat ≈ 41M token-reads`, and the same line when a chat
 opens, before any message (a new or cleared chat shows the version and

@@ -3,6 +3,22 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## 0.3.43
+
+- **Weekly pace on the owner's line:** under the usage line after every
+  turn (and at chat start) the desktop app now shows how plan usage is
+  going, e.g. `Week 78% used · 57% of week gone · 21 ahead · runs out
+  ~Tue 5pm · 7%/day lasts the week · 5h 23%`: used minus elapsed, when
+  100% comes at the week's rate so far ("lasts the week" if never), and
+  the daily share that lasts to the reset. Hooks can't read plan usage
+  (it's only in the terminal statusline's input), so a new PostToolUse
+  hook (`hooks/plan-usage.mjs`) saves each `get_usage` result any chat
+  gets, and the hub's prompt hook asks it to call `get_usage` at most
+  once an hour (desktop app only; not while it's wrapping up). Numbers
+  over an hour old show their age; a reset week shows nothing until new
+  numbers come in. `"pace": false` hides it. Needs a restart of open
+  chats (new hook in `hooks.json`).
+
 ## 0.3.42
 
 - **The hub's limit is a hard stop:** past `trimAt` the hub only got a

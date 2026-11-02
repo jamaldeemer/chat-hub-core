@@ -180,6 +180,41 @@ t "start stats: new chat shows the version" "$(ss u9 "$tmp/none.jsonl" startup |
 t "start stats: resume shows the real numbers" "$(ss u1 "$tr" resume | grep -c "\"systemMessage\":\"chat-hub-core $ver · Context 200k · 3 turns · this chat ≈ 204k token-reads\"")" 1
 t "start stats: after a compact, no stale context" "$(ss u1 "$tr" compact | grep -c '"systemMessage":"[^"]*Context compacted · 3 turns')" 1
 t "start stats: Claude still gets the start note" "$(ss u9 "$tmp/none.jsonl" startup | grep -c 'additionalContext":"This project uses chat-hub-core')" 1
+# pace.mjs + plan-usage.mjs: the weekly pace line from saved get_usage numbers (times in UTC)
+export TZ=UTC
+pu() { printf '{"tool_name":"mcp__ccd_session_mgmt__get_usage","tool_response":[{"type":"text","text":"{\\"plan\\":{\\"status\\":\\"ok\\",\\"windows\\":[{\\"label\\":\\"5-hour limit\\",\\"percentUsed\\":23,\\"resetsAt\\":\\"%s\\"},{\\"label\\":\\"Weekly · all models\\",\\"percentUsed\\":%s,\\"resetsAt\\":\\"%s\\"},{\\"label\\":\\"Weekly · Fable\\",\\"percentUsed\\":0,\\"resetsAt\\":\\"%s\\"}]}}"}]}' "$1" "$2" "$3" "$3" | node "$root/hooks/plan-usage.mjs"; }
+pl() { node -e 'import(process.argv[1]).then(m=>console.log(m.paceLine(undefined,Date.parse(process.argv[2]))))' "$root/hooks/pace.mjs" "$1"; }
+pu 2099-01-01T00:00:00Z 78 2099-01-01T00:00:00Z
+t "pace: get_usage result saved" "$(grep -c '"week":{"used":78' "$TMPDIR/chat-hub-core/plan-usage.json")" 1
+t "pace: other tools ignored" "$(echo '{"tool_name":"Bash","tool_response":"{\"plan\":{\"status\":\"ok\",\"windows\":[]}}"}' | node "$root/hooks/plan-usage.mjs"; grep -c '"used":78' "$TMPDIR/chat-hub-core/plan-usage.json")" 1
+sv() { node -e 'import(process.argv[1]).then(m=>m.savePlan(JSON.parse(process.argv[2]),Date.parse(process.argv[3])))' "$root/hooks/pace.mjs" "$1" "$2"; }
+wk() { printf '{"status":"ok","windows":[{"label":"5-hour limit","percentUsed":23,"resetsAt":"2026-11-03T00:00:00Z"},{"label":"Weekly · all models","percentUsed":%s,"resetsAt":"2026-11-05T23:00:00Z"}]}' "$1"; }
+sv "$(wk 78)" 2026-11-02T22:30:00Z
+t "pace: ahead, run-out, per day, 5h" "$(pl 2026-11-02T22:40:00Z)" "Week 78% used · 57% of week gone · 21 ahead · runs out ~Wed 1am · 7%/day lasts the week · 5h 23%"
+t "pace: old numbers say their age" "$(pl 2026-11-03T00:40:00Z)" "Week 78% used · 57% of week gone · 21 ahead · runs out ~Wed 1am · 7%/day lasts the week (2h old)"
+t "pace: nothing once the week resets" "$(pl 2026-11-06T00:00:00Z)" ""
+sv "$(wk 40)" 2026-11-02T22:30:00Z
+t "pace: behind lasts the week" "$(pl 2026-11-02T22:40:00Z | grep -c '^Week 40% used · 57% of week gone · 17 behind · lasts the week · 19%/day')" 1
+sv "$(wk 100)" 2026-11-02T22:30:00Z
+t "pace: used up says when it resets" "$(pl 2026-11-02T22:40:00Z | grep -c 'used up till Thu 11pm')" 1
+sv '{"status":"not_applicable"}' 2026-11-02T22:30:00Z
+t "pace: no plan limits, no line" "$(pl 2026-11-02T22:40:00Z)" ""
+pu 2099-01-01T00:00:00Z 78 2099-01-01T00:00:00Z
+t "pace: under the after-turn line" "$(at u1 | grep -c '"systemMessage":"chat-hub-core [^"]*token-reads\\nWeek 78% used')" 1
+t "pace: at chat start too" "$(ss u1 "$tr" resume | grep -c 'token-reads\\nWeek 78% used')" 1
+echo '{"level":0,"pace":false}' > .claude/chat-hub.json
+t "pace: off when pace is false" "$(at u1 | grep -c 'Week ')" 0
+echo '{"level":0}' > .claude/chat-hub.json
+pn() { CLAUDE_CODE_HOST_SESSION_ID="$1" node -e 'import(process.argv[1]).then(m=>console.log(m.paceNudge(JSON.parse(process.argv[2]))?1:0))' "$root/hooks/pace.mjs" "$2"; }
+t "pace nudge: not while numbers are fresh" "$(pn local_x '{"level":0}')" 0
+rm -f "$TMPDIR/chat-hub-core/plan-usage.json"
+t "pace nudge: not outside the desktop app" "$(pn '' '{"level":0}')" 0
+t "pace nudge: not when pace is false" "$(pn local_x '{"level":0,"pace":false}')" 0
+t "pace nudge: asks when there are no numbers" "$(pn local_x '{"level":0}')" 1
+t "pace nudge: then not again within the hour" "$(pn local_x '{"level":0}')" 0
+t "pace nudge: hub only, in the prompt hook" "$(grep -c 'const pace = isHub && !nudge ? paceNudge(cfg)' "$root/hooks/on-prompt.mjs")" 1
+t "pace: hook wired to get_usage" "$(grep -c '"matcher": "mcp__ccd_session_mgmt__get_usage"' "$root/hooks/hooks.json")" 1
+rm -f "$TMPDIR/chat-hub-core/plan-usage.json"; unset TZ
 # titles.mjs: the after-turn title check reads the app's custom-title.json next to the transcript.
 ttl() { mkdir -p "$tmp/$1"; printf '{"customTitle":"%s"}' "$2" > "$tmp/$1/custom-title.json"; }
 atb() { printf '{"session_id":"%s","transcript_path":"%s","cwd":"%s","stop_hook_active":%s}' "$1" "$tr" "$(pwd)" "${2:-false}" | node "$root/hooks/after-turn.mjs"; }
