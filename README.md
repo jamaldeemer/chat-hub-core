@@ -186,7 +186,9 @@ claude plugin update chat-hub-core@chat-hub
 Open chats don't need a restart. Their hooks run through a small
 launcher (`hooks/run.mjs`) that always runs the version the project has
 installed now, and on its next prompt each chat is told to read its new
-rules. It's told to restart only when the update changes which hooks run.
+rules. All you see is one line from the app, "Updated" ("Updated:
+restart this chat" when the update changes which hooks run); the chat
+reads its new rules quietly and doesn't talk about it.
 (Chats started on 0.3.20 or earlier don't have the launcher yet: restart
 those once after moving to 0.3.21.) Run setup again if the CHANGELOG says
 to. Projects you don't update stay on the version they have. Each chat's

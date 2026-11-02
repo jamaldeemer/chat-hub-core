@@ -17,8 +17,10 @@ export function loadConfig(dir = process.cwd()) {
 }
 export const readConfig = (dir = process.cwd()) => loadConfig(dir).cfg
 
-export function say(event, text) {
-  process.stdout.write(JSON.stringify({ hookSpecificOutput: { hookEventName: event, additionalContext: text } }))
+// shown: a line the app shows the owner itself (systemMessage), apart from what the model gets.
+export function say(event, text, shown) {
+  process.stdout.write(JSON.stringify({ ...(shown && { systemMessage: shown }),
+    hookSpecificOutput: { hookEventName: event, additionalContext: text } }))
 }
 
 // What Claude Code passes on stdin (session_id, prompt, ...). Empty object when there's none.
@@ -179,25 +181,30 @@ export function pluginVersion(root = PLUGIN_ROOT) {
 // holds the rules it loaded at start. CHAT_HUB_LOADED_ROOT (set by the launcher) is the version
 // the chat started with; when it isn't this one, tell the chat once per version to read the new
 // rules file, and to restart only if the hooks list (hooks.json) changed. Each chat's last
-// notice is kept in git's shared folder (rules/<session>). No git or no launcher: quiet.
+// notice is kept in git's shared folder (rules/<session>). No git or no launcher: null.
+// Returns { text, shown }: text is for the model only; shown is the one line the app shows the
+// owner ("Updated"), so the model must not talk about the update itself.
 export function rulesNotice({ session, isHub }) {
   try {
     const loaded = process.env.CHAT_HUB_LOADED_ROOT
     const f = sharedHubFile()
-    if (!loaded || !session || !f || loaded === PLUGIN_ROOT) return ''
+    if (!loaded || !session || !f || loaded === PLUGIN_ROOT) return null
     const now = pluginVersion(), dir = f.replace(/\/hub$/, '/rules'), rec = `${dir}/${session.replace(/[^\w.-]/g, '_')}`
-    if (pluginVersion(loaded) === now || (existsSync(rec) && readFileSync(rec, 'utf8').trim() === now)) return ''
+    if (pluginVersion(loaded) === now || (existsSync(rec) && readFileSync(rec, 'utf8').trim() === now)) return null
     mkdirSync(dir, { recursive: true })
     writeFileSync(rec, now + '\n')
     const read = p => { try { return readFileSync(p, 'utf8') } catch { return null } }
     const restart = read(`${loaded}/hooks/hooks.json`) !== read(`${PLUGIN_ROOT}/hooks/hooks.json`)
     const skill = isHub ? 'hub' : 'work-chat'
-    return `chat-hub-core was updated to ${now} (this chat started on ${pluginVersion(loaded)}). Before anything else, ` +
+    const shown = restart ? 'Updated: restart this chat' : 'Updated'
+    const text = `chat-hub-core was updated to ${now} (this chat started on ${pluginVersion(loaded)}). Before anything else, ` +
       `read ${PLUGIN_ROOT}/skills/${skill}/SKILL.md in full with the Read tool: it replaces the ${skill} rules you loaded ` +
-      '(loading the skill again may give the old copy). Then carry on.' +
-      (restart ? ' This update also changes when hooks run, which only takes effect after a restart: restart this chat at ' +
-        'your next stopping point (terminal: exit, then `claude --continue`; desktop app: quit and reopen the app).' : '')
-  } catch { return '' }
+      '(loading the skill again may give the old copy). Then carry on with the prompt. The app already showed the owner ' +
+      `"${shown}", so say nothing about the update, the version or the new rules: no line, no summary.` +
+      (restart ? ' This update also changes when hooks run, which only takes effect after a restart; the owner was told ' +
+        'to restart this chat (terminal: exit, then `claude --continue`; desktop app: quit and reopen the app).' : '')
+    return { text, shown }
+  } catch { return null }
 }
 
 // Hub notes are one current snapshot in fixed sections, not a diary. These are the allowed

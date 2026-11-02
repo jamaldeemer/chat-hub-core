@@ -390,11 +390,13 @@ t "launcher: --plugin-dir copy keeps its own" "$(lr "$root" session-start s1 | g
 t "launcher: unknown hook name is quiet" "$(lr "$cache/1.0.0" '../x' s1 | wc -c | tr -d ' ')" 0
 t "reload: hub told to read the new hub rules" "$(lr "$cache/1.0.0" on-prompt h1 | grep -c "updated to 2.0.0 (this chat started on 1.0.0).*read .*/2.0.0/skills/hub/SKILL.md")" 1
 t "reload: work chat told to read work-chat rules" "$(lr "$cache/1.0.0" on-prompt w1 | grep -c "read .*/2.0.0/skills/work-chat/SKILL.md")" 1
+t "reload: owner shown just Updated" "$(lr "$cache/1.0.0" on-prompt w5 | grep -c '^{"systemMessage":"Updated",')" 1
+t "reload: model told to say nothing about it" "$(lr "$cache/1.0.0" on-prompt w6 | grep -c 'say nothing about the update')" 1
 t "reload: told once" "$(lr "$cache/1.0.0" on-prompt w1 | wc -c | tr -d ' ')" 0
 t "reload: no restart when hooks.json is the same" "$(lr "$cache/1.0.0" on-prompt w2 | grep -c 'restart')" 0
 t "reload: chat on the installed version not told" "$(lr "$cache/2.0.0" on-prompt w3 | wc -c | tr -d ' ')" 0
 echo '{"hooks":{}}' > "$cache/2.0.0/hooks/hooks.json"
-t "reload: restart when hooks.json changed" "$(lr "$cache/1.0.0" on-prompt w4 | grep -c 'restart this chat at your next stopping point')" 1
+t "reload: restart when hooks.json changed" "$(lr "$cache/1.0.0" on-prompt w4 | grep -c '"systemMessage":"Updated: restart this chat".*the owner was told to restart this chat')" 1
 t "reload: hooks run directly are quiet" "$(cd "$vd" && CHAT_HUB_PLUGINS_FILE="$pf" node "$cache/2.0.0/hooks/on-prompt.mjs" < "$tmp/lr.json" | wc -c | tr -d ' ')" 0
 nd=$(mktemp -d "${TMPDIR:-/tmp}/chat-hub-nogit.XXXXXX"); mkdir "$nd/.claude"; echo '{"level":0,"hubSession":"h1"}' > "$nd/.claude/chat-hub.json"
 t "reload: no git, quiet" "$(cd "$nd" && CHAT_HUB_PLUGINS_FILE="$pf" CHAT_HUB_LOADED_ROOT="$cache/1.0.0" node "$cache/2.0.0/hooks/on-prompt.mjs" < "$tmp/lr.json" | wc -c | tr -d ' ')" 0

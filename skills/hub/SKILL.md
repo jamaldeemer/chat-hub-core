@@ -300,7 +300,8 @@ which chats just became ✅ and why the others can't close yet.
 Open chats pick up a new version on their own: their hooks run the
 newly installed version, and on its next prompt each chat (you too) is
 told to read its new rules file, and to restart only if the update
-needs it. Don't message the chats about it. When the owner asks how to
+needs it. The app shows the owner "Updated" in each chat; say nothing
+about the update yourself. Don't message the chats about it. When the owner asks how to
 update, give them `sh ~/.claude/plugins/marketplaces/chat-hub/scripts/update-all.sh`
 (every project at once; they run it, your sandbox can't).
 
