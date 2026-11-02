@@ -213,13 +213,13 @@ echo '{"level":0,"trimAt":150000}' > .claude/chat-hub.json
 node "$root/hooks/set-hub.mjs" --session u1 --replace >/dev/null
 op() { printf '{"session_id":"%s","prompt":"hi","cwd":"%s"}' "$1" "$(pwd)" | node "$root/hooks/on-prompt.mjs"; }
 pt() { j=$(node -e 'process.stdout.write(JSON.stringify({session_id:process.argv[1],cwd:process.argv[2],tool_name:process.argv[3],tool_input:JSON.parse(process.argv[4])}))' "$1" "$(pwd)" "$2" "$3"); printf "%s" "$j" | node "$root/hooks/guard.mjs"; }
-# trim: one level at trimAt; the hub wraps up (no new work, finish what's in flight, notes, then ask to be cleared)
-t "wrap up: hub past trimAt" "$(op u1 | grep -c 'WRAP UP.*past its limit of 150k.*no new work.*## Next.*in flight.*wrapping up.*notes saved. Type /clear in this chat.*Never ask the owner about clearing.*no ask or actions')" 1
+asst m4 0 160000; at u1 >/dev/null
+# trim: at trimAt the hub wraps up (no new work, finish what's in flight, notes, then the SAFE TO CLEAR banner)
+t "wrap up: hub past trimAt" "$(op u1 | grep -c 'WRAP UP.*past its limit of 150k.*no new work.*## Next.*in flight.*plain line .*wrapping up.*notes up to date.*SAFE TO CLEAR: type /clear.*Never ask the owner about clearing.*no ask or actions')" 1
+t "wrap up: says when the hard stop comes" "$(op u1 | grep -c 'At 170k tokens the hooks refuse every tool but your notes')" 1
+t "wrap up: says how the owner lifts it" "$(op u1 | grep -c 'Only the owner can lift this: they type /chat-hub-core:limit <a higher limit.*/chat-hub-core:limit off')" 1
 t "wrap up: on every prompt" "$(op u1 | grep -c 'WRAP UP')" 1
-asst m4 0 226000; at u1 >/dev/null
-t "wrap up: no other levels further on" "$(op u1 | grep -c 'LAST WARNING\|HARD STOP')" 0
-t "wrap up: tools never refused" "$(pt u1 mcp__x__send_message '{}' | grep -c '"deny"')" 0
-t "wrap up: Bash never refused" "$(pt u1 Bash '{"command":"npm test"}' | grep -c '"deny"')" 0
+t "wrap up: no hard stop yet" "$(op u1 | grep -c 'HARD STOP')" 0
 asst m6 0 50000; at u1 >/dev/null; op u1 >/dev/null
 t "wrap up: quiet after a clear" "$(op u1 | wc -c | tr -d ' ')" 0
 asst m7 0 151000; at u1 >/dev/null
@@ -244,8 +244,71 @@ asst m13 0 151000; at u2 >/dev/null
 t "trim: work chats not by default" "$(op u2 | wc -c | tr -d ' ')" 0
 echo '{"level":0,"trimAt":150000,"trimAtWork":100000}' > .claude/chat-hub.json
 t "trim: work chats with trimAtWork" "$(op u2 | grep -c 'natural stopping point')" 1
-# /chat-hub-core:limit: changes the limits from the next prompt, for every worktree, never in the settings
+t "trim: work chats show a plain line, then the banner" "$(op u2 | grep -c 'plain line .*This chat is at 151k tokens: wrapping up.*SAFE TO CLEAR: type /clear')" 1
+t "trim: work chats never refused" "$(pt u2 mcp__ccd_session__start_session '{}' | grep -c '"deny"')" 0
+# Hard stops for the hub: stage 1 at the limit (no new work), stage 2 at limit + hardStopAfter (notes only).
+echo '{"level":1,"trimAt":150000,"done":["tests pass"]}' > .claude/chat-hub.json
+node "$root/hooks/set-hub.mjs" --session u1 --replace >/dev/null
+notes="$(pwd)/.git/chat-hub/hub-notes.md"
 lp() { printf '{"session_id":"%s","prompt":"/chat-hub-core:limit %s","cwd":"%s"}' "$1" "$2" "$(pwd)" | node "$root/hooks/on-prompt.mjs"; }
+den() { pt "$@" | grep -c '"permissionDecision":"deny"'; }
+asst m20 0 151000; at u1 >/dev/null
+t "stage 1: new chat refused" "$(den u1 mcp__ccd_session__start_session '{"title":"x"}')" 1
+t "stage 1: refusal says no new chats" "$(pt u1 mcp__ccd_session__start_session '{}' | grep -c 'past its limit of 150k, so no new work: no new chats.*After clear:')" 1
+t "stage 1: refusal names the override" "$(pt u1 mcp__ccd_session__start_session '{}' | grep -c 'owner can lift this: they type /chat-hub-core:limit')" 1
+t "stage 1: new tag refused" "$(den u1 Bash '{"command":"git tag v0.3.42 release"}')" 1
+t "stage 1: annotated tag refused" "$(den u1 Bash '{"command":"git -C /x tag -a v1 -m hi"}')" 1
+t "stage 1: listing tags allowed" "$(den u1 Bash '{"command":"git tag -l | tail -3"}')" 0
+t "stage 1: bare git tag allowed" "$(den u1 Bash '{"command":"git tag"}')" 0
+t "stage 1: release commit refused" "$(den u1 Bash '{"command":"git commit -m \"Release 0.3.42 (R31): x\""}')" 1
+t "stage 1: release branch reset refused" "$(den u1 Bash '{"command":"git checkout -B release main"}')" 1
+t "stage 1: release branch via switch refused" "$(den u1 Bash '{"command":"git switch -C release origin/main"}')" 1
+t "stage 1: release branch via branch -f refused" "$(den u1 Bash '{"command":"git branch -f release main"}')" 1
+t "stage 1: checking out release allowed" "$(den u1 Bash '{"command":"git checkout release"}')" 0
+t "stage 1: close-chat allowed" "$(den u1 Bash '{"command":"node /p/hooks/close-chat.mjs /wt/a"}')" 0
+t "stage 1: merge allowed" "$(den u1 Bash '{"command":"git merge --no-ff claude/x"}')" 0
+t "stage 1: merge commit allowed" "$(den u1 Bash '{"command":"git commit -m \"Merge branch x into release\""}')" 0
+t "stage 1: messages allowed" "$(den u1 mcp__ccd_session_mgmt__send_message '{}')" 0
+t "stage 1: titles allowed" "$(den u1 mcp__ccd_session_mgmt__set_session_title '{}')" 0
+t "stage 1: reads allowed" "$(den u1 Read '{"file_path":"x"}')" 0
+t "stage 1: reading the settings allowed" "$(den u1 Bash '{"command":"cat .claude/chat-hub.json"}')" 0
+t "stage 1: hub can't change the limit itself" "$(den u1 Bash '{"command":"node /p/hooks/limit.mjs off"}')" 1
+t "stage 1: nor rewrite limits.json" "$(den u1 Bash '{"command":"echo {} > .git/chat-hub/limits.json"}')" 1
+t "stage 1: nor edit the settings" "$(den u1 Edit '{"file_path":".claude/chat-hub.json"}')" 1
+t "stage 1: nor sed the settings" "$(den u1 Bash '{"command":"sed -i \"\" s/150000/300000/ .claude/chat-hub.json"}')" 1
+t "stage 1: nor hand the hub away" "$(den u1 Bash '{"command":"node /p/hooks/set-hub.mjs --session zz --replace"}')" 1
+t "stage 1: nor reset its usage counts" "$(den u1 Bash '{"command":"rm $TMPDIR/chat-hub-core/u1.json"}')" 1
+t "stage 1: work chats still free" "$(den u2 mcp__ccd_session__start_session '{}')" 0
+asst m21 0 171000; at u1 >/dev/null
+t "stage 2: prompt note is the hard stop" "$(op u1 | grep -c 'HARD STOP.*171k.*except reading and writing your hub notes.*SAFE TO CLEAR: type /clear.*/chat-hub-core:limit')" 1
+t "stage 2: prompt note names the notes file" "$(op u1 | grep -c "$notes")" 1
+t "stage 2: Bash refused" "$(den u1 Bash '{"command":"ls"}')" 1
+t "stage 2: close-chat refused" "$(den u1 Bash '{"command":"node /p/hooks/close-chat.mjs /wt/a"}')" 1
+t "stage 2: messages refused" "$(den u1 mcp__ccd_session_mgmt__send_message '{}')" 1
+t "stage 2: other files refused" "$(den u1 Read '{"file_path":"README.md"}')" 1
+t "stage 2: refusal shows the banner and override" "$(pt u1 Bash '{"command":"ls"}' | grep -c 'HARD STOP.*SAFE TO CLEAR: type /clear.*/chat-hub-core:limit off')" 1
+t "stage 2: reading the notes allowed" "$(den u1 Read "{\"file_path\":\"$notes\"}")" 0
+t "stage 2: editing the notes allowed" "$(den u1 Edit "{\"file_path\":\"$notes\"}")" 0
+t "stage 2: writing the notes allowed" "$(den u1 Write "{\"file_path\":\"$notes\"}")" 0
+t "stage 2: wrap-up box allowed" "$(den u1 mcp__ccd_turn__wrap_up '{}')" 0
+echo '{"level":1,"trimAt":150000,"hardStopAfter":40000,"done":["tests pass"]}' > .claude/chat-hub.json
+t "hardStopAfter moves stage 2" "$(den u1 Bash '{"command":"ls"}')" 0
+t "hardStopAfter: still stage 1" "$(den u1 Bash '{"command":"git tag v9"}')" 1
+t "hardStopAfter: shown by /limit" "$(node "$root/hooks/limit.mjs" | grep -c 'at 190k (40k more, hardStopAfter)')" 1
+echo '{"level":1,"trimAt":150000,"done":["tests pass"]}' > .claude/chat-hub.json
+t "override: /limit 300k lifts both stages" "$(lp u1 300k | grep -c 'Saved.*stop and carry on as normal'); $(den u1 Bash '{"command":"ls"}'); $(den u1 mcp__ccd_session__start_session '{}')" "1; 0; 0"
+t "override: /limit off lifts them too" "$(lp u1 off >/dev/null; den u1 Bash '{"command":"git tag v9"}')" 0
+t "override: /limit 160k is stage 1 again" "$(lp u1 160k >/dev/null; den u1 Bash '{"command":"ls"}'); $(den u1 Bash '{"command":"git tag v9"}')" "0; 1"
+node "$root/hooks/limit.mjs" default >/dev/null
+asst m22 0 50000; at u1 >/dev/null
+t "after a clear: nothing refused" "$(den u1 mcp__ccd_session__start_session '{}')" 0
+# The guard reads the transcript itself, so a long turn is stopped mid-turn, before the after-turn hook.
+asst m23 0 175000
+ptt() { j=$(node -e 'process.stdout.write(JSON.stringify({session_id:process.argv[1],cwd:process.argv[2],transcript_path:process.argv[3],tool_name:"Bash",tool_input:{command:"ls"}}))' "$1" "$(pwd)" "$tr"); printf "%s" "$j" | node "$root/hooks/guard.mjs"; }
+t "mid-turn: guard sees the new context" "$(ptt u1 | grep -c 'HARD STOP')" 1
+asst m24 0 136000; at u1 >/dev/null
+echo '{"level":0,"trimAt":150000,"trimAtWork":100000}' > .claude/chat-hub.json
+# /chat-hub-core:limit: changes the limits from the next prompt, for every worktree, never in the settings
 t "limit: shows both limits" "$(node "$root/hooks/limit.mjs" | grep -c 'hub wraps up at 150k (from .claude/chat-hub.json); work chats are asked to stop at 100k')" 1
 t "limit: hub limit set from the prompt" "$(lp u1 200k | grep -c 'Saved.*hub wraps up at 200k (set with /chat-hub-core:limit).*already done')" 1
 t "limit: hub under the new limit is told to stop wrapping up" "$(lp u1 200k | grep -c 'stop and carry on as normal')" 1

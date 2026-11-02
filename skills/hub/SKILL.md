@@ -106,19 +106,28 @@ turns × context size, and it's usually most of a project's usage.
 - **When a "⚠️ WRAP UP" note says you're past your limit** (`trimAt`,
   default 135k, or what the owner set with `/chat-hub-core:limit`; if a
   new limit puts you back under it, stop wrapping up), wrap up, so a clear never lands in the middle of a step:
-  - **No new work:** no new chats or releases. Anything new the
+  - **No new work:** no new chats or releases; the guard hook now
+    refuses both (the app's start-session tool, a new tag, a `Release`
+    commit, making or resetting the release branch). Anything new the
     owner or a chat asks for goes under "## Next" in your notes as a
     line starting `- After clear:` (the start note quotes those lines
     back to you after the clear); say it's noted for after the clear.
-  - **Finish what's in flight:** a merge or release you've started
-    (through its tests and commit), closing every chat whose wrap-up
+  - **Finish what's in flight:** a merge you've started (through its
+    tests and commit), closing every chat whose wrap-up
     report is in (`close-chat.mjs`, then ✅; never leave one at ⏳ for
     after the clear), title changes you owe, replies to messages chats
     have sent you, messages you said you'd send.
-  - **Then** bring your notes up to date and start every reply until
-    you're cleared with the line the note gives you, which tells the
-    owner to type `/clear` in this chat. Never carry on past it as if it
-    weren't there.
+  - **While that's going on,** start each reply with the plain
+    "⚠️ Hub at …: wrapping up." line. **Then** bring your notes up to
+    date and start every reply until you're cleared with the boxed
+    "SAFE TO CLEAR: type /clear" banner the note gives you, in a code
+    block. Never carry on past it as if it weren't there.
+  - **Hard stop:** `hardStopAfter` (default 20k) past the limit, the
+    hook refuses every tool except Read, Edit and Write on your notes.
+    Bring them up to date and show the banner; nothing else is left.
+  - **Only the owner lifts a stop**, with `/chat-hub-core:limit <higher>`
+    or `off`. Never change the limit, the settings, the hub record or
+    the usage counts yourself; the hook refuses those too.
   - **Never ask about clearing:** no question, menu or buttons ("Clear
     the hub now?", "Cleared it"). A button only sends words back; it
     can't clear a chat, and once the chat is cleared nothing is left to
