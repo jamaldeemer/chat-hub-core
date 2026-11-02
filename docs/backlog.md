@@ -193,8 +193,10 @@ Findings 1–3 shipped in 0.3.4. Still open:
 - A fresh clone or another computer gets "plugin not found": settings turn
   the plugin on but don't add the marketplace. Setup could add the
   marketplace entry (unpinned) to the project's settings too.
-- The hub is told to "run the done checks", but `done` items are sentences
-  ("docs updated"), not commands. Allow an optional command per item.
+- ~~The hub is told to "run the done checks", but `done` items are sentences
+  ("docs updated"), not commands. Allow an optional command per item.~~
+  Done in 0.3.41: close-chat runs commands in backticks in `done` when
+  `checks` is missing.
 
 ## Versions and updating
 
@@ -231,6 +233,13 @@ Findings 1–3 shipped in 0.3.4. Still open:
 
 - tests/run.sh: "commit reminder: done" fails on main too (seen by A2 while adding trimEvery).
 - tests/run.sh: older tests pipe JSON into hooks (`echo … | node hook`); in C5 that sometimes reached the hook empty. Feed input from a file (`node hook < file`) like the notes-check tests do (C5).
+
+## From 30-C5 (close-chat in the hub's folder, 2026-11-01)
+
+- `tests/run.sh` "shared hub: seen from another worktree" fails inside a
+  chat's sandbox (`git worktree add ../wt2` is refused, so `../wt2` is
+  never made); it fails on 0.3.39 too. Make the test skip or use a
+  writable folder.
 
 ## Found while building C3 (2026-11-01)
 
