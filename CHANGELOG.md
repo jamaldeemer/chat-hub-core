@@ -3,7 +3,7 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
-## Unreleased
+## 0.3.36
 
 - **`/chat-hub-core:version` shows the version:** type it in any chat of
   any project to see which chat-hub-core version that project runs
