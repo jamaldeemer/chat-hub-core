@@ -3,7 +3,7 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
-## Unreleased
+## 0.3.38
 
 - **An update shows just "Updated":** after a plugin update, each open
   chat used to tell the owner about it in its own words. The prompt hook
