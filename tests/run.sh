@@ -54,6 +54,8 @@ t "app address: cleared hub not asked to look itself up" "$(ssa local_A s7 | gre
 t "app address: cleared hub's new session ID recorded" "$(grep -c '"session":"s7","app":"local_A"' .git/chat-hub/hub)" 1
 t "app address: work chat told so outright" "$(ssa local_Z s6 | grep -c 'This chat is a work chat (its app address is local_Z; the hub is local_A).*only ever message local_A')" 1
 t "app address: work chat not told to read the notes" "$(ssa local_Z s6 | grep -c 'hub-notes.md')" 0
+t "app address: cleared hub told to recount and prune" "$(ssa local_A s7 | grep -c 'drop chats the owner deleted from your notes and fix your title')" 1
+t "app address: work chat not told to recount" "$(ssa local_Z s6 | grep -c 'owner deleted')" 0
 printf '## Me\nx\n## Next\n- code E10 next\n- After clear: close E8 (report in)\n- after the clear: tell E7 to merge main\n## Plans\n- After clear: not this one\n' > .git/chat-hub/hub-notes.md
 t "after clear: start note quotes the Next items" "$(ssa local_A s7 | grep -c 'put off until after the clear; do it first.*close E8 (report in).*tell E7 to merge main')" 1
 t "after clear: only from ## Next" "$(ssa local_A s7 | grep -c 'not this one')" 0
@@ -477,7 +479,11 @@ t "close: hub sets ✅ with the READY" "$(grep -c 'right after that READY, in on
 t "close: setup has checks" "$(grep -c '"checks": ""' "$root/skills/setup/SKILL.md")" 1
 t "hub title: open count in parentheses" "$(grep -c "the \*\*open count\*\* in parentheses" "$root/skills/hub/SKILL.md")" 1
 t "hub title: talk and ✅ chats not counted" "$(grep -c "Talk chats (no release tag), ✅ chats" "$root/skills/hub/SKILL.md")" 1
-t "hub title: count only with other title changes" "$(grep -c "never retitle yourself just" "$root/skills/hub/SKILL.md")" 1
+t "hub title: count set with other title changes" "$(grep -c "set it in the same batch of title" "$root/skills/hub/SKILL.md")" 1
+t "hub title: recount on every wake" "$(grep -c "recount on every wake" "$root/skills/hub/SKILL.md")" 1
+t "hub title: retitle only when the count is wrong" "$(grep -c "retitle yourself only if your" "$root/skills/hub/SKILL.md")" 1
+t "hub notes: deleted chats dropped by session id" "$(grep -c "match on session id, never title" "$root/skills/hub/SKILL.md")" 1
+t "hub notes: unmerged deleted chat told once" "$(grep -c "tell the owner once (code, branch)" "$root/skills/hub/SKILL.md")" 1
 t "release tag: hub writes small-caps ʀ" "$(grep -c 'small-caps `ʀ` (U+0280), never a plain `R`' "$root/skills/hub/SKILL.md")" 1
 t "release tag: digits and kind stay plain" "$(grep -c 'the digits and `~`/`+`$' "$root/skills/hub/SKILL.md")" 1
 t "release tag: old plain-R titles still count" "$(grep -c 'old plain-`R` tag (`R07`, `(R7)`)' "$root/skills/hub/SKILL.md")" 1
