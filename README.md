@@ -349,6 +349,38 @@ so every worktree sees it and it's never committed; it wins over `trimAt`
 and `trimAtWork` in `.claude/chat-hub.json`. Raise the hub's limit while
 it's wrapping up and it carries on as normal.
 
+**Set the limit well above the hub's base.** A fresh hub already holds
+its tools, skills list, CLAUDE.md and its own rules before you say
+anything: about 88k tokens on one large project. Measure yours (the stats
+line after the hub's first turn) and keep `trimAt` comfortably above it,
+or the hub wraps up almost as soon as it starts.
+
+**Turning off tools a project doesn't use.** Every tool a chat has costs
+context on every turn, the hub's most of all, and most chats never touch
+the Browser pane, the iOS simulator or Artifacts. Setup asks which to turn
+off; change it any time with `/chat-hub-core:tools`:
+
+| Command | Does |
+|---|---|
+| `/chat-hub-core:tools` | shows which groups are off and on |
+| `/chat-hub-core:tools off browser ios` | turns groups off (`off unused`: all of them) |
+| `/chat-hub-core:tools on browser` | turns them back on (`on all`: all of them) |
+
+Groups: `browser` (Browser pane, about 7k tokens; keep for a web UI),
+`chrome` (Claude in Chrome), `ios` (iOS simulator, about 2k; keep for an
+iOS app), `charts` (inline charts and diagrams), `artifacts` (published
+pages, about 12k), `workflows` (multi-agent scripts), `suggestions`
+(plugin and skill suggestions). It writes deny rules into the project's
+`.claude/settings.local.json` (just you, never committed): a denied tool
+is removed from the chat entirely, not just blocked. In the desktop app,
+worktree chats read the main checkout's settings, so the hub and work
+chats always get the same set. New chats load it; restart an open chat
+to drop or get them. Tools you never use anywhere can go in your own
+`~/.claude/settings.json` the same way (`"permissions": {"deny":
+["mcp__visualize"]}`), and plugins you don't use in a project can be
+turned off there with `"enabledPlugins": {"<plugin>": false}`, which also
+shortens the skills list every chat carries.
+
 **Hub notes.** The hub keeps one current snapshot of its notes under fixed
 headings, edited in place. If they gain other `## ` headings (dated or
 "checkpoint" blocks) or pass `notesMaxBytes` (default 6000; 0 = off), a

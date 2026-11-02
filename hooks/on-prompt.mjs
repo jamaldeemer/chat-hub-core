@@ -6,6 +6,7 @@ import { dirname } from 'node:path'
 import { HubTaken, hookInput, isHubChat, readConfig, readHub, say, setHub } from './config.mjs'
 import { trimNudge } from './usage.mjs'
 import { limitCommand } from './limit.mjs'
+import { toolsCommand } from './tools.mjs'
 import { rulesNotice } from './config.mjs'
 
 const setHubCmd = `node "${dirname(fileURLToPath(import.meta.url))}/set-hub.mjs"`
@@ -22,6 +23,13 @@ if (lm && cfg) {
   limitChanged = r.changed
   limitNote = `chat-hub-core /limit: ${r.text} This is already done: tell the owner exactly that in one short ` +
     'reply and do nothing else for it.'
+}
+// /chat-hub-core:tools [off|on <groups>]: which heavy tools chats load. Writes the project's
+// .claude/settings.local.json, which the chat's sandbox can't.
+const tm = prompt.match(/^\/chat-hub-core:tools\b(.*)$/s)
+if (tm && cfg) {
+  limitNote = `chat-hub-core /tools: ${toolsCommand(tm[1], input.cwd || process.cwd()).text} This is already done: ` +
+    'tell the owner exactly that in one short reply and do nothing else for it.'
 }
 if (!m && cfg) {
   const isHub = isHubChat(readHub(cfg), input.session_id)

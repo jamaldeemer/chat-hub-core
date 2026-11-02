@@ -225,6 +225,23 @@ t "limit: default goes back to the settings" "$(node "$root/hooks/limit.mjs" def
 ln -s "$root" "$tmp/linked-root"
 t "limit: runs when reached through a symlinked path" "$(node "$tmp/linked-root/hooks/limit.mjs" | grep -c 'hub wraps up at 150k')" 1
 rm "$tmp/linked-root"
+# /chat-hub-core:tools: deny rules in the main checkout's settings.local.json, owner's own rules kept
+tl() { printf '{"session_id":"u1","prompt":"/chat-hub-core:tools %s","cwd":"%s"}' "$1" "$(pwd)" | node "$root/hooks/on-prompt.mjs"; }
+printf '{"permissions":{"allow":["Bash(ls)"],"deny":["WebFetch"]},"model":"x"}\n' > .claude/settings.local.json
+t "tools: shows all on" "$(node "$root/hooks/tools.mjs" | grep -c 'Tools off: none; on: browser, chrome, ios')" 1
+t "tools: off from the prompt" "$(tl 'off browser ios' | grep -c '/tools: Saved.*off: browser, ios.*already done')" 1
+t "tools: server rules written" "$(grep -c '"mcp__Claude_Browser"\|"mcp__Claude_Code_iOS_Simulator"' .claude/settings.local.json)" 2
+t "tools: owner's own settings kept" "$(grep -c '"WebFetch"\|"Bash(ls)"\|"model"' .claude/settings.local.json)" 3
+t "tools: seen from another worktree" "$(git -c user.email=a@b -c user.name=t worktree add -q ../wt5 2>/dev/null; cd ../wt5 && node "$root/hooks/tools.mjs" off charts >/dev/null; cd - >/dev/null; git worktree remove --force ../wt5; grep -c '"mcp__visualize"' .claude/settings.local.json)" 1
+t "tools: nothing to change" "$(node "$root/hooks/tools.mjs" off ios | grep -c 'Nothing to change')" 1
+t "tools: on removes only ours" "$(node "$root/hooks/tools.mjs" on all >/dev/null; grep -c 'mcp__' .claude/settings.local.json; grep -c '"WebFetch"' .claude/settings.local.json)" "0
+1"
+t "tools: off unused turns off every group" "$(node "$root/hooks/tools.mjs" off unused | grep -c 'on: none')" 1
+t "tools: unknown group refused" "$(node "$root/hooks/tools.mjs" off printer | grep -c 'Not changed: no group called "printer"')" 1
+t "tools: nonsense refused" "$(node "$root/hooks/tools.mjs" maybe | grep -c 'Not changed: didn.t understand')" 1
+rm .claude/settings.local.json
+t "tools: no settings file yet, created" "$(node "$root/hooks/tools.mjs" off workflows >/dev/null; grep -c '"Workflow"' .claude/settings.local.json)" 1
+rm .claude/settings.local.json
 rm -rf .git/chat-hub; export TMPDIR="$oldtmp"
 echo '{"level":0,"done":["tests pass"]}' > .claude/chat-hub.json
 mkdir .githooks && touch .githooks/pre-push; echo '{"level":1}' > .claude/chat-hub.json

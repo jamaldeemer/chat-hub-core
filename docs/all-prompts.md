@@ -40,7 +40,7 @@ owner's own edits in files you touch.
 
 Suggest the highest level the project supports and seems to want.
 
-## 3. Ask (AskUserQuestion, one batch, 2–5 questions)
+## 3. Ask (AskUserQuestion, 2–5 questions; a menu holds 4, so a fifth goes in a second one)
 
 Only what you couldn't tell. Usually:
 
@@ -59,6 +59,14 @@ Only what you couldn't tell. Usually:
 4. Level 2: the command that asks CI whether a commit passed. It must
    print `1` (passed) or `0` (not passed), and fail or print nothing when it
    can't ask CI (never `0` on an error). Propose one from what you found.
+
+5. Tools the chats can turn off (multiSelect; every tool costs context
+   on every turn, the hub's most of all). Four options, marking
+   Recommended the ones this project shows no use for: "Browser"
+   (`browser chrome`; keep for a web UI), "iOS simulator" (`ios`; keep
+   for an iOS app), "Charts and artifacts" (`charts artifacts`),
+   "Workflows and suggestions" (`workflows suggestions`). Skip it on a
+   re-run unless the owner asks; `/chat-hub-core:tools` changes it later.
 
 Don't ask how chats start: `startMode` defaults to "ask" (the hub asks
 before each chat). Set "plan", "build" or "wait" (just open the chat
@@ -94,6 +102,12 @@ to `.githooks/pre-push` (executable) and run
 start-of-chat hook sets it in every checkout. If the project already has a
 hooks folder with its own pre-push, save ours there as `chat-hub-pre-push`
 and add a line to theirs that runs it.
+
+**Tools** the owner picked to turn off: run `node
+"${CLAUDE_PLUGIN_ROOT}/hooks/tools.mjs" off <groups>`. It writes
+`.claude/settings.local.json`, which your sandbox usually blocks; then put
+`/chat-hub-core:tools off <groups>` under "Left for you" (the owner types
+it; the prompt hook writes it).
 
 **Level 2:** add `.claude/issues-to-check.md` to `.gitignore`.
 
@@ -673,6 +687,46 @@ Without git they're written into `.claude/chat-hub.json`.
 
 ---
 
+## `skills/tools/SKILL.md`
+
+````markdown
+---
+name: tools
+description: Show or change which heavy tools this project's chats load (Browser pane, iOS simulator, charts, Artifacts...), to cut every chat's context. Use when the owner types /chat-hub-core:tools (e.g. "/chat-hub-core:tools off browser ios", "/chat-hub-core:tools on all") or asks to turn tools off or on for this project.
+---
+
+# Tools
+
+The prompt hook has usually done it already: a "chat-hub-core /tools:"
+note came with the owner's prompt. Tell the owner what it says in one
+short reply and do nothing else for it.
+
+If no such note came (the hook didn't run), run it yourself with the
+owner's words after the command:
+`node "${CLAUDE_PLUGIN_ROOT}/hooks/tools.mjs" <words>` (none to show what's
+off) and tell the owner its line. If your sandbox blocks the write, give
+the owner the command to type instead: `/chat-hub-core:tools <words>`.
+
+- `/chat-hub-core:tools` shows which groups are off and on.
+- `/chat-hub-core:tools off browser ios` turns groups off; `off unused`
+  turns off every group.
+- `/chat-hub-core:tools on browser` turns them back on; `on all` for
+  every group.
+
+Groups: `browser` (Browser pane), `chrome` (Claude in Chrome), `ios` (iOS
+simulator), `charts` (inline charts and diagrams), `artifacts` (published
+pages), `workflows` (multi-agent scripts), `suggestions` (plugin and skill
+suggestions).
+
+It writes deny rules in the project's `.claude/settings.local.json` (just
+the owner, never committed), which remove those tools from every chat,
+hub and work chats alike. New chats load the new set; an open chat drops
+or gets them when restarted. A work chat that needs a tool that's off
+(e.g. the Browser pane for a UI fix) asks the owner to turn it on.
+````
+
+---
+
 ## `templates/brief.md`
 
 ````markdown
@@ -747,6 +801,7 @@ From `hooks/on-prompt.mjs`:
 
 ```js
     'reply and do nothing else for it.'
+    'tell the owner exactly that in one short reply and do nothing else for it.'
       'up, stop and carry on as normal.'
   if (out) say('UserPromptSubmit', out)
     say('UserPromptSubmit', `Recorded this chat (session ${input.session_id}) as the hub.` +
@@ -762,6 +817,13 @@ From `hooks/limit.mjs`:
 
 ```js
   '/chat-hub-core:limit work 100k (or "work off") for work chats, /chat-hub-core:limit default to go back to the settings.'
+```
+
+From `hooks/tools.mjs`:
+
+```js
+  '"off unused") to turn groups off, /chat-hub-core:tools on browser (or "on all") to turn them back on. Groups: ' +
+      'new set; restart an open chat for it to drop or get them.',
 ```
 
 From `hooks/before-commit.mjs`:
