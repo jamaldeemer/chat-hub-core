@@ -350,16 +350,30 @@ long chats, the hub above all, cost the most. When the hub passes
 `trimAt` (default 135k tokens) it wraps up: it takes on no new work
 (anything new you or a chat ask for goes in its notes as an
 "After clear:" line, which the start note quotes back to it after the
-clear), finishes what it already has in flight (a merge or release it
+clear), finishes what it already has in flight (a merge it
 started, closing every chat whose wrap-up report is in, titles it owes,
 replies to chats, messages it promised), brings
 its notes up to date, and only then asks you to clear it, so a clear
 never lands in the middle of a step. Until then each reply starts
-"⚠️ Hub at …: wrapping up", then "⚠️ Wrapped up, notes saved. Type
-/clear in this chat to clear it." The hub never asks you about clearing
+"⚠️ Hub at …: wrapping up", then a boxed "SAFE TO CLEAR: type /clear"
+banner. The hub never asks you about clearing
 (no question or buttons: a button can't clear a chat); you just type
 `/clear` in the hub chat. Work chats get a similar reminder past `trimAtWork`,
-if set: stop at a natural point, note where they are, ask to be cleared.
+if set: stop at a natural point, note where they are, then the same banner.
+
+**The hub's limit is a hard stop,** in two stages, so it can't drift on
+when asked for "just one more thing". At `trimAt` a hook refuses new
+work: starting a chat and building a release (a new tag, a `Release`
+commit, making or resetting the release branch); finishing work
+(close-chat, merges, titles, messages, notes) still runs. `hardStopAfter`
+past it (default 20k tokens; set it in `.claude/chat-hub.json`) the hook
+refuses every tool except reading and writing the hub's notes, and every
+reply shows the banner. Each refusal says how to get past it: you type
+`/chat-hub-core:limit <higher>` or `/chat-hub-core:limit off`. The hub
+can't do that itself: the hook also refuses its attempts to change the
+limit, the settings, the hub record or its usage counts. A clear, or a
+limit above its context, lifts both stages. Work chats are never
+stopped.
 
 **Changing the limits as you go.** Type `/chat-hub-core:limit 200k` in any
 chat to move the hub's limit, `/chat-hub-core:limit work 100k` (or

@@ -10,7 +10,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname } from 'node:path'
 import { isMain, limitsFile, loadConfig, readLimits } from './config.mjs'
-import { DEFAULT_TRIM_AT, short } from './usage.mjs'
+import { DEFAULT_TRIM_AT, hardStopAfter, short } from './usage.mjs'
 
 export const LIMIT_USAGE = 'Type /chat-hub-core:limit to see the limits, /chat-hub-core:limit 200k for the hub, ' +
   '/chat-hub-core:limit work 100k (or "work off") for work chats, /chat-hub-core:limit default to go back to the settings.'
@@ -43,7 +43,13 @@ export function limitCommand(args = '', dir = process.cwd()) {
   const word = words.shift()
   const { cfg: c } = loadConfig(dir)
   const cfg = c || {}
-  const show = (lead = '') => `${lead}Context limits: ${describe('hub', cfg, readLimits())}; ${describe('work', cfg, readLimits())}.`
+  // The hub's two stops (usage.mjs): new work at its limit, every tool but its notes `hardStopAfter` later.
+  const stops = () => {
+    const v = 'trimAt' in readLimits() ? readLimits().trimAt : cfg.trimAt ?? DEFAULT_TRIM_AT
+    return v ? ` At its limit the hub can't start chats or releases; at ${short(v + hardStopAfter(cfg))} (${short(hardStopAfter(cfg))} ` +
+      'more, hardStopAfter) it can only write its notes until cleared.' : ''
+  }
+  const show = (lead = '') => `${lead}Context limits: ${describe('hub', cfg, readLimits())}; ${describe('work', cfg, readLimits())}.${stops()}`
   if (words.length) return { ok: false, changed: false, text: `Not changed: didn't understand "${args.trim()}". ${LIMIT_USAGE}` }
   if (!word) return { ok: true, changed: false, text: show() }
 

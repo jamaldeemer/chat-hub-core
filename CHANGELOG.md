@@ -3,6 +3,36 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## 0.3.42
+
+- **The hub's limit is a hard stop:** past `trimAt` the hub only got a
+  ⚠️ WRAP UP note and still did anything the owner asked, so it drifted
+  far past it. Now `hooks/guard.mjs` stops it in two stages. **At the
+  limit**, no new work: the app's start-session tool, a new tag
+  (`git tag v…`; listing is fine), a commit whose message starts
+  `Release`, and making or resetting the release branch
+  (`checkout -B`, `switch -C`, `branch -f`) are refused. Finishing work
+  still runs: close-chat, merges, titles, messages, notes, reads.
+  **`hardStopAfter` past it** (new setting, default 20k tokens): every
+  tool is refused except Read, Edit and Write on the hub notes, and the
+  prompt note says to show the clear banner and do nothing else. Hub
+  only; work chats' `trimAtWork` is still a note.
+- **Only the owner lifts it:** every refusal and note ends with
+  "type `/chat-hub-core:limit <higher>` or `off`". Past its limit the hub
+  can't run `limit.mjs` or `set-hub.mjs`, or write `limits.json`,
+  `.claude/chat-hub.json`, the hub record or its usage counts. The limit
+  skill's "run it yourself" fallback now says never to lift a stop.
+- **Checked mid-turn:** the guard reads what the transcript gained since
+  its last read before each of the hub's tool calls, so a long turn is
+  stopped when it crosses the line, not at its end.
+- **A clear banner you can't miss:** while wrapping up, the hub (and a
+  work chat past `trimAtWork`) starts each reply with a plain
+  "wrapping up" line; once its bookkeeping is done it shows a boxed
+  "✅ SAFE TO CLEAR: type /clear" banner in a code block instead of
+  the old "Wrapped up, notes saved" line.
+- `/chat-hub-core:limit` also says where the hard stop is
+  ("at 155k (20k more, hardStopAfter)").
+
 ## 0.3.41
 
 - **close-chat merges in the hub's own folder:** when the hub's folder

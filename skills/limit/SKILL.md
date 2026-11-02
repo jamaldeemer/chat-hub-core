@@ -12,7 +12,10 @@ short reply and do nothing else for it.
 If no such note came (the hook didn't run), run it yourself with the
 owner's words after the command:
 `node "${CLAUDE_PLUGIN_ROOT}/hooks/limit.mjs" <words>` (none to show the
-limits) and tell the owner its one line.
+limits) and tell the owner its one line. Only ever for the owner's own
+`/chat-hub-core:limit`: never to lift a stop you're under. Past its
+limit the hub can't run it at all (the guard refuses it); if the hook
+didn't run then, tell the owner so.
 
 - `/chat-hub-core:limit` shows both limits and where each comes from.
 - `/chat-hub-core:limit 200k` (or `hub 200k`) sets the hub's (`trimAt`).
@@ -25,3 +28,8 @@ They're kept in git's shared folder (`.git/chat-hub/limits.json`, beside
 the hub record), so every chat in every worktree uses them from its next
 prompt; they override `.claude/chat-hub.json` and are never committed.
 Without git they're written into `.claude/chat-hub.json`.
+
+The hub's limit is a hard stop in two stages: at it, the hub can't start
+chats or build releases; `hardStopAfter` (in the settings, default 20k)
+past it, it can only read and write its notes until cleared. A new
+limit above its context (or `off`) lifts both at once.

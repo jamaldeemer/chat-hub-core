@@ -3,7 +3,7 @@
 // already the hub, it refuses unless the owner typed "/chat-hub-core:hub replace".
 import { fileURLToPath } from 'node:url'
 import { dirname } from 'node:path'
-import { HubTaken, hookInput, isHubChat, readConfig, readHub, say, setHub } from './config.mjs'
+import { HubTaken, hookInput, hubNotesFile, isHubChat, readConfig, readHub, say, setHub } from './config.mjs'
 import { trimNudge } from './usage.mjs'
 import { limitCommand } from './limit.mjs'
 import { applyDefaults, defaultsNote, toolsCommand } from './tools.mjs'
@@ -42,7 +42,7 @@ if (/^\/chat-hub-core:version\b/.test(prompt)) {
 }
 if (!m && cfg) {
   const isHub = isHubChat(readHub(cfg), input.session_id)
-  const nudge = trimNudge({ session: input.session_id, isHub, cfg, everyTime: true })
+  const nudge = trimNudge({ session: input.session_id, isHub, cfg, everyTime: true, notes: isHub ? hubNotesFile() : '' })
   if (limitChanged && isHub && !nudge) {
     limitNote += ' No WRAP UP note came with this prompt, so you are under the hub\'s limit: if you were wrapping ' +
       'up, stop and carry on as normal.'
