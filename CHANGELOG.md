@@ -5,6 +5,40 @@ Each version is a git tag (`v0.1.0`). Projects pin a tag in
 
 ## 0.3.41
 
+- **close-chat merges in the hub's own folder:** when the hub's folder
+  has the release preview checked out, `hooks/close-chat.mjs` used to
+  stop ("merge there instead") and the hub merged by hand. Now it merges
+  there itself, by a fast-forward that moves the branch and the folder's
+  files together, after checking the folder has nothing uncommitted
+  (git also refuses to overwrite a local change). A preview checked out
+  in any other folder still stops.
+- **No `checks`, still checked:** with no `checks` in the settings,
+  close-chat used to stop. Now it runs the commands written in
+  backticks in `done` (`"tests pass (\`npm test\`)"`), else a default
+  it finds in the merge: package.json's lint, typecheck, test and build
+  scripts (with the package manager its lock file names), else
+  `tests/run.sh`, else `make test`; its PASS/FAIL line says which it
+  ran. The copy it checks borrows the project's `node_modules`, so
+  package scripts run there. Setup now always proposes and writes
+  `checks`.
+- **No leftover temp copies:** a failed check left its copy of the merge
+  in the temp folder; it's now removed on every exit.
+- **🚀 chats find out CI finished after a clear:** a work chat at 🚀
+  learned CI ended only from the watcher it ran in the background, and a
+  clear or restart killed it, so green chats sat at 🚀 until the hub
+  messaged them. Now a level-2 work chat whose branch head is pushed gets
+  one more line in its start note: the start hook asks `ci.passed` about
+  that head and says what to do (passed: set 🟢 and ask "more or wrap
+  up?"; not yet, or couldn't ask: look at the run, watch it again if
+  it's still running, 🔴 if it failed). The hub isn't told, and nor is a
+  chat with unpushed commits. The work-chat rules and the work chats'
+  limit note say not to promise "I'll check CI after the clear".
+- **`hooks/ci-status.mjs` for the hub:** one line per chat branch (every
+  worktree branch but main and the release preview, or the ones named):
+  CI passed, not passed yet, couldn't ask, or not pushed. The hub's wake
+  backstop now runs it while any chat shows 🚀 and messages each 🚀 chat
+  whose head passed, not only chats with a wrap-up report in. Close-check
+  uses the same `ci.passed` helper (`ciState` in `hooks/config.mjs`).
 - **Titles keep their symbol and tag:** object_creator's hub saw titles
   with no symbol, ⚪ on started work chats and a plain `R` around a
   clear. Neither a clear nor the app resets titles (every cleared chat

@@ -71,7 +71,11 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
   finished and waiting for a release; then push it at once and tell the
   hub ("pushed the merge"), so it merges you on that run.
 - **Level 2:** after you push, set 🚀 and watch the run; set 🟢 or 🔴
-  when it ends. On a failure (yours, or one the hub reports), fix it on
+  when it ends. Watch it in the background, so it wakes you. A clear or
+  restart stops that watcher: the start note then says what CI says
+  about your pushed head; act on it at once (🚀 and still running:
+  start the watcher again). Never tell the owner you'll check CI
+  "after the clear", or wait for a prompt to do it. On a failure (yours, or one the hub reports), fix it on
   your branch, or show why the test should change. A fix for a
   reported problem says `Fixes #n` and adds `- #n <what to try>` to the
   file `fixes.toCheck` names.

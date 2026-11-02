@@ -235,3 +235,29 @@ export function notesProblem(cfg, file = hubNotesFile()) {
     'notes now. Never keep ✅ chats (or the ✅ symbol) in the notes, and never list them to the owner again.' : ''
   return [rewrite, closed].filter(Boolean).join(' ')
 }
+
+// Level 2: ask CI whether it passed on a commit, with the settings' `ci.passed` command
+// (`SHA=<sha> sh -c "<command>"`; prints 1 = passed, 0 = not, anything else = couldn't ask).
+// Returns 'passed', 'not' (running, failed or not started: the command can't tell which) or 'unknown'.
+export function ciState(cfg, sha, dir = process.cwd(), timeout = 20000) {
+  const cmd = cfg?.ci?.passed
+  if (!cmd || !sha) return 'unknown'
+  let out = '', rc = 0
+  try { out = execFileSync('sh', ['-c', cmd], { cwd: dir, encoding: 'utf8', timeout, env: { ...process.env, SHA: sha }, stdio: ['ignore', 'pipe', 'ignore'] }).trim() }
+  catch (e) { rc = e.status ?? 1; out = String(e.stdout || '').trim() }
+  return out === '1' ? 'passed' : out === '0' && rc === 0 ? 'not' : 'unknown'
+}
+
+// A branch's push state, as last fetched: { branch, head, remote, ahead }. remote is the upstream,
+// or origin/<branch> when there's none (chats can't set one), or '' if never pushed; ahead counts
+// commits not pushed. null when not a branch or not in git.
+export function pushState(branch, dir = process.cwd()) {
+  const git = (...a) => { try { return execFileSync('git', ['-C', dir, ...a], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim() } catch { return null } }
+  if (!branch || branch === 'HEAD') return null
+  const head = git('rev-parse', '--verify', '-q', `refs/heads/${branch}`)
+  if (!head) return null
+  const up = git('rev-parse', '--abbrev-ref', `${branch}@{u}`)
+  const remote = up || (git('rev-parse', '--verify', '-q', `refs/remotes/origin/${branch}`) ? `origin/${branch}` : '')
+  const ahead = remote ? Number(git('rev-list', '--count', `${remote}..refs/heads/${branch}`) || 0) : 0
+  return { branch, head, remote, ahead }
+}

@@ -209,7 +209,12 @@ Two styles, set by `titles` in the settings:
   below): a report in means the close happens now, even while wrapping
   up; it never waits for a clear. Backstop, on every wake (and first
   thing after a clear): close any chat whose wrap-up report is in and
-  that isn't ✅ yet.
+  that isn't ✅ yet. Level 2, on the same wakes while any chat shows
+  🚀: run `node "${CLAUDE_PLUGIN_ROOT}/hooks/ci-status.mjs"` (one line
+  per chat branch: CI passed, not passed yet, or not pushed) and message
+  each 🚀 chat whose head passed, once per commit: "CI passed on <sha>:
+  set 🟢 and ask the owner more or wrap up." A clear stops a chat's own
+  CI watcher, so it may not know.
 - **Talk chats** (questions, research, planning; no code to ship): no
   release tag, no branch or worktree, never retagged at a release.
   They start with `⚪` like other chats and keep it (except ❓ while
@@ -256,9 +261,12 @@ A chat closes only when all of this holds, checked in this order:
    branch, all pushed; level 2 CI passed on its newest commit and no fix
    waiting for the owner's check), merges the branch into the release
    preview, runs the settings' `checks` on the merge (skipped when the
-   merge adds nothing to the branch: the chat's own run covered it), and
-   moves the preview only if they pass. Don't merge, test or look up the
-   folder yourself first. Level 0: `node
+   merge adds nothing to the branch: the chat's own run covered it; no
+   `checks`: the commands in backticks in `done`, else a default it
+   finds, and it says which it ran), and moves the preview only if they
+   pass. If the preview is checked out in your own folder, it merges
+   there too (your folder must have nothing uncommitted). Don't merge,
+   test or look up the folder yourself first. Level 0: `node
    "${CLAUDE_PLUGIN_ROOT}/hooks/close-check.mjs" <its folder>`. On any
    FAIL, tell the chat what failed; a merge clash is the chat's to
    resolve, not yours.
@@ -334,7 +342,9 @@ next status change, or the sidebar shows old and new symbols mixed.
 - `ci.passed` is a command that says whether CI passed on a commit
   (`SHA=<sha> sh -c "<command>"`). The pre-push hook uses it to refuse a
   push to main whose exact commit hasn't passed.
-- Watch CI only while a run is in flight.
+- Watch CI only while a run is in flight. `ci-status.mjs` (Titles
+  backstop) gives every chat branch's CI state in one call; use it for
+  `## Waiting` in your notes too.
 - If CI can't run at all (no runner, billing, an outage; not a test
   failure), say so and ask the owner whether to merge on the jobs that
   did pass. Never decide that yourself.
