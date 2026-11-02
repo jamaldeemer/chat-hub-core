@@ -170,6 +170,14 @@ asst m3 0 200000
 t "stats: reads only what's new" "$(at u1 | grep -c 'Context 200k · 3 turns')" 1
 echo '{"level":0,"stats":false}' > .claude/chat-hub.json
 t "stats: off when stats is false" "$(at u1 | wc -c | tr -d ' ')" 0
+ss() { printf '{"session_id":"%s","transcript_path":"%s","cwd":"%s","source":"%s"}' "$1" "$2" "$(pwd)" "$3" | node "$root/hooks/session-start.mjs"; }
+t "start stats: off when stats is false" "$(ss u1 "$tr" resume | grep -c systemMessage)" 0
+echo '{"level":0}' > .claude/chat-hub.json
+ver=$(node -p 'require(process.argv[1]).version' "$root/.claude-plugin/plugin.json")
+t "start stats: new chat shows the version" "$(ss u9 "$tmp/none.jsonl" startup | grep -c "^{\"systemMessage\":\"chat-hub-core $ver · new chat\",")" 1
+t "start stats: resume shows the real numbers" "$(ss u1 "$tr" resume | grep -c "\"systemMessage\":\"chat-hub-core $ver · Context 200k · 3 turns · this chat ≈ 204k token-reads\"")" 1
+t "start stats: after a compact, no stale context" "$(ss u1 "$tr" compact | grep -c '"systemMessage":"[^"]*Context compacted · 3 turns')" 1
+t "start stats: Claude still gets the start note" "$(ss u9 "$tmp/none.jsonl" startup | grep -c 'additionalContext":"This project uses chat-hub-core')" 1
 echo '{"level":0,"trimAt":150000}' > .claude/chat-hub.json
 node "$root/hooks/set-hub.mjs" --session u1 --replace >/dev/null
 op() { printf '{"session_id":"%s","prompt":"hi","cwd":"%s"}' "$1" "$(pwd)" | node "$root/hooks/on-prompt.mjs"; }

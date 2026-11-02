@@ -1,8 +1,10 @@
-// At the start of every chat: tell Claude which chat-hub-core rules apply here.
+// At the start of every chat: tell Claude which chat-hub-core rules apply here, and show the owner
+// the same usage line the after-turn hook shows (version, and the real numbers after a resume).
 import { execFileSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname } from 'node:path'
+import { statsLine, updateUsage } from './usage.mjs'
 import { applyDefaults, defaultsNote, offNote } from './tools.mjs'
 import { afterClearItems, hookInput, hostApp, hubAddress, hubNotesFile, loadConfig, notesProblem, pluginVersion, readHub, say, setHub } from './config.mjs'
 
@@ -30,7 +32,8 @@ if (error) {
   say('SessionStart', "chat-hub-core is installed but this project isn't set up. If the owner asks about chats, hubs or releases, suggest /chat-hub-core:setup.")
 } else {
   const guard = c.level >= 1 ? ensureGuard() : ''
-  const me = hookInput().session_id || ''
+  const input = hookInput()
+  const me = input.session_id || ''
   const hub = readHub(c)
   const to = hubAddress(hub)
   const notesFile = hubNotesFile()
@@ -76,5 +79,8 @@ if (error) {
   const mine = me ? ` This chat's session ID is ${me}.` : ''
   // What's off for this chat (read before the defaults change it: this chat keeps its tools).
   const off = [offNote(), defaultsNote(applyDefaults())].filter(Boolean).map(t => ' ' + t).join('')
-  say('SessionStart', `This project uses chat-hub-core ${pluginVersion()} (level ${c.level}). ${who}${mine}${guard}${off}`)
+  // The owner's usage line: a new or cleared chat has no turns yet, so it shows the version.
+  const stats = c.stats === false || !me ? '' :
+    statsLine(updateUsage(me, input.transcript_path), { compacted: input.source === 'compact' })
+  say('SessionStart', `This project uses chat-hub-core ${pluginVersion()} (level ${c.level}). ${who}${mine}${guard}${off}`, stats)
 }

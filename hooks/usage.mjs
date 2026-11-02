@@ -4,7 +4,7 @@
 // transcript since the last one, so this stays fast on long chats.
 import { closeSync, existsSync, fstatSync, mkdirSync, openSync, readFileSync, readSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { readLimits } from './config.mjs'
+import { pluginVersion, readLimits } from './config.mjs'
 
 const dir = `${tmpdir()}/chat-hub-core`
 const stateFile = session => `${dir}/${String(session).replace(/[^\w-]/g, '_')}.json`
@@ -54,6 +54,17 @@ export function updateUsage(session, transcript) {
 }
 
 export const short = n => (n >= 1e6 ? `${(n / 1e6).toFixed(n >= 1e7 ? 0 : 1)}M` : n >= 1e3 ? `${Math.round(n / 1e3)}k` : String(n))
+
+// The owner's one-line note (a systemMessage, never in Claude's context), shown after every turn
+// and when a chat starts. A chat with no turns yet shows the version and "new chat". Right after
+// a compact the last context size is out of date, so it says "compacted" instead.
+export function statsLine(s, { compacted = false } = {}) {
+  const parts = [`chat-hub-core ${pluginVersion()}`]
+  if (!s.turns) parts.push('new chat')
+  else parts.push(compacted ? 'Context compacted' : `Context ${short(s.context)}`, `${s.turns} turns`,
+    `this chat ≈ ${short(s.reads)} token-reads`)
+  return parts.join(' · ')
+}
 
 // The size limit: `trimAt` for the hub (default 135k); work chats only if `trimAtWork` is set.
 // A limit set with /chat-hub-core:limit (limits.json) wins over the settings.
