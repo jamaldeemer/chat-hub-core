@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url'
 import { dirname } from 'node:path'
 import { statsLine, updateUsage } from './usage.mjs'
 import { applyDefaults, defaultsNote, offNote } from './tools.mjs'
-import { afterClearItems, hookInput, hostApp, hubAddress, hubNotesFile, loadConfig, notesProblem, pluginVersion, readHub, say, setHub } from './config.mjs'
+import { afterClearItems, ciState, hookInput, hostApp, hubAddress, hubNotesFile, loadConfig, notesProblem, pluginVersion, pushState, readHub, say, setHub } from './config.mjs'
 
 const setHubCmd = `node "${dirname(fileURLToPath(import.meta.url))}/set-hub.mjs"`
 
@@ -21,6 +21,25 @@ function ensureGuard() {
   if (dir) return existsSync(`${dir}/pre-push`) ? '' : ` The push guard is off: git uses hooks from "${dir}", which has no pre-push. Tell the owner once.`
   try { git('config', 'core.hooksPath', '.githooks'); return ' (Push guard switched on for this checkout.)' }
   catch { return ' The push guard is off in this checkout: tell the owner once to run `git config core.hooksPath .githooks`.' }
+}
+
+// Level 2, a work chat whose branch head is pushed: a clear or restart killed the CI watcher it ran
+// in the background, so it would sit at 🚀 until a message came. Ask CI here and tell it what to do.
+function ciNote(c) {
+  if (c.level < 2) return ''
+  let branch = ''
+  try { branch = execFileSync('git', ['rev-parse', '--abbrev-ref', 'HEAD'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim() } catch {}
+  if ([c.branches?.main || 'main', c.branches?.release || 'release'].includes(branch)) return ''
+  const p = pushState(branch)
+  if (!p || !p.remote || p.ahead) return ''
+  const sha = p.head.slice(0, 7)
+  const lost = 'A clear or restart stopped any CI watcher you had.'
+  const ask = 'ask the owner "Anything more, or should I wrap up?" (menu)'
+  const ci = ciState(c, p.head)
+  if (ci === 'passed') return ` CI passed on your pushed branch head ${sha}. If your title still shows 🚀, set 🟢 now and ${ask}.`
+  return ` Your branch head ${sha} is pushed and CI ${ci === 'not' ? "hasn't passed on it yet" : "couldn't be asked about it (ci.passed failed)"}. ` +
+    `${lost} If your title shows 🚀, look at the run for ${sha} now: still running, start the watcher again in the background; ` +
+    `failed, set 🔴 and fix it; passed, set 🟢 and ${ask}. Never wait for the owner to prompt you about it.`
 }
 
 const { cfg: c, error } = loadConfig()
@@ -58,7 +77,7 @@ if (error) {
       `never the work-chat skill.${rec}` + notes + recount
   } else if (hub.app && app) {
     who = `This chat is a work chat (its app address is ${app}; the hub is ${hub.app}): load the chat-hub-core:work-chat ` +
-      `skill now and only ever message ${hub.app}.`
+      `skill now and only ever message ${hub.app}.` + ciNote(c)
   } else if (hub.session && me && hub.session === me) {
     // In the desktop app, record the hub's app address here too when it's missing.
     let added = false
@@ -69,11 +88,11 @@ if (error) {
     who = `This project's hub is app session ${hub.app}. Look up this session's own details with your session tools: ` +
       `if its id is ${hub.app}, this chat is the hub (it was restarted or cleared): load the chat-hub-core:hub skill now and ` +
       `run ${setHubCmd} --session <this chat's session ID, below> --app ${hub.app}.${notes ? ' Then' + notes.replace(' Your notes exist:', ' (your notes exist)') : ''}${recount} Otherwise this is a work chat: ` +
-      `load the chat-hub-core:work-chat skill now and only ever message ${hub.app}.`
+      `load the chat-hub-core:work-chat skill now and only ever message ${hub.app}.` + ciNote(c)
   } else if (hub.session) {
     who = `This chat is a work chat: load the chat-hub-core:work-chat skill now. This project's hub is session ${hub.session}; ` +
       'only ever message that session (if the app won\'t accept that ID, ask the owner which chat is the hub). ' +
-      'Become the hub only if the owner runs /chat-hub-core:hub here.'
+      'Become the hub only if the owner runs /chat-hub-core:hub here.' + ciNote(c)
   } else {
     who = 'No hub is recorded for this project. Load the chat-hub-core:work-chat skill, and tell the owner first thing: ' +
       '"No hub is recorded; type /chat-hub-core:hub in the chat that should be the hub." Until one is recorded, ' +

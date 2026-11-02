@@ -143,6 +143,9 @@ Automate what relies on memory:
    the hub runs in the background, which renames the chat itself, reads
    the failing log and says real, flaky or infrastructure (see
    object_creator's list above). Also saves hub turns: no polling.
+   (0.3.41: after a clear the start note checks CI for a 🚀 chat, and
+   `hooks/ci-status.mjs` lists every chat branch's CI state; the
+   renaming, failing-log reading and real/flaky call are still open.)
 
 Make concrete:
 10. "Decide flaky or real": rerun once; passes on the rerun = flaky.
@@ -237,3 +240,10 @@ Findings 1–3 shipped in 0.3.4. Still open:
   chat's sandbox (`git worktree add ../wt2` is refused, so `../wt2` is
   never made); it fails on 0.3.39 too. Make the test skip or use a
   writable folder.
+
+## Found while building C3 (2026-11-01)
+
+- **Tests and a shared temp folder:** `tests/run.sh` makes `../wt2` (and
+  `../wt3`) beside its own temp folder, so a run that was stopped leaves
+  them in `$TMPDIR` and every later run fails "shared hub: seen from
+  another worktree". Make them inside `$tmp`.

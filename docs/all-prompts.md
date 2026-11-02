@@ -428,7 +428,12 @@ Two styles, set by `titles` in the settings:
   below): a report in means the close happens now, even while wrapping
   up; it never waits for a clear. Backstop, on every wake (and first
   thing after a clear): close any chat whose wrap-up report is in and
-  that isn't ✅ yet.
+  that isn't ✅ yet. Level 2, on the same wakes while any chat shows
+  🚀: run `node "${CLAUDE_PLUGIN_ROOT}/hooks/ci-status.mjs"` (one line
+  per chat branch: CI passed, not passed yet, or not pushed) and message
+  each 🚀 chat whose head passed, once per commit: "CI passed on <sha>:
+  set 🟢 and ask the owner more or wrap up." A clear stops a chat's own
+  CI watcher, so it may not know.
 - **Talk chats** (questions, research, planning; no code to ship): no
   release tag, no branch or worktree, never retagged at a release.
   They start with `⚪` like other chats and keep it (except ❓ while
@@ -549,7 +554,9 @@ next status change, or the sidebar shows old and new symbols mixed.
 - `ci.passed` is a command that says whether CI passed on a commit
   (`SHA=<sha> sh -c "<command>"`). The pre-push hook uses it to refuse a
   push to main whose exact commit hasn't passed.
-- Watch CI only while a run is in flight.
+- Watch CI only while a run is in flight. `ci-status.mjs` (Titles
+  backstop) gives every chat branch's CI state in one call; use it for
+  `## Waiting` in your notes too.
 - If CI can't run at all (no runner, billing, an outage; not a test
   failure), say so and ask the owner whether to merge on the jobs that
   did pass. Never decide that yourself.
@@ -636,7 +643,11 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
   finished and waiting for a release; then push it at once and tell the
   hub ("pushed the merge"), so it merges you on that run.
 - **Level 2:** after you push, set 🚀 and watch the run; set 🟢 or 🔴
-  when it ends. On a failure (yours, or one the hub reports), fix it on
+  when it ends. Watch it in the background, so it wakes you. A clear or
+  restart stops that watcher: the start note then says what CI says
+  about your pushed head; act on it at once (🚀 and still running:
+  start the watcher again). Never tell the owner you'll check CI
+  "after the clear", or wait for a prompt to do it. On a failure (yours, or one the hub reports), fix it on
   your branch, or show why the test should change. A fix for a
   reported problem says `Fixes #n` and adds `- #n <what to try>` to the
   file `fixes.toCheck` names.
@@ -806,18 +817,17 @@ export function say(event, text, shown) {
 From `hooks/session-start.mjs`:
 
 ```js
+    `${lost} If your title shows 🚀, look at the run for ${sha} now: still running, start the watcher again in the background; ` +
+    `failed, set 🔴 and fix it; passed, set 🟢 and ${ask}. Never wait for the owner to prompt you about it.`
   say('SessionStart', `chat-hub-core: this project's settings file (.claude/chat-hub.json) is broken (${error}). ` +
     'Tell the owner first thing, before anything else, and follow none of the chat-hub-core rules until it is fixed ' +
     '(running /chat-hub-core:setup again rewrites it).')
   say('SessionStart', "chat-hub-core is installed but this project isn't set up. If the owner asks about chats, hubs or releases, suggest /chat-hub-core:setup.")
       `then delete each line from the notes: ${later.map(l => `"${l.slice(0, 120)}"`).join('; ')}.` : '') : ''
     " Then list sessions (include archived): drop chats the owner deleted from your notes and fix your title's open count if it's wrong."
-      `skill now and only ever message ${hub.app}.`
       `if its id is ${hub.app}, this chat is the hub (it was restarted or cleared): load the chat-hub-core:hub skill now and ` +
       `run ${setHubCmd} --session <this chat's session ID, below> --app ${hub.app}.${notes ? ' Then' + notes.replace(' Your notes exist:', ' (your notes exist)') : ''}${recount} Otherwise this is a work chat: ` +
-      `load the chat-hub-core:work-chat skill now and only ever message ${hub.app}.`
       'only ever message that session (if the app won\'t accept that ID, ask the owner which chat is the hub). ' +
-      'Become the hub only if the owner runs /chat-hub-core:hub here.'
       '"No hub is recorded; type /chat-hub-core:hub in the chat that should be the hub." Until one is recorded, ' +
       'don\'t message any chat as the hub and don\'t guess one by its name.'
   say('SessionStart', `This project uses chat-hub-core ${pluginVersion()} (level ${c.level}). ${who}${mine}${guard}${off}`, stats)
@@ -898,7 +908,8 @@ From `hooks/usage.mjs`:
   'no ask or actions.'
   `⚠️ STOP: this chat's context is ${short(ctx)} tokens, and every turn re-reads all of it. When you reach a ` +
   'natural stopping point, write down where you are (in your branch\'s notes or a commit) and tell the owner, ' +
-  `starting your reply with "⚠️ This chat is at ${short(ctx)} tokens: please clear it or wrap it up." Repeat that line in every reply until cleared.`
+  `starting your reply with "⚠️ This chat is at ${short(ctx)} tokens: please clear it or wrap it up." Repeat that line in every reply until cleared. ` +
+  'Don\'t promise to check CI after the clear: the start note checks it for you.'
 ```
 
 From `hooks/after-turn.mjs`:

@@ -339,6 +339,28 @@ t "close-check: level 2 CI not passed fails" "$(ccw "$wt" "FAIL CI: hasn't passe
 echo '{"level":2,"ci":{"passed":"echo 1"}}' > "$wt/.claude/chat-hub.json"
 echo '- #9 try it' > "$wt/.claude/issues-to-check.md"
 t "close-check: unchecked fix fails" "$(ccw "$wt" 'FAIL fixes: 1 still waiting')" 1
+# After a clear or restart: a level-2 work chat with a pushed head is told its CI state (its watcher died).
+(cd "$wt" && node "$root/hooks/set-hub.mjs" --session h1 >/dev/null)
+ssw() { (cd "$wt" && printf '{"session_id":"%s"}' "$1" | node "$root/hooks/session-start.mjs"); }
+cfg2() { node -e 'process.stdout.write(JSON.stringify({level:2,ci:{passed:process.argv[1]}}))' "$1" > "$wt/.claude/chat-hub.json"; }
+t "ci note: passed, set 🟢 and ask" "$(cfg2 'echo 1'; ssw s2 | grep -c 'CI passed on your pushed branch head [0-9a-f]\{7\}. If your title still shows 🚀, set 🟢 now')" 1
+t "ci note: not passed, restart the watcher" "$(cfg2 'echo 0'; ssw s2 | grep -c "hasn't passed on it yet. A clear or restart stopped any CI watcher.*start the watcher again in the background")" 1
+t "ci note: can't ask, still told to look" "$(cfg2 'exit 1'; ssw s2 | grep -c "couldn't be asked about it.*look at the run")" 1
+t "ci note: asks about the branch head" "$(cfg2 "test \"\$SHA\" = $(git rev-parse a2-work) && echo 1 || echo 0"; ssw s2 | grep -c 'CI passed on your pushed')" 1
+t "ci note: the hub isn't told" "$(cfg2 'echo 1'; ssw h1 | grep -c 'CI passed\|CI watcher')" 0
+t "ci note: level 1 not told" "$(echo '{"level":1}' > "$wt/.claude/chat-hub.json"; ssw s2 | grep -c 'CI watcher\|CI passed')" 0
+echo z > "$wt/h.txt"; git -C "$wt" add h.txt; git -C "$wt" -c user.email=a@b -c user.name=t commit -q -m "A2: z"
+t "ci note: unpushed head not told" "$(cfg2 'echo 1'; ssw s2 | grep -c 'CI watcher\|CI passed')" 0
+# ci-status.mjs: the hub's list of chat branches and their CI state.
+cp "$wt/.claude/chat-hub.json" .claude/chat-hub.json
+t "ci-status: unpushed commits shown" "$(node "$root/hooks/ci-status.mjs" | grep -c '^a2-work [0-9a-f]\{7\} 1 commit(s) not pushed$')" 1
+git -C "$wt" push -q origin HEAD
+t "ci-status: pushed and passed" "$(node "$root/hooks/ci-status.mjs" | grep -c '^a2-work [0-9a-f]\{7\} CI passed$')" 1
+t "ci-status: main and release left out" "$(node "$root/hooks/ci-status.mjs" | grep -c '^main \|^release ')" 0
+t "ci-status: not passed yet" "$(echo '{"level":2,"ci":{"passed":"echo 0"}}' > .claude/chat-hub.json; node "$root/hooks/ci-status.mjs" a2-work | grep -c 'CI not passed yet')" 1
+t "ci-status: branch never pushed" "$(git branch lone; node "$root/hooks/ci-status.mjs" lone | grep -c '^lone [0-9a-f]\{7\} not pushed$')" 1
+t "ci-status: level 1 has no CI" "$(echo '{"level":1}' > .claude/chat-hub.json; node "$root/hooks/ci-status.mjs" | grep -c 'no CI to ask')" 1
+git checkout -q -- .claude/chat-hub.json; git -C "$wt" checkout -q -- .claude/chat-hub.json
 # close-chat.mjs: the hub's one-step close (merge into the preview, checks, close check)
 mkdir "$tmp/ch" && cd "$tmp/ch" && git init -q --bare remote.git && git init -q -b main repo && cd repo
 mkdir .claude && echo '{"level":1,"checks":"test ! -e bad.txt"}' > .claude/chat-hub.json && git add -A && gc -m init && git remote add origin ../remote.git && git push -q origin main

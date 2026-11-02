@@ -9,7 +9,7 @@
 import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { loadConfig } from './config.mjs'
+import { ciState, loadConfig } from './config.mjs'
 
 const args = process.argv.slice(2)
 const beforeMerge = args.includes('--before-merge')
@@ -66,11 +66,9 @@ if (tryGit('rev-parse', '--is-inside-work-tree') !== 'true') {
         const cmd = cfg.ci?.passed
         if (!cmd) fail('CI: no ci.passed command in the settings')
         else {
-          let out = '', rc = 0
-          try { out = execFileSync('sh', ['-c', cmd], { cwd: dir, encoding: 'utf8', env: { ...process.env, SHA: head }, stdio: ['ignore', 'pipe', 'ignore'] }).trim() }
-          catch (e) { rc = e.status ?? 1; out = String(e.stdout || '').trim() }
-          if (out === '1') pass(`CI: passed on ${head.slice(0, 7)}`)
-          else if (out === '0' && rc === 0) fail(`CI: hasn't passed on ${head.slice(0, 7)}`)
+          const ci = ciState(cfg, head, dir, 0)
+          if (ci === 'passed') pass(`CI: passed on ${head.slice(0, 7)}`)
+          else if (ci === 'not') fail(`CI: hasn't passed on ${head.slice(0, 7)}`)
           else fail(`CI: couldn't ask whether ${head.slice(0, 7)} passed (check ci.passed)`)
         }
         const toCheck = `${dir}/${cfg.fixes?.toCheck || '.claude/issues-to-check.md'}`

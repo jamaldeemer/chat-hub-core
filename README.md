@@ -421,7 +421,18 @@ it runs commands written in backticks in `done`, else lint/typecheck/test/build
 from package.json, `tests/run.sh` or `make test`, and says which), runs the close
 check, and prints READY or FAIL, so ✅ comes in the same turn. If the hub's own
 folder has the preview checked out, it merges there (a fast-forward, only with
-nothing uncommitted in it). Nothing in the plugin names a git host, CI service or
+nothing uncommitted in it).
+
+**CI after a clear (level 2).** A chat at 🚀 watches its run in the
+background, and a clear or restart stops that watcher. The start note then
+asks `ci.passed` about the chat's pushed head and tells it what to do (🟢
+and ask "more or wrap up?", or look at the run and watch it again), so it
+doesn't sit at 🚀 waiting for a prompt. As a backstop, the hub runs
+`hooks/ci-status.mjs` on every wake while any chat shows 🚀 (one line per
+chat branch: CI passed, not passed yet, or not pushed) and tells each 🚀
+chat whose head passed.
+
+Nothing in the plugin names a git host, CI service or
 framework.
 
 ## Working on the plugin
