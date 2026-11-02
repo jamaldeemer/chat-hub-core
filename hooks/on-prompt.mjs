@@ -9,6 +9,7 @@ import { limitCommand } from './limit.mjs'
 import { applyDefaults, defaultsNote, toolsCommand } from './tools.mjs'
 import { versionCommand } from './version.mjs'
 import { rulesNotice } from './config.mjs'
+import { closeBackstop } from './wrapups.mjs'
 
 const setHubCmd = `node "${dirname(fileURLToPath(import.meta.url))}/set-hub.mjs"`
 const input = hookInput()
@@ -48,7 +49,9 @@ if (!m && cfg) {
       'up, stop and carry on as normal.'
   }
   const rules = rulesNotice({ session: input.session_id, isHub })
-  const out = [limitNote, defaults, rules?.text, nudge].filter(Boolean).join(' ')
+  // The hub's close backstop: a report in this prompt, or a chat whose report is in still at ⏳.
+  const close = isHub ? closeBackstop({ prompt, transcript: input.transcript_path }) : ''
+  const out = [limitNote, defaults, rules?.text, close, nudge].filter(Boolean).join(' ')
   if (out) say('UserPromptSubmit', out, rules?.shown)
 }
 if (m && input.session_id && cfg) {

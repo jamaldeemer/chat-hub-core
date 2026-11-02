@@ -587,5 +587,38 @@ t "titles: work chat sets 🔨 as it starts work" "$(grep -c 'it": set 🔨 and 
 t "titles: hub starts chats with the whole title" "$(grep -c 'Start a chat with its whole title' "$root/skills/hub/SKILL.md")" 1
 t "titles: hub told the app's notes show old titles" "$(grep -c 'never updates them' "$root/skills/hub/SKILL.md")" 1
 t "titles: README says chats set their own" "$(grep -c 'Each chat sets its own symbol the moment its status changes' "$root/README.md")" 1
+# wrapups.mjs: the hub's close backstop. A wrap-up report in a prompt, then a chat still at ⏳.
+cd "$tmp"
+echo '{"level":1}' > .claude/chat-hub.json
+node "$root/hooks/set-hub.mjs" --session hc1 --replace >/dev/null
+pd="$tmp/projects"; enc=$(git worktree list --porcelain | sed -n 's/^worktree //p' | head -1 | sed 's/[^a-zA-Z0-9]/-/g')
+ct() { mkdir -p "$pd/$enc/$1"; printf '{"customTitle":"%s"}' "$2" > "$pd/$enc/$1/custom-title.json"; }
+# Input through a file: a slow writer on a pipe can leave the hook reading nothing.
+hp() { node -e 'process.stdout.write(JSON.stringify({session_id:process.argv[1],prompt:process.argv[2],cwd:process.argv[3]}))' "$1" "$2" "$(pwd)" > "$tmp/hp.json"; CHAT_HUB_PROJECTS_DIR="$pd" node "$root/hooks/on-prompt.mjs" < "$tmp/hp.json"; }
+rm -f .git/chat-hub/wrapups.json
+ct w1 '⏳  ʀ32 C7 · Close finished chats'
+t "close backstop: quiet with no report" "$(hp hc1 hello | grep -c 'wrap-up report')" 0
+t "close backstop: report in the prompt, close now" "$(hp hc1 '**Wrap-up · C7**
+- **Commit:** abc' | grep -c 'wrap-up report of C7. Close it now: run close-chat.mjs.*even if its work ships in a later release')" 1
+t "close backstop: report remembered" "$(grep -c '"C7"' .git/chat-hub/wrapups.json)" 1
+t "close backstop: still ⏳ on the next wake, reminded" "$(hp hc1 hello | grep -c 'close backstop: C7 (\\"⏳  ʀ32 C7 · Close finished chats\\") sent its wrap-up report and still shows ⏳')" 1
+t "close backstop: work chats not reminded" "$(hp w9 hello | grep -c 'close backstop')" 0
+t "close backstop: hub start note reminds after a clear" "$(echo '{"session_id":"hc1"}' | CHAT_HUB_PROJECTS_DIR="$pd" node "$root/hooks/session-start.mjs" | grep -c 'close backstop: C7')" 1
+ct w2 '✅  ʀ28 C7 · An old chat with the same code'
+t "close backstop: an old ✅ chat with the code doesn't hide the ⏳ one" "$(hp hc1 hello | grep -c 'close backstop: C7')" 1
+ct w1 '✅  ʀ32 C7 · Close finished chats'
+t "close backstop: quiet once it's ✅" "$(hp hc1 hello | grep -c 'close backstop')" 0
+t "close backstop: forgotten once it's ✅" "$(grep -c '"C7"' .git/chat-hub/wrapups.json)" 0
+ct w3 '🔨  ʀ31 E4 · Back at work'
+hp hc1 'Wrap-up · E4 (report)' >/dev/null
+t "close backstop: back to 🔨 after a failed close, forgotten" "$(hp hc1 hello | grep -c 'close backstop'; grep -c '"E4"' .git/chat-hub/wrapups.json)" "0
+0"
+hp hc1 '**Wrap-up · F9**' >/dev/null
+t "close backstop: no title found, quiet but remembered" "$(hp hc1 hello | grep -c 'close backstop'; grep -c '"F9"' .git/chat-hub/wrapups.json)" "0
+1"
+t "close backstop: hub rules say no parked state" "$(grep -c 'There is no "parked" state' "$root/skills/hub/SKILL.md")" 1
+t "close backstop: hub closes whichever release" "$(grep -c 'never hold a finished chat at ⏳ for a later release' "$root/skills/hub/SKILL.md")" 1
+t "close backstop: wrap-up note says a later release too" "$(grep -c 'never leave one at ⏳ for after the clear or a later release' "$root/hooks/usage.mjs")" 1
+rm -rf "$pd" .git/chat-hub/wrapups.json
 cd "$tmp"
 rm -rf "$tmp"; exit $fail

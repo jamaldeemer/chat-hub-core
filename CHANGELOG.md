@@ -3,6 +3,29 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## 0.3.42
+
+- **Finished chats close at once, whatever their release:** in
+  object_creator, 8F sat at ⏳ for hours after its wrap-up report
+  because its hub held it for a later release. The hub rules now say it
+  plainly (Titles backstop, Closing chats, Releases): a report in means
+  close now (`close-chat.mjs` merges it into the release preview, then
+  ✅), even when the chat is tagged for a later release. There is no
+  "parked" state; a problem found later is a normal bug in a new chat.
+  The hub's wrap-up note says the same ("never leave one at ⏳ for after
+  the clear or a later release").
+- **Close backstop hook:** the hub's prompt hook spots a wrap-up report
+  in the message that woke it (`**Wrap-up · C7**`) and tells the hub to
+  close that chat now. It remembers each report (`wrapups.json` in
+  git's shared `chat-hub` folder, never committed) and, on every later
+  hub prompt and in the hub's start note after a clear, reads the
+  project's chat titles (the app's `custom-title.json` for each
+  worktree) and reminds the hub to close any of them still at ⏳. A chat
+  whose title moved on (✅, or 🔨 after a failed close) is forgotten,
+  and one that can't be found after a week too. Outside the desktop app
+  there are no titles to read, so only the first note comes
+  (`hooks/wrapups.mjs`).
+
 ## 0.3.41
 
 - **close-chat merges in the hub's own folder:** when the hub's folder
