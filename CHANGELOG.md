@@ -3,7 +3,7 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
-## 0.3.45 (E3; version set at release)
+## 0.3.45
 
 - **🔄: waiting for you to type /clear.** A chat past its limit showing
   the SAFE TO CLEAR banner had no title symbol for it, so it couldn't be
