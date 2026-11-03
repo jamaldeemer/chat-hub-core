@@ -25,7 +25,8 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
   exactly, two spaces after the symbol included; the hub owns the
   rest (tag, code, name). No message to the hub for it. A hook checks
   your title after each turn and sends you back to fix a missing
-  symbol, one space, a plain `R` tag or ⚪ on a work chat.
+  symbol, one space, a plain `R` tag, ⚪ on a work chat, or 🔄 once
+  you're under your limit again.
   If the rename fails, tell the hub the status in one line instead
   ("asking for OK", "question for owner: <topic>", "working again",
   "pushed") and it sets it.
@@ -40,6 +41,10 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
     "waiting for instructions"); a closing "anything else?" isn't one.
   - 🟢 pushed (level 1) or CI passed (level 2), asking "more or wrap
     up?"; level 2: 🚀 pushed, CI running; 🔴 CI failed.
+  - 🔄 you're showing the SAFE TO CLEAR banner, waiting for the owner
+    to type /clear: set it in the turn you first show it. After the
+    clear, set your normal status again (🔨, or ❓ when you ask a
+    question again).
   - Talk chats (no branch) keep ⚪, with ❓ while waiting on an answer.
     ⚪ and ✅ on a work chat are the hub's.
 - **The owner's OK** is needed before every commit. A message from another

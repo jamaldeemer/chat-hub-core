@@ -4,7 +4,7 @@ import { execFileSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname } from 'node:path'
-import { statsLine, updateUsage } from './usage.mjs'
+import { CLEAR_SYMBOL, statsLine, updateUsage } from './usage.mjs'
 import { withPace } from './pace.mjs'
 import { applyDefaults, defaultsNote, offNote } from './tools.mjs'
 import { closeBackstop } from './wrapups.mjs'
@@ -115,10 +115,13 @@ if (error) {
       'don\'t message any chat as the hub and don\'t guess one by its name.' + workNote()
   }
   const mine = me ? ` This chat's session ID is ${me}.` : ''
+  // After a clear the app keeps the title, so a 🔄 (waiting for the clear) would stay.
+  const cleared = input.source === 'clear' ? ` You were just cleared: if your title's symbol is ${CLEAR_SYMBOL}, set your ` +
+    'normal status now (work chat: 🔨, or ❓ when you ask a question again; hub: ⚪, or your release symbol).' : ''
   // What's off for this chat (read before the defaults change it: this chat keeps its tools).
   const off = [offNote(), defaultsNote(applyDefaults())].filter(Boolean).map(t => ' ' + t).join('')
   // The owner's usage line: a new or cleared chat has no turns yet, so it shows the version.
   const stats = c.stats === false || !me ? '' :
     withPace(statsLine(updateUsage(me, input.transcript_path), { compacted: input.source === 'compact' }), c)
-  say('SessionStart', `This project uses chat-hub-core ${pluginVersion()} (level ${c.level}). ${who}${mine}${guard}${off}`, stats)
+  say('SessionStart', `This project uses chat-hub-core ${pluginVersion()} (level ${c.level}). ${who}${cleared}${mine}${guard}${off}`, stats)
 }
