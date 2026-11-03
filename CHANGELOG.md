@@ -3,6 +3,18 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## 0.3.45 (E3; version set at release)
+
+- **🔄: waiting for you to type /clear.** A chat past its limit showing
+  the SAFE TO CLEAR banner had no title symbol for it, so it couldn't be
+  spotted in the sidebar. Now the hub and work chats set 🔄 in the turn
+  they first show the banner (the note that gives them the banner says
+  so; the hub's hard stop lets it read and set titles for this). After
+  the clear the start note tells the chat to set its normal status again
+  (🔨 or ❓; the hub ⚪ or its release symbol), and the after-turn title
+  check sends back a 🔄 left on a chat that's under its limit. README's
+  symbol tables and both skills list 🔄.
+
 ## 0.3.44
 
 - **Work chats keep what came in while wrapping up:** a work chat past

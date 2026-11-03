@@ -12,7 +12,7 @@ export function readTitle(input) {
   } catch { return '' }
 }
 
-const SYMBOLS = ['🙋', '⏳', '🔨', '❓', '🟢', '🚀', '🔴', '⚪', '✅']
+const SYMBOLS = ['🙋', '⏳', '🔨', '❓', '🟢', '🚀', '🔴', '⚪', '✅', '🔄']
 const lead = new RegExp(`^(${SYMBOLS.join('|')})️?( *)`, 'u')
 // Plain-R release tags: release-first "R26~ 8E" and code-first "(R7)".
 const plainR = /(^|[\s(])R(\d+[~+]?)(?=[\s)])/u
@@ -20,7 +20,8 @@ const plainR = /(^|[\s(])R(\d+[~+]?)(?=[\s)])/u
 // What's wrong with a title, as short sentences ([] when it's fine). Only titles that look like
 // ours (a symbol, a tag or a " · ") are checked, so an app-made title in a new chat is left alone.
 // workChat: a chat that isn't the hub; ⚪ is then only right on a talk chat (no ʀ tag).
-export function titleProblems(title, { workChat = false } = {}) {
+// pastLimit: the chat is past its context limit, the only time 🔄 (waiting for /clear) is right.
+export function titleProblems(title, { workChat = false, pastLimit = true } = {}) {
   if (!title) return []
   const m = title.match(lead)
   const tagged = /ʀ\d/u.test(title) || plainR.test(title)
@@ -32,6 +33,12 @@ export function titleProblems(title, { workChat = false } = {}) {
   if (m && m[1] === '⚪' && workChat && /[ʀR]\d/u.test(title)) {
     out.push('⚪ is only for talk chats and the hub: set the symbol for where you are now (🔨 working, ❓ waiting on an answer, 🙋 asking for an OK, …)')
   }
+  if (m && m[1] === '🔄' && !pastLimit) {
+    out.push('🔄 is only for a chat showing the SAFE TO CLEAR banner, and this one is under its limit (cleared, or the ' +
+      'limit was raised): set your normal status again (' + (workChat
+        ? '🔨 working, ❓ waiting on an answer, 🙋 asking for an OK, 🟢 asking "more or wrap up?", …'
+        : '⚪, or your release symbol during a release') + ')')
+  }
   return out
 }
 
@@ -41,9 +48,9 @@ export function fixedTitle(title) {
 }
 
 // The note that sends the chat back to fix its title, or '' when the title is fine.
-export function titleNote(input, { workChat }) {
+export function titleNote(input, { workChat, pastLimit = true }) {
   const title = readTitle(input)
-  const p = titleProblems(title, { workChat })
+  const p = titleProblems(title, { workChat, pastLimit })
   if (!p.length) return ''
   const fix = fixedTitle(title)
   return `chat-hub-core title check: this chat's title is "${title}", and ${p.join('; ')}. ` +

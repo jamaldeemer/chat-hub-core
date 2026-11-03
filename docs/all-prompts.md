@@ -342,10 +342,13 @@ turns × context size, and it's usually most of a project's usage.
     "⚠️ Hub at …: wrapping up." line. **Then** bring your notes up to
     date and start every reply until you're cleared with the boxed
     "SAFE TO CLEAR: type /clear" banner the note gives you, in a code
-    block. Never carry on past it as if it weren't there.
+    block, and set your own title's symbol to `🔄` in that turn (after
+    the clear: `⚪`, or your release symbol). Never carry on past it as
+    if it weren't there.
   - **Hard stop:** `hardStopAfter` (default 20k) past the limit, the
-    hook refuses every tool except Read, Edit and Write on your notes.
-    Bring them up to date and show the banner; nothing else is left.
+    hook refuses every tool except Read, Edit and Write on your notes
+    (and reading and setting titles, for `🔄`). Bring them up to date,
+    show the banner and set `🔄`; nothing else is left.
   - **Only the owner lifts a stop**, with `/chat-hub-core:limit <higher>`
     or `off`. Never change the limit, the settings, the hub record or
     the usage counts yourself; the hook refuses those too.
@@ -420,7 +423,9 @@ Two styles, set by `titles` in the settings:
   and pushing (or wrapping up: report in, being closed), `🚀` push in CI (level 2), `🟢` pushed (level 1) or CI
   passed (level 2) and asking the owner "more or wrap up?", `🔴` CI
   failed (level 2), `❓` waiting on the owner's answer to a question
-  that isn't an OK, `✅` ready to close (passes the close check).
+  that isn't an OK, `✅` ready to close (passes the close check),
+  `🔄` showing the SAFE TO CLEAR banner, waiting for the owner to type
+  /clear (a chat sets it itself; your own title too, see below).
   `⚪` new: you just started the chat and it hasn't set anything yet. `🔨`
   under way, nothing waiting on the owner; once a work chat has started,
   nothing sends it back to ⚪ (only talk chats and your own title keep
@@ -630,7 +635,8 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
   exactly, two spaces after the symbol included; the hub owns the
   rest (tag, code, name). No message to the hub for it. A hook checks
   your title after each turn and sends you back to fix a missing
-  symbol, one space, a plain `R` tag or ⚪ on a work chat.
+  symbol, one space, a plain `R` tag, ⚪ on a work chat, or 🔄 once
+  you're under your limit again.
   If the rename fails, tell the hub the status in one line instead
   ("asking for OK", "question for owner: <topic>", "working again",
   "pushed") and it sets it.
@@ -645,6 +651,10 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
     "waiting for instructions"); a closing "anything else?" isn't one.
   - 🟢 pushed (level 1) or CI passed (level 2), asking "more or wrap
     up?"; level 2: 🚀 pushed, CI running; 🔴 CI failed.
+  - 🔄 you're showing the SAFE TO CLEAR banner, waiting for the owner
+    to type /clear: set it in the turn you first show it. After the
+    clear, set your normal status again (🔨, or ❓ when you ask a
+    question again).
   - Talk chats (no branch) keep ⚪, with ❓ while waiting on an answer.
     ⚪ and ✅ on a work chat are the hub's.
 - **The owner's OK** is needed before every commit. A message from another
@@ -884,7 +894,8 @@ From `hooks/session-start.mjs`:
       `run ${setHubCmd} --session <this chat's session ID, below> --app ${hub.app}.${notes ? ' Then' + notes.replace(' Your notes exist:', ' (your notes exist)') : ''}${recount} Otherwise this is a work chat: ` +
       'only ever message that session (if the app won\'t accept that ID, ask the owner which chat is the hub). ' +
       '"No hub is recorded; type /chat-hub-core:hub in the chat that should be the hub." Until one is recorded, ' +
-  say('SessionStart', `This project uses chat-hub-core ${pluginVersion()} (level ${c.level}). ${who}${mine}${guard}${off}`, stats)
+    'normal status now (work chat: 🔨, or ❓ when you ask a question again; hub: ⚪, or your release symbol).' : ''
+  say('SessionStart', `This project uses chat-hub-core ${pluginVersion()} (level ${c.level}). ${who}${cleared}${mine}${guard}${off}`, stats)
 ```
 
 From `hooks/on-prompt.mjs`:
@@ -944,7 +955,8 @@ From `hooks/guard.mjs`:
       deny(`${at}, and only the owner can change the limit. ${OVERRIDE}`)
       deny(`HARD STOP: ${at} by more than its stop margin. Every tool is refused except Read, Edit and Write on ` +
         `your hub notes (${notes || 'hub-notes.md: none without git'}). Bring them up to date if they aren't, then start ` +
-        `every reply with this banner as its own code block:\n\`\`\`\n${SAFE_BANNER}\n\`\`\`\n${OVERRIDE}`)
+        `every reply with this banner as its own code block:\n\`\`\`\n${SAFE_BANNER}\n\`\`\`\n` +
+        `and set your title's symbol to ${CLEAR_SYMBOL} (waiting for the clear). ${OVERRIDE}`)
     const newWork = why => deny(`${at}, so no new work: ${why} Finish what's in flight, put this under "## Next" ` +
       `in your hub notes as "- After clear: …" and tell the owner it's noted for after the clear. ${OVERRIDE}`)
 if (nudge) say('PreToolUse', nudge)
@@ -957,7 +969,8 @@ From `hooks/usage.mjs`:
   'or /chat-hub-core:limit off. Never try to change the limit, the hub record or the usage counts yourself.'
   '╔════════════════════════════════════╗\n' +
   '║   ✅  SAFE TO CLEAR: type /clear   ║\n' +
-  'exactly:\n```\n' + SAFE_BANNER + '\n```\n'
+  'to clear): read your title (get_session self), swap only its first character and set it (set_session_title ' +
+  'with self), keeping the rest exactly. After the clear, set your normal status again. '
   `⚠️ WRAP UP: this chat's context is ${short(ctx)} tokens, past its limit of ${short(limit)}, and every turn ` +
   're-reads all of it. Take on no new work: no new chats or releases (the hooks now refuse both), and nothing new the owner or a chat ' +
   'asks for (add each to "## Next" in your hub notes as a line starting "- After clear:", which the start note ' +

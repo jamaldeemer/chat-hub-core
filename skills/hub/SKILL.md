@@ -121,10 +121,13 @@ turns × context size, and it's usually most of a project's usage.
     "⚠️ Hub at …: wrapping up." line. **Then** bring your notes up to
     date and start every reply until you're cleared with the boxed
     "SAFE TO CLEAR: type /clear" banner the note gives you, in a code
-    block. Never carry on past it as if it weren't there.
+    block, and set your own title's symbol to `🔄` in that turn (after
+    the clear: `⚪`, or your release symbol). Never carry on past it as
+    if it weren't there.
   - **Hard stop:** `hardStopAfter` (default 20k) past the limit, the
-    hook refuses every tool except Read, Edit and Write on your notes.
-    Bring them up to date and show the banner; nothing else is left.
+    hook refuses every tool except Read, Edit and Write on your notes
+    (and reading and setting titles, for `🔄`). Bring them up to date,
+    show the banner and set `🔄`; nothing else is left.
   - **Only the owner lifts a stop**, with `/chat-hub-core:limit <higher>`
     or `off`. Never change the limit, the settings, the hub record or
     the usage counts yourself; the hook refuses those too.
@@ -199,7 +202,9 @@ Two styles, set by `titles` in the settings:
   and pushing (or wrapping up: report in, being closed), `🚀` push in CI (level 2), `🟢` pushed (level 1) or CI
   passed (level 2) and asking the owner "more or wrap up?", `🔴` CI
   failed (level 2), `❓` waiting on the owner's answer to a question
-  that isn't an OK, `✅` ready to close (passes the close check).
+  that isn't an OK, `✅` ready to close (passes the close check),
+  `🔄` showing the SAFE TO CLEAR banner, waiting for the owner to type
+  /clear (a chat sets it itself; your own title too, see below).
   `⚪` new: you just started the chat and it hasn't set anything yet. `🔨`
   under way, nothing waiting on the owner; once a work chat has started,
   nothing sends it back to ⚪ (only talk chats and your own title keep

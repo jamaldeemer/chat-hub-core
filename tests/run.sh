@@ -252,6 +252,21 @@ t "title check: hub keeps ⚪" "$(atb u1 | grep -c '"decision"')" 0
 echo '{"level":0,"stats":false}' > .claude/chat-hub.json
 ttl u1 '❓ ʀ25+ 7F · x'
 t "title check: runs with stats off" "$(atb u1 | grep -c '"decision":"block"')" 1
+# 🔄 (waiting for /clear) is only right past the chat's limit.
+echo '{"level":0}' > .claude/chat-hub.json
+asst e3a 0 50000; ttl u1 '🔄  ʀ34 E3 · Clear symbol'
+t "title check: 🔄 sent back under the limit" "$(atb u1 | grep -c '"decision":"block".*🔄 is only for a chat showing the SAFE TO CLEAR banner.*🔨 working')" 1
+t "title check: 🔄 is a known symbol" "$(atb u1 | grep -c 'no status symbol')" 0
+echo '{"level":0,"trimAtWork":100000}' > .claude/chat-hub.json
+asst e3b 0 120000
+t "title check: work chat keeps 🔄 past its limit" "$(atb u1 | grep -c '"decision"')" 0
+echo '{"level":0,"hubSession":"u1"}' > .claude/chat-hub.json
+t "title check: hub under its limit sent back from 🔄" "$(atb u1 | grep -c '🔄 is only for.*⚪, or your release symbol')" 1
+asst e3c 0 140000
+t "title check: hub keeps 🔄 past its limit" "$(atb u1 | grep -c '"decision"')" 0
+asst e3d 0 10000; atb u1 >/dev/null
+t "start note: cleared chat told to drop 🔄" "$(ss u1 "$tr" clear | grep -c 'You were just cleared: if your title.s symbol is 🔄, set your normal status now')" 1
+t "start note: no 🔄 line on a plain start" "$(ss u1 "$tr" startup | grep -c 'You were just cleared')" 0
 rm -rf "$tmp/u1"
 echo '{"level":0,"trimAt":150000}' > .claude/chat-hub.json
 node "$root/hooks/set-hub.mjs" --session u1 --replace >/dev/null
@@ -263,6 +278,7 @@ t "wrap up: hub past trimAt" "$(op u1 | grep -c 'WRAP UP.*past its limit of 150k
 t "wrap up: says when the hard stop comes" "$(op u1 | grep -c 'At 170k tokens the hooks refuse every tool but your notes')" 1
 t "wrap up: says how the owner lifts it" "$(op u1 | grep -c 'Only the owner can lift this: they type /chat-hub-core:limit <a higher limit.*/chat-hub-core:limit off')" 1
 t "wrap up: on every prompt" "$(op u1 | grep -c 'WRAP UP')" 1
+t "wrap up: banner comes with 🔄 in the title" "$(op u1 | grep -c 'SAFE TO CLEAR.*set your title.s symbol to 🔄 (waiting for the owner to clear).*After the clear, set your normal status again')" 1
 t "wrap up: no hard stop yet" "$(op u1 | grep -c 'HARD STOP')" 0
 asst m6 0 50000; at u1 >/dev/null; op u1 >/dev/null
 t "wrap up: quiet after a clear" "$(op u1 | wc -c | tr -d ' ')" 0
@@ -289,6 +305,7 @@ t "trim: work chats not by default" "$(op u2 | wc -c | tr -d ' ')" 0
 echo '{"level":0,"trimAt":150000,"trimAtWork":100000}' > .claude/chat-hub.json
 t "trim: work chats with trimAtWork" "$(op u2 | grep -c 'natural stopping point')" 1
 t "trim: work chats show a plain line, then the banner" "$(op u2 | grep -c 'plain line .*This chat is at 151k tokens: wrapping up.*SAFE TO CLEAR: type /clear')" 1
+t "trim: work chats set 🔄 with the banner" "$(op u2 | grep -c 'SAFE TO CLEAR.*set your title.s symbol to 🔄')" 1
 t "trim: work chats never refused" "$(pt u2 mcp__ccd_session__start_session '{}' | grep -c '"deny"')" 0
 t "trim: work STOP names the chat notes file" "$(op u2 | grep -c 'your chat notes (.*chat-hub/work/main.md), under .*## Next.*- After clear:')" 1
 t "trim: work STOP keeps a request from this message" "$(op u2 | grep -c 'every request from the owner.*including one that came with this message.*every question you asked the owner.*backlog entry or a commit alone is not enough')" 1
@@ -338,6 +355,10 @@ t "stage 2: reading the notes allowed" "$(den u1 Read "{\"file_path\":\"$notes\"
 t "stage 2: editing the notes allowed" "$(den u1 Edit "{\"file_path\":\"$notes\"}")" 0
 t "stage 2: writing the notes allowed" "$(den u1 Write "{\"file_path\":\"$notes\"}")" 0
 t "stage 2: wrap-up box allowed" "$(den u1 mcp__ccd_turn__wrap_up '{}')" 0
+t "stage 2: reading its title allowed" "$(den u1 mcp__ccd_session_mgmt__get_session '{"session_id":"self"}')" 0
+t "stage 2: setting its title allowed" "$(den u1 mcp__ccd_session_mgmt__set_session_title '{}')" 0
+t "stage 2: prompt note says set 🔄" "$(op u1 | grep -c 'HARD STOP.*set your title.s symbol to 🔄')" 1
+t "stage 2: refusal says set 🔄" "$(pt u1 Bash '{"command":"ls"}' | grep -c 'set your title.s symbol to 🔄 (waiting for the clear)')" 1
 echo '{"level":1,"trimAt":150000,"hardStopAfter":40000,"done":["tests pass"]}' > .claude/chat-hub.json
 t "hardStopAfter moves stage 2" "$(den u1 Bash '{"command":"ls"}')" 0
 t "hardStopAfter: still stage 1" "$(den u1 Bash '{"command":"git tag v9"}')" 1

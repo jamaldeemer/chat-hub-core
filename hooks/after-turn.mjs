@@ -3,7 +3,7 @@
 // Then the chat's own title: if its symbol, spacing or ʀ tag is wrong, the chat is sent back
 // once to fix it (never twice in a row, so a rename that fails can't loop).
 import { hookInput, isHubChat, readConfig, readHub } from './config.mjs'
-import { statsLine, updateUsage } from './usage.mjs'
+import { statsLine, trimLimit, updateUsage } from './usage.mjs'
 import { titleNote } from './titles.mjs'
 import { withPace } from './pace.mjs'
 
@@ -11,14 +11,17 @@ const input = hookInput()
 const cfg = readConfig(input.cwd || process.cwd())
 if (!cfg || !input.session_id) process.exit(0)
 const out = {}
+const s = updateUsage(input.session_id, input.transcript_path)
 if (cfg.stats !== false) {
-  const s = updateUsage(input.session_id, input.transcript_path)
   if (s.turns) out.systemMessage = withPace(statsLine(s), cfg)
 }
 if (!input.stop_hook_active) {
   let workChat = true
   try { workChat = !isHubChat(readHub(cfg), input.session_id) } catch {}
-  const note = titleNote(input, { workChat })
+  // 🔄 (waiting for /clear) is only right past the limit: after a clear it's sent back.
+  const limit = trimLimit(!workChat, cfg)
+  const pastLimit = !!limit && s.context >= limit
+  const note = titleNote(input, { workChat, pastLimit })
   if (note) Object.assign(out, { decision: 'block', reason: note })
 }
 if (Object.keys(out).length) process.stdout.write(JSON.stringify(out))

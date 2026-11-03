@@ -45,10 +45,12 @@ More: [Levels in detail](#levels-in-detail).
 | 🟢 | Pushed (1) or CI passed (2): more, or wrap up? | 1+ |
 | 🔴 | CI failed | 2 |
 | ✅ | Ready to close | all |
+| 🔄 | Showing SAFE TO CLEAR: waiting for you to type `/clear` | all |
 
 The hub's own title uses ⚪ normally, and during a release 🙋 (built,
 waiting on your push), 🚀 (release in CI), 🟢 (CI passed, push to main),
 🔴 (CI failed), ❓ (question for you); ⚪ again once main has it.
+Past its limit it shows 🔄 like any chat, until you clear it.
 Its title ends with the number of chats still open for that release, in
 parentheses: `⚪  Hub · ʀ07 (6)`. Talk chats and ✅ chats don't count;
 `(0)` means the release's work is all done. The hub sets it whenever it
@@ -260,6 +262,7 @@ asks which title style the project wants:
 | Pushed / CI passed: more or wrap up? | `🟢  3F · (Fix menu spacing) (ʀ7)` | `🟢  ʀ07 3F · (Fix menu spacing)` |
 | CI failed (level 2) | `🔴  3F · (Fix menu spacing) (ʀ7)` | `🔴  ʀ07 3F · (Fix menu spacing)` |
 | Ready to close | `✅  3F · (Fix menu spacing) (ʀ7)` | `✅  ʀ07 3F · (Fix menu spacing)` |
+| Waiting for you to type `/clear` | `🔄  3F · (Fix menu spacing) (ʀ7)` | `🔄  ʀ07 3F · (Fix menu spacing)` |
 | Later release (not the next one) | `🔨  3F · Fix menu spacing (ʀ8)` | `🔨  ʀ08 3F · Fix menu spacing` |
 | Talk chat (no release) | `⚪  A4 · Compare libraries` | `⚪  ᴢ A4 · Compare libraries` |
 | The hub | `⚪  Hub · ʀ7 (6)` | `⚪  Hub · ʀ07 (6)` |
@@ -286,6 +289,7 @@ only ⚪ (starting a chat), ✅ (closing it) and the rest of every title.
 | 🟢 | Pushed (level 1) or CI passed (level 2); the chat is asking "Anything more, or should I wrap up?" in a menu ("Wrap up" / "More changes"); it changes as soon as you answer, so 🟢 always means the question is open | the chat pushes / its CI run passes | 1+ |
 | 🔴 | CI failed | its CI run fails | 2 |
 | ✅ | Ready to close | the hub: the chat's wrap-up passes the close check | all |
+| 🔄 | Past its limit and showing the SAFE TO CLEAR banner: waiting for you to type `/clear` | the chat (hub or work chat) first shows the banner; after the clear it sets its normal status again | all |
 
 The release tag's letter is small-caps `ʀ` (`ʀ07`, `(ʀ7)`), so it
 stands apart from the code; the digits, `~` and `+` stay plain. Older
@@ -379,6 +383,12 @@ answered yet, and where its work stands. After the clear the start note
 quotes those lines back, so nothing waits for you to bring it up again.
 Like the hub, a work chat's count is checked before every tool call
 too, so a long turn can't run far past the limit.
+
+A chat showing the banner sets its title's symbol to 🔄, so you can
+spot every chat waiting for `/clear` in the sidebar. After the clear
+the start note tells it to set its normal status again (🔨, ❓; the hub
+⚪ or its release symbol), and the after-turn title check sends back a
+🔄 left on a chat that's under its limit.
 
 **The hub's limit is a hard stop,** in two stages, so it can't drift on
 when asked for "just one more thing". At `trimAt` a hook refuses new

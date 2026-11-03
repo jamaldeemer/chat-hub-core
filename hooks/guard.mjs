@@ -12,7 +12,7 @@ import { realpathSync, writeSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { basename, dirname, resolve } from 'node:path'
 import { hookInput, hubNotesFile, isHubChat, menuOk, readConfig, readHub, say, workNotesFile } from './config.mjs'
-import { OVERRIDE, SAFE_BANNER, hubStage, short, trimLimit, trimNudge, updateUsage } from './usage.mjs'
+import { CLEAR_SYMBOL, OVERRIDE, SAFE_BANNER, hubStage, short, trimLimit, trimNudge, updateUsage } from './usage.mjs'
 
 const input = hookInput()
 const cwd = input.cwd || process.cwd()
@@ -129,12 +129,15 @@ if (limit && input.session_id) {
   }
   if (stage === 2) {
     const own = !!notes && !!path && real(expand(path)) === real(notes)
+    // Reading and setting titles stays free, so the hub can show 🔄 (waiting for the clear).
     const free = /^mcp__ccd_turn__/.test(tool) || tool === 'ToolSearch' ||
+      /^mcp__ccd_session_mgmt__(get_session|set_session_title)$/.test(tool) ||
       (tool === 'Skill' && /^chat-hub-core:limit$/.test(String(ti.skill || '')))
     if (!(free || (own && /^(Read|Edit|Write|MultiEdit)$/.test(tool)))) {
       deny(`HARD STOP: ${at} by more than its stop margin. Every tool is refused except Read, Edit and Write on ` +
         `your hub notes (${notes || 'hub-notes.md: none without git'}). Bring them up to date if they aren't, then start ` +
-        `every reply with this banner as its own code block:\n\`\`\`\n${SAFE_BANNER}\n\`\`\`\n${OVERRIDE}`)
+        `every reply with this banner as its own code block:\n\`\`\`\n${SAFE_BANNER}\n\`\`\`\n` +
+        `and set your title's symbol to ${CLEAR_SYMBOL} (waiting for the clear). ${OVERRIDE}`)
     }
   }
   if (stage === 1) {

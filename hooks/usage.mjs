@@ -99,8 +99,13 @@ export const SAFE_BANNER =
   '╔════════════════════════════════════╗\n' +
   '║   ✅  SAFE TO CLEAR: type /clear   ║\n' +
   '╚════════════════════════════════════╝'
+// The title symbol for a chat showing that banner, so the owner spots it in the sidebar.
+export const CLEAR_SYMBOL = '🔄'
+const titleRule = `In the same turn you first show it, set your title's symbol to ${CLEAR_SYMBOL} (waiting for the owner ` +
+  'to clear): read your title (get_session self), swap only its first character and set it (set_session_title ' +
+  'with self), keeping the rest exactly. After the clear, set your normal status again. '
 const bannerRule = 'start every reply until you\'re cleared with this banner, as its own code block (```), ' +
-  'exactly:\n```\n' + SAFE_BANNER + '\n```\n'
+  'exactly:\n```\n' + SAFE_BANNER + '\n```\n' + titleRule
 
 // Stage 1: the hub wraps up. It takes on no new work, finishes what it already has in flight,
 // brings its notes up to date and only then shows the banner, so a clear never lands in the
