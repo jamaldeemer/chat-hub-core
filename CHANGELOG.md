@@ -3,7 +3,7 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
-## 0.3.45 (E2; version set at release, after C8's 0.3.44)
+## 0.3.44
 
 - **Work chats keep what came in while wrapping up:** a work chat past
   `trimAtWork` was only told to "write down where you are", so a request
