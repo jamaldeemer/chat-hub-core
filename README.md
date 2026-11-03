@@ -370,7 +370,15 @@ never lands in the middle of a step. Until then each reply starts
 banner. The hub never asks you about clearing
 (no question or buttons: a button can't clear a chat); you just type
 `/clear` in the hub chat. Work chats get a similar reminder past `trimAtWork`,
-if set: stop at a natural point, note where they are, then the same banner.
+if set: stop at a natural point, then the same banner. Before the banner
+a work chat writes what a fresh chat needs into its own notes
+(`.git/chat-hub/work/<branch>.md`, under "## Next" as "- After clear:"
+lines): every request of yours it hasn't finished, including one sent
+with the message that hit the limit, every question you haven't
+answered yet, and where its work stands. After the clear the start note
+quotes those lines back, so nothing waits for you to bring it up again.
+Like the hub, a work chat's count is checked before every tool call
+too, so a long turn can't run far past the limit.
 
 **The hub's limit is a hard stop,** in two stages, so it can't drift on
 when asked for "just one more thing". At `trimAt` a hook refuses new

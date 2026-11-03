@@ -56,6 +56,15 @@ t "app address: work chat told so outright" "$(ssa local_Z s6 | grep -c 'This ch
 t "app address: work chat not told to read the notes" "$(ssa local_Z s6 | grep -c 'hub-notes.md')" 0
 t "app address: cleared hub told to recount and prune" "$(ssa local_A s7 | grep -c 'drop chats the owner deleted from your notes and fix your title')" 1
 t "app address: work chat not told to recount" "$(ssa local_Z s6 | grep -c 'owner deleted')" 0
+# A work chat's own notes (chat-hub/work/<branch>.md): its "- After clear:" lines come back at start.
+mkdir -p .git/chat-hub/work
+printf '## Next\n- After clear: make the face buttons follow the camera softly, as if through a fluid (owner asked, not started)\n- After clear: ask the owner: selected face lit less?\n## Done\n- After clear: not this one\n' > .git/chat-hub/work/main.md
+t "work notes: start note quotes the after-clear items" "$(ssa local_Z s6 | grep -c 'chat notes (.*chat-hub/work/main.md).*before anything new.*ask it again now.*follow the camera softly, as if through a fluid.*selected face lit less?')" 1
+t "work notes: only from ## Next" "$(ssa local_Z s6 | grep -c 'not this one')" 0
+t "work notes: the hub doesn't get them" "$(ssa local_A s7 | grep -c 'chat-hub/work/')" 0
+t "work notes: another branch has its own" "$(cd ../wt2 && ssa local_Z s6 | grep -c 'follow the camera')" 0
+t "work notes: none, nothing quoted" "$(printf '## Next\n- x\n' > .git/chat-hub/work/main.md; ssa local_Z s6 | grep -c 'chat notes')" 0
+rm -rf .git/chat-hub/work
 printf '## Me\nx\n## Next\n- code E10 next\n- After clear: close E8 (report in)\n- after the clear: tell E7 to merge main\n## Plans\n- After clear: not this one\n' > .git/chat-hub/hub-notes.md
 t "after clear: start note quotes the Next items" "$(ssa local_A s7 | grep -c 'put off until after the clear; do it first.*close E8 (report in).*tell E7 to merge main')" 1
 t "after clear: only from ## Next" "$(ssa local_A s7 | grep -c 'not this one')" 0
@@ -281,6 +290,9 @@ echo '{"level":0,"trimAt":150000,"trimAtWork":100000}' > .claude/chat-hub.json
 t "trim: work chats with trimAtWork" "$(op u2 | grep -c 'natural stopping point')" 1
 t "trim: work chats show a plain line, then the banner" "$(op u2 | grep -c 'plain line .*This chat is at 151k tokens: wrapping up.*SAFE TO CLEAR: type /clear')" 1
 t "trim: work chats never refused" "$(pt u2 mcp__ccd_session__start_session '{}' | grep -c '"deny"')" 0
+t "trim: work STOP names the chat notes file" "$(op u2 | grep -c 'your chat notes (.*chat-hub/work/main.md), under .*## Next.*- After clear:')" 1
+t "trim: work STOP keeps a request from this message" "$(op u2 | grep -c 'every request from the owner.*including one that came with this message.*every question you asked the owner.*backlog entry or a commit alone is not enough')" 1
+t "trim: work STOP no CI line below level 2" "$(op u2 | grep -c 'check CI')" 0
 # Hard stops for the hub: stage 1 at the limit (no new work), stage 2 at limit + hardStopAfter (notes only).
 echo '{"level":1,"trimAt":150000,"done":["tests pass"]}' > .claude/chat-hub.json
 node "$root/hooks/set-hub.mjs" --session u1 --replace >/dev/null
@@ -341,6 +353,9 @@ t "after a clear: nothing refused" "$(den u1 mcp__ccd_session__start_session '{}
 asst m23 0 175000
 ptt() { j=$(node -e 'process.stdout.write(JSON.stringify({session_id:process.argv[1],cwd:process.argv[2],transcript_path:process.argv[3],tool_name:"Bash",tool_input:{command:"ls"}}))' "$1" "$(pwd)" "$tr"); printf "%s" "$j" | node "$root/hooks/guard.mjs"; }
 t "mid-turn: guard sees the new context" "$(ptt u1 | grep -c 'HARD STOP')" 1
+echo '{"level":0,"trimAt":150000,"trimAtWork":100000}' > .claude/chat-hub.json
+t "mid-turn: a work chat's guard sees it too" "$(ptt u3 | grep -c 'STOP: this chat.s context is 175k')" 1
+echo '{"level":1,"trimAt":150000,"done":["tests pass"]}' > .claude/chat-hub.json
 asst m24 0 136000; at u1 >/dev/null
 echo '{"level":0,"trimAt":150000,"trimAtWork":100000}' > .claude/chat-hub.json
 # /chat-hub-core:limit: changes the limits from the next prompt, for every worktree, never in the settings

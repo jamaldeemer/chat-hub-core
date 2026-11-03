@@ -91,6 +91,18 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
   shape. Never call yourself ready to close or set ✅; the hub checks and
   decides. Follow-ups go in the settings' `followups` file
   (`docs/backlog.md` if it isn't set).
+- **Past your limit** (a "⚠️ STOP" note, if `trimAtWork` is set): start
+  nothing new; get to a natural stopping point. Before the SAFE TO CLEAR
+  banner, write under "## Next" in your chat notes (the file the note
+  names, `.git/chat-hub/work/<branch>.md`) one `- After clear: …` line
+  for each request from the owner you haven't finished (one that came
+  with the STOP note too: note it, don't start it), each question to the
+  owner with no answer yet, and where your work stands. A backlog entry
+  or a commit alone doesn't count: after the clear the start note
+  quotes only those lines back. Then tell the owner what you noted.
+- **After a clear:** if the start note quotes your chat notes, do those
+  lines first: ask open questions again, carry out (or ask about)
+  requests, and delete each line once it's done or answered.
 - **Plugin update:** when a note says chat-hub-core was updated, read
   the rules file it names before anything else; it replaces these rules.
   The app already showed the owner "Updated", so say nothing about the
