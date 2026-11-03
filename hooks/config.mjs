@@ -33,9 +33,9 @@ export function hookInput() {
 // sees it at once and it's never committed. It's stored by two IDs: Claude's session ID (what
 // hooks see) and the desktop app's address, `local_…` (what the app's messaging uses, and
 // what survives a clear). Without git, it falls back to `hubSession` in the settings.
-function sharedHubFile() {
+function sharedHubFile(cwd = process.cwd()) {
   try {
-    const dir = execFileSync('git', ['rev-parse', '--path-format=absolute', '--git-common-dir'],
+    const dir = execFileSync('git', ['-C', cwd, 'rev-parse', '--path-format=absolute', '--git-common-dir'],
       { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim()
     return dir ? `${dir}/chat-hub/hub` : null
   } catch { return null }
@@ -81,6 +81,21 @@ const fromId = id => (id.startsWith('local_') ? { app: id } : { session: id })
 export function hubNotesFile() {
   const f = sharedHubFile()
   return f ? f.replace(/\/hub$/, '/hub-notes.md') : null
+}
+
+// A work chat's own notes (chat-hub/work/<branch>.md, next to the hub record): what a cleared
+// chat needs back, in a "## Next" section of "- After clear: …" lines. Keyed by branch, which a
+// clear keeps. null without git or on no branch (detached HEAD).
+export function workNotesFile(dir = process.cwd()) {
+  const f = sharedHubFile(dir)
+  if (!f) return null
+  let branch = ''
+  try {
+    branch = execFileSync('git', ['-C', dir, 'rev-parse', '--abbrev-ref', 'HEAD'],
+      { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim()
+  } catch {}
+  if (!branch || branch === 'HEAD') return null
+  return f.replace(/\/hub$/, `/work/${branch.replace(/[^\w.-]/g, '_')}.md`)
 }
 
 // Context limits set with /chat-hub-core:limit (limits.json, next to the hub record). They

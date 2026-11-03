@@ -3,6 +3,29 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## 0.3.45 (E2; version set at release, after C8's 0.3.44)
+
+- **Work chats keep what came in while wrapping up:** a work chat past
+  `trimAtWork` was only told to "write down where you are", so a request
+  the owner sent with the ⚠️ STOP note went into a long backlog, the
+  chat showed SAFE TO CLEAR, and after the clear nothing brought it
+  back (an open question to the owner was lost the same way). Now each
+  work chat has its own notes, `<git common dir>/chat-hub/work/<branch>.md`.
+  The STOP note names that file and says that before the banner the
+  chat must log, under "## Next" as `- After clear: …`, every owner
+  request it hasn't finished (one sent with that message too), every
+  unanswered question to the owner, and where its work stands. A
+  backlog entry or a commit doesn't count. After the clear, the work
+  chat's start note quotes those lines back, like the hub's: do them
+  first, ask the questions again, delete each line once it's done.
+- **A work chat's count is checked mid-turn:** `hooks/guard.mjs` now
+  updates a work chat's context before every tool call when
+  `trimAtWork` is set (it did this for the hub only), so a turn that
+  jumps past the limit gets the STOP note at once, not at the next
+  prompt.
+- The STOP note's "the start note checks CI for you" line is now only
+  shown at level 2, where the start note really does.
+
 ## 0.3.43
 
 - **Weekly pace on the owner's line:** under the usage line after every

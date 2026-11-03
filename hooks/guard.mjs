@@ -11,7 +11,7 @@ import { execFileSync } from 'node:child_process'
 import { realpathSync, writeSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { basename, dirname, resolve } from 'node:path'
-import { hookInput, hubNotesFile, isHubChat, menuOk, readConfig, readHub, say } from './config.mjs'
+import { hookInput, hubNotesFile, isHubChat, menuOk, readConfig, readHub, say, workNotesFile } from './config.mjs'
 import { OVERRIDE, SAFE_BANNER, hubStage, short, trimLimit, trimNudge, updateUsage } from './usage.mjs'
 
 const input = hookInput()
@@ -161,6 +161,10 @@ if (limit && input.session_id) {
   }
 }
 
+// A work chat with a limit (`trimAtWork`): bring its numbers up to date too, so a turn that
+// crosses the limit gets the STOP note on its next tool call, not at the next prompt.
+if (!isHub && input.session_id && trimLimit(false, c)) updateUsage(input.session_id, input.transcript_path)
+
 // Nothing refused: pass on a trim nudge if this chat just crossed its size limit.
-const nudge = trimNudge({ session: input.session_id, isHub, cfg: c, notes })
+const nudge = trimNudge({ session: input.session_id, isHub, cfg: c, notes: isHub ? notes : trimLimit(false, c) ? workNotesFile(cwd) : '' })
 if (nudge) say('PreToolUse', nudge)

@@ -8,7 +8,7 @@ import { statsLine, updateUsage } from './usage.mjs'
 import { withPace } from './pace.mjs'
 import { applyDefaults, defaultsNote, offNote } from './tools.mjs'
 import { closeBackstop } from './wrapups.mjs'
-import { afterClearItems, ciState, hookInput, hostApp, hubAddress, hubNotesFile, loadConfig, notesProblem, pluginVersion, pushState, readHub, say, setHub } from './config.mjs'
+import { afterClearItems, ciState, hookInput, hostApp, hubAddress, hubNotesFile, loadConfig, notesProblem, pluginVersion, pushState, readHub, say, setHub, workNotesFile } from './config.mjs'
 
 const setHubCmd = `node "${dirname(fileURLToPath(import.meta.url))}/set-hub.mjs"`
 
@@ -42,6 +42,19 @@ function ciNote(c) {
   return ` Your branch head ${sha} is pushed and CI ${ci === 'not' ? "hasn't passed on it yet" : "couldn't be asked about it (ci.passed failed)"}. ` +
     `${lost} If your title shows 🚀, look at the run for ${sha} now: still running, start the watcher again in the background; ` +
     `failed, set 🔴 and fix it; passed, set 🟢 and ${ask}. Never wait for the owner to prompt you about it.`
+}
+
+// A work chat after a clear: what it wrote under "## Next" in its own notes before the clear
+// (owner requests not finished, open questions, where it stands). Without this a cleared work
+// chat starts from its brief alone and loses a request the owner made during wrap-up.
+function workNote() {
+  const f = workNotesFile()
+  const later = afterClearItems(f)
+  if (!later.length) return ''
+  return ` Before a clear you wrote down in your chat notes (${f}) what to pick up again: read that file first, then ` +
+    'do these before anything new. A question to the owner on the list: ask it again now. A request: carry it out ' +
+    "(or, if it needs the owner's go, ask). Delete each line from the notes once it's done or answered: " +
+    later.map(l => `"${l.slice(0, 300)}"`).join('; ') + '.'
 }
 
 const { cfg: c, error } = loadConfig()
@@ -80,7 +93,7 @@ if (error) {
       `never the work-chat skill.${rec}` + notes + recount
   } else if (hub.app && app) {
     who = `This chat is a work chat (its app address is ${app}; the hub is ${hub.app}): load the chat-hub-core:work-chat ` +
-      `skill now and only ever message ${hub.app}.` + ciNote(c)
+      `skill now and only ever message ${hub.app}.` + ciNote(c) + workNote()
   } else if (hub.session && me && hub.session === me) {
     // In the desktop app, record the hub's app address here too when it's missing.
     let added = false
@@ -91,15 +104,15 @@ if (error) {
     who = `This project's hub is app session ${hub.app}. Look up this session's own details with your session tools: ` +
       `if its id is ${hub.app}, this chat is the hub (it was restarted or cleared): load the chat-hub-core:hub skill now and ` +
       `run ${setHubCmd} --session <this chat's session ID, below> --app ${hub.app}.${notes ? ' Then' + notes.replace(' Your notes exist:', ' (your notes exist)') : ''}${recount} Otherwise this is a work chat: ` +
-      `load the chat-hub-core:work-chat skill now and only ever message ${hub.app}.` + ciNote(c)
+      `load the chat-hub-core:work-chat skill now and only ever message ${hub.app}.` + ciNote(c) + workNote()
   } else if (hub.session) {
     who = `This chat is a work chat: load the chat-hub-core:work-chat skill now. This project's hub is session ${hub.session}; ` +
       'only ever message that session (if the app won\'t accept that ID, ask the owner which chat is the hub). ' +
-      'Become the hub only if the owner runs /chat-hub-core:hub here.' + ciNote(c)
+      'Become the hub only if the owner runs /chat-hub-core:hub here.' + ciNote(c) + workNote()
   } else {
     who = 'No hub is recorded for this project. Load the chat-hub-core:work-chat skill, and tell the owner first thing: ' +
       '"No hub is recorded; type /chat-hub-core:hub in the chat that should be the hub." Until one is recorded, ' +
-      'don\'t message any chat as the hub and don\'t guess one by its name.'
+      'don\'t message any chat as the hub and don\'t guess one by its name.' + workNote()
   }
   const mine = me ? ` This chat's session ID is ${me}.` : ''
   // What's off for this chat (read before the defaults change it: this chat keeps its tools).

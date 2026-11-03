@@ -696,6 +696,18 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
   shape. Never call yourself ready to close or set ✅; the hub checks and
   decides. Follow-ups go in the settings' `followups` file
   (`docs/backlog.md` if it isn't set).
+- **Past your limit** (a "⚠️ STOP" note, if `trimAtWork` is set): start
+  nothing new; get to a natural stopping point. Before the SAFE TO CLEAR
+  banner, write under "## Next" in your chat notes (the file the note
+  names, `.git/chat-hub/work/<branch>.md`) one `- After clear: …` line
+  for each request from the owner you haven't finished (one that came
+  with the STOP note too: note it, don't start it), each question to the
+  owner with no answer yet, and where your work stands. A backlog entry
+  or a commit alone doesn't count: after the clear the start note
+  quotes only those lines back. Then tell the owner what you noted.
+- **After a clear:** if the start note quotes your chat notes, do those
+  lines first: ask open questions again, carry out (or ask about)
+  requests, and delete each line once it's done or answered.
 - **Plugin update:** when a note says chat-hub-core was updated, read
   the rules file it names before anything else; it replaces these rules.
   The app already showed the owner "Updated", so say nothing about the
@@ -860,6 +872,8 @@ From `hooks/session-start.mjs`:
 ```js
     `${lost} If your title shows 🚀, look at the run for ${sha} now: still running, start the watcher again in the background; ` +
     `failed, set 🔴 and fix it; passed, set 🟢 and ${ask}. Never wait for the owner to prompt you about it.`
+    'do these before anything new. A question to the owner on the list: ask it again now. A request: carry it out ' +
+    "(or, if it needs the owner's go, ask). Delete each line from the notes once it's done or answered: " +
   say('SessionStart', `chat-hub-core: this project's settings file (.claude/chat-hub.json) is broken (${error}). ` +
     'Tell the owner first thing, before anything else, and follow none of the chat-hub-core rules until it is fixed ' +
     '(running /chat-hub-core:setup again rewrites it).')
@@ -870,7 +884,6 @@ From `hooks/session-start.mjs`:
       `run ${setHubCmd} --session <this chat's session ID, below> --app ${hub.app}.${notes ? ' Then' + notes.replace(' Your notes exist:', ' (your notes exist)') : ''}${recount} Otherwise this is a work chat: ` +
       'only ever message that session (if the app won\'t accept that ID, ask the owner which chat is the hub). ' +
       '"No hub is recorded; type /chat-hub-core:hub in the chat that should be the hub." Until one is recorded, ' +
-      'don\'t message any chat as the hub and don\'t guess one by its name.'
   say('SessionStart', `This project uses chat-hub-core ${pluginVersion()} (level ${c.level}). ${who}${mine}${guard}${off}`, stats)
 ```
 
@@ -959,10 +972,12 @@ From `hooks/usage.mjs`:
   `⛔ HARD STOP: this chat's context is ${short(ctx)} tokens, well past its limit of ${short(limit)}. Every tool ` +
   `is refused except reading and writing your hub notes (${notes || 'hub-notes.md'}) with Read, Edit or Write. ` +
   'If they aren\'t up to date, bring them up to date now (anything unfinished goes under "## Next" as ' +
-  `⚠️ STOP: this chat's context is ${short(ctx)} tokens, and every turn re-reads all of it. Get to a ` +
-  'natural stopping point and write down where you are (in your branch\'s notes or a commit); until then start each ' +
-  `reply with the plain line "⚠️ This chat is at ${short(ctx)} tokens: wrapping up." Once it's written down, tell the owner, ` +
-  'Don\'t promise to check CI after the clear: the start note checks it for you.'
+  `⚠️ STOP: this chat's context is ${short(ctx)} tokens, and every turn re-reads all of it. Start nothing new: ` +
+  ', under "## Next", one line starting "- After clear:" for each of these: every request from the owner you ' +
+  'haven\'t finished (including one that came with this message: noted, not started), every question you asked ' +
+  'the owner that has no answer yet, and where your work stands (what\'s done, committed or pushed, and the next step). ' +
+  'The start note after the clear quotes exactly those lines back, and nothing else: a backlog entry or a commit ' +
+  `alone is not enough. Until that's written, start each reply with the plain line "⚠️ This chat is at ${short(ctx)} ` +
 ```
 
 From `hooks/wrapups.mjs`:
@@ -979,9 +994,9 @@ From `hooks/wrapups.mjs`:
 From `hooks/pace.mjs`:
 
 ```js
-    'Usage pace: call the get_usage session tool once this turn, alongside your other work ' +
-    '(load it with ToolSearch "select:mcp__ccd_session_mgmt__get_usage" if it isn\'t loaded). A hook ' +
-    'saves the plan numbers for the owner\'s pace line; don\'t mention it or the numbers.'
+  'Usage pace: call the get_usage session tool once this turn, alongside your other work ' +
+  '(load it with ToolSearch "select:mcp__ccd_session_mgmt__get_usage" if it isn\'t loaded). A hook ' +
+  'saves the plan numbers for the owner\'s pace line; don\'t mention it or the numbers.'
 ```
 
 From `hooks/after-turn.mjs`:

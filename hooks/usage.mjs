@@ -128,12 +128,19 @@ export const hardStopText = (ctx, limit, notes) =>
   '"- After clear: …"), then ' + bannerRule +
   'Do nothing else. Never ask the owner about clearing: no question, menu or buttons. ' + OVERRIDE
 
-const workText = ctx =>
-  `⚠️ STOP: this chat's context is ${short(ctx)} tokens, and every turn re-reads all of it. Get to a ` +
-  'natural stopping point and write down where you are (in your branch\'s notes or a commit); until then start each ' +
-  `reply with the plain line "⚠️ This chat is at ${short(ctx)} tokens: wrapping up." Once it's written down, tell the owner, ` +
-  'and ' + bannerRule +
-  'Don\'t promise to check CI after the clear: the start note checks it for you.'
+// A work chat past `trimAtWork`. A clear loses everything not written down, so before the banner
+// it logs what a fresh chat needs in its own notes file, which the start note quotes back.
+// A request that came with this very prompt counts too: that's the one most easily lost.
+const workText = (ctx, cfg, notes) =>
+  `⚠️ STOP: this chat's context is ${short(ctx)} tokens, and every turn re-reads all of it. Start nothing new: ` +
+  'get to a natural stopping point. Then write down in ' + (notes ? `your chat notes (${notes})` : 'your chat notes (no file without git: put them in a commit)') +
+  ', under "## Next", one line starting "- After clear:" for each of these: every request from the owner you ' +
+  'haven\'t finished (including one that came with this message: noted, not started), every question you asked ' +
+  'the owner that has no answer yet, and where your work stands (what\'s done, committed or pushed, and the next step). ' +
+  'The start note after the clear quotes exactly those lines back, and nothing else: a backlog entry or a commit ' +
+  `alone is not enough. Until that's written, start each reply with the plain line "⚠️ This chat is at ${short(ctx)} ` +
+  'tokens: wrapping up." Once it is, tell the owner what you noted for after the clear, and ' + bannerRule +
+  ((cfg?.level || 0) >= 2 ? 'Don\'t promise to check CI after the clear: the start note checks it for you.' : '')
 
 // Past the limit: the note comes on every prompt, and once on a tool call when the chat first
 // crosses it. Resets once the context drops below 80% of the limit (after a clear).
@@ -147,6 +154,6 @@ export function trimNudge({ session, isHub, cfg, everyTime = false, notes = '' }
   if (s.context < limit) return ''
   if (!everyTime && s.nudgedAt) return ''
   if (!s.nudgedAt) { s.nudgedAt = limit; writeUsage(session, s) }
-  if (!isHub) return workText(s.context)
+  if (!isHub) return workText(s.context, cfg, notes)
   return hubStage(s.context, cfg, limit) === 2 ? hardStopText(s.context, limit, notes) : wrapUpText(s.context, limit, cfg)
 }
