@@ -3,6 +3,21 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## 0.3.46
+
+- **`/chat-hub-core:limit more`: a little more room until the clear.**
+  A chat that hit its limit mid-task could only be let through with a
+  higher fixed limit, which then stayed for every chat. Now typing
+  `/chat-hub-core:limit more` in that chat (hub or work chat) gives it
+  25k tokens past where it is now (`more 40k` for another size, 5k–200k;
+  type it again for more). Only that chat gets it: the room is kept in
+  its own usage counts, not `limits.json`. For the hub, wrap-up and the
+  hard stop (`hardStopAfter` later) both move up. It ends at the clear
+  (a new start, and the start hook drops it), or once the context is back
+  under 80% of the normal limit. The chat is told to carry on and set its
+  normal status again from 🔄; plain `/chat-hub-core:limit` shows the
+  room. Every stop note now names `more` as the first way past it.
+
 ## 0.3.45
 
 - **🔄: waiting for you to type /clear.** A chat past its limit showing

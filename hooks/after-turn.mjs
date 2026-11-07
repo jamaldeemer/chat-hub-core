@@ -3,7 +3,7 @@
 // Then the chat's own title: if its symbol, spacing or ʀ tag is wrong, the chat is sent back
 // once to fix it (never twice in a row, so a rename that fails can't loop).
 import { hookInput, isHubChat, readConfig, readHub } from './config.mjs'
-import { statsLine, trimLimit, updateUsage } from './usage.mjs'
+import { chatLimit, statsLine, updateUsage } from './usage.mjs'
 import { titleNote } from './titles.mjs'
 import { withPace } from './pace.mjs'
 
@@ -19,7 +19,7 @@ if (!input.stop_hook_active) {
   let workChat = true
   try { workChat = !isHubChat(readHub(cfg), input.session_id) } catch {}
   // 🔄 (waiting for /clear) is only right past the limit: after a clear it's sent back.
-  const limit = trimLimit(!workChat, cfg)
+  const limit = chatLimit(input.session_id, !workChat, cfg)
   const pastLimit = !!limit && s.context >= limit
   const note = titleNote(input, { workChat, pastLimit })
   if (note) Object.assign(out, { decision: 'block', reason: note })

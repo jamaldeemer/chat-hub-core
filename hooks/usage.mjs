@@ -8,7 +8,7 @@ import { pluginVersion, readLimits } from './config.mjs'
 
 const dir = `${tmpdir()}/chat-hub-core`
 const stateFile = session => `${dir}/${String(session).replace(/[^\w-]/g, '_')}.json`
-const fresh = () => ({ offset: 0, lastId: '', turns: 0, reads: 0, context: 0, nudgedAt: 0 })
+const fresh = () => ({ offset: 0, lastId: '', turns: 0, reads: 0, context: 0, nudgedAt: 0, roomTo: 0 })
 
 export function readUsage(session) {
   try { return { ...fresh(), ...JSON.parse(readFileSync(stateFile(session), 'utf8')) } } catch { return fresh() }
@@ -74,6 +74,32 @@ export function trimLimit(isHub, cfg, limits = readLimits()) {
   return isHub ? (c.trimAt ?? DEFAULT_TRIM_AT) : (c.trimAtWork || 0)
 }
 
+// Extra room for one chat (/chat-hub-core:limit more): its limit moves up to `roomTo` (kept in its
+// own usage counts) until it's cleared. A clear starts new counts; the room also ends once the
+// context is back under 80% of the normal limit (a compact), so it never outlives the reason for it.
+export const DEFAULT_MORE = 25000
+export function chatLimit(session, isHub, cfg, limits = readLimits()) {
+  const base = trimLimit(isHub, cfg, limits)
+  if (!base || !session) return base
+  const s = readUsage(session)
+  if (!s.roomTo) return base
+  if (s.context < base * 0.8) { s.roomTo = 0; writeUsage(session, s); return base }
+  return Math.max(base, s.roomTo)
+}
+// Gives this chat `n` tokens of room past where it is now (or past its limit, if that's higher).
+// Returns the new limit.
+export function addRoom(session, isHub, cfg, n = DEFAULT_MORE) {
+  const s = readUsage(session)
+  s.roomTo = Math.max(s.context, chatLimit(session, isHub, cfg)) + n
+  writeUsage(session, s)
+  return s.roomTo
+}
+// After a clear: no extra room (in case the app kept the session ID).
+export function dropRoom(session) {
+  const s = readUsage(session)
+  if (s.roomTo) { s.roomTo = 0; writeUsage(session, s) }
+}
+
 // Past the limit the hub's hooks stop it in two stages (hub only; work chats just get a note):
 //   stage 1, at the limit: no new work. Starting a chat and building a release are refused;
 //     finishing what's in flight (merges, close-chat, titles, messages, notes) still works.
@@ -91,8 +117,8 @@ export function hubStage(ctx, cfg, limit = trimLimit(true, cfg)) {
 }
 
 // How the owner gets past a stop: the chat itself never can.
-export const OVERRIDE = 'Only the owner can lift this: they type /chat-hub-core:limit <a higher limit, e.g. 200k> ' +
-  'or /chat-hub-core:limit off. Never try to change the limit, the hub record or the usage counts yourself.'
+export const OVERRIDE = 'Only the owner can lift this: they type /chat-hub-core:limit more (25k more for this chat ' +
+  'until it\'s cleared), /chat-hub-core:limit <a higher limit, e.g. 200k> or /chat-hub-core:limit off. Never try to change the limit, the hub record or the usage counts yourself.'
 
 // The line a chat shows once it has nothing left to do but be cleared: hard to miss.
 export const SAFE_BANNER =
@@ -151,7 +177,7 @@ const workText = (ctx, cfg, notes) =>
 // crosses it. Resets once the context drops below 80% of the limit (after a clear).
 export function trimNudge({ session, isHub, cfg, everyTime = false, notes = '' }) {
   if (!session || !cfg) return ''
-  const limit = trimLimit(isHub, cfg)
+  const limit = chatLimit(session, isHub, cfg)
   if (!limit) return ''
   const s = readUsage(session)
   // A new limit (nudgedAt keeps the one it nudged at) counts as a fresh start too.

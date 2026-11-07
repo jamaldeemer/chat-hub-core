@@ -4,7 +4,7 @@ import { execFileSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname } from 'node:path'
-import { CLEAR_SYMBOL, statsLine, updateUsage } from './usage.mjs'
+import { CLEAR_SYMBOL, dropRoom, statsLine, updateUsage } from './usage.mjs'
 import { withPace } from './pace.mjs'
 import { applyDefaults, defaultsNote, offNote } from './tools.mjs'
 import { closeBackstop } from './wrapups.mjs'
@@ -68,6 +68,8 @@ if (error) {
   const guard = c.level >= 1 ? ensureGuard() : ''
   const input = hookInput()
   const me = input.session_id || ''
+  // Extra room from /chat-hub-core:limit more lasts until the clear.
+  if (me && input.source === 'clear') dropRoom(me)
   const hub = readHub(c)
   const to = hubAddress(hub)
   const notesFile = hubNotesFile()
