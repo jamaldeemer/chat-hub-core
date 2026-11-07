@@ -12,7 +12,7 @@ import { realpathSync, writeSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { basename, dirname, resolve } from 'node:path'
 import { hookInput, hubNotesFile, isHubChat, menuOk, readConfig, readHub, say, workNotesFile } from './config.mjs'
-import { CLEAR_SYMBOL, OVERRIDE, SAFE_BANNER, hubStage, short, trimLimit, trimNudge, updateUsage } from './usage.mjs'
+import { CLEAR_SYMBOL, OVERRIDE, SAFE_BANNER, chatLimit, hubStage, short, trimLimit, trimNudge, updateUsage } from './usage.mjs'
 
 const input = hookInput()
 const cwd = input.cwd || process.cwd()
@@ -107,10 +107,10 @@ if (level >= 1 && !isHub && /^(Edit|Write|MultiEdit|NotebookEdit)$/.test(tool)) 
 
 // The hub past its context limit. Its numbers are brought up to date first (only what the
 // transcript gained since the last read), so a long turn can't run past the limit unseen.
-const limit = isHub ? trimLimit(true, c) : 0
 const notes = hubNotesFile()
-if (limit && input.session_id) {
+if (isHub && trimLimit(true, c) && input.session_id) {
   const ctx = updateUsage(input.session_id, input.transcript_path).context
+  const limit = chatLimit(input.session_id, true, c)   // with any extra room (/chat-hub-core:limit more)
   const stage = hubStage(ctx, c, limit)
   const at = `the hub's context is ${short(ctx)} tokens, past its limit of ${short(limit)}`
   const path = String(ti.file_path || ti.notebook_path || '')

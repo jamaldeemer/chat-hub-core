@@ -398,7 +398,8 @@ commit, making or resetting the release branch); finishing work
 past it (default 20k tokens; set it in `.claude/chat-hub.json`) the hook
 refuses every tool except reading and writing the hub's notes, and every
 reply shows the banner. Each refusal says how to get past it: you type
-`/chat-hub-core:limit <higher>` or `/chat-hub-core:limit off`. The hub
+`/chat-hub-core:limit more` (below), `/chat-hub-core:limit <higher>` or
+`/chat-hub-core:limit off`. The hub
 can't do that itself: the hook also refuses its attempts to change the
 limit, the settings, the hub record or its usage counts. A clear, or a
 limit above its context, lifts both stages. Work chats are never
@@ -413,6 +414,14 @@ in git's own folder (`.git/chat-hub/limits.json`, next to the hub record),
 so every worktree sees it and it's never committed; it wins over `trimAt`
 and `trimAtWork` in `.claude/chat-hub.json`. Raise the hub's limit while
 it's wrapping up and it carries on as normal.
+
+**A little more room, until the clear.** When a chat hits its limit in the
+middle of something, type `/chat-hub-core:limit more` in that chat: it
+gets 25k tokens past where it is now (`more 40k` for another size; type
+it again for more), and carries on. Only that chat gets it, the hub or a
+work chat; for the hub both stops move up. After `/clear` (or if its
+context drops well under the limit) it's back to its normal limit.
+`/chat-hub-core:limit` in that chat shows the room it has.
 
 **Set the limit well above the hub's base.** A fresh hub already holds
 its tools, skills list, CLAUDE.md and its own rules before you say

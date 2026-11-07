@@ -4,7 +4,7 @@
 import { fileURLToPath } from 'node:url'
 import { dirname } from 'node:path'
 import { HubTaken, hookInput, hubNotesFile, isHubChat, readConfig, readHub, say, setHub, workNotesFile } from './config.mjs'
-import { trimNudge } from './usage.mjs'
+import { trimLimit, trimNudge } from './usage.mjs'
 import { paceNudge } from './pace.mjs'
 import { limitCommand } from './limit.mjs'
 import { applyDefaults, defaultsNote, toolsCommand } from './tools.mjs'
@@ -22,7 +22,7 @@ const cfg = readConfig(input.cwd || process.cwd())
 const lm = prompt.match(/^\/chat-hub-core:limit\b(.*)$/s)
 let limitNote = "", limitChanged = false
 if (lm && cfg) {
-  const r = limitCommand(lm[1], input.cwd || process.cwd())
+  const r = limitCommand(lm[1], input.cwd || process.cwd(), { session: input.session_id, transcript: input.transcript_path })
   limitChanged = r.changed
   limitNote = `chat-hub-core /limit: ${r.text} This is already done: tell the owner exactly that in one short ` +
     'reply and do nothing else for it.'
@@ -45,9 +45,10 @@ if (/^\/chat-hub-core:version\b/.test(prompt)) {
 if (!m && cfg) {
   const isHub = isHubChat(readHub(cfg), input.session_id)
   const nudge = trimNudge({ session: input.session_id, isHub, cfg, everyTime: true, notes: isHub ? hubNotesFile() : workNotesFile(input.cwd || process.cwd()) })
-  if (limitChanged && isHub && !nudge) {
-    limitNote += ' No WRAP UP note came with this prompt, so you are under the hub\'s limit: if you were wrapping ' +
-      'up, stop and carry on as normal.'
+  if (limitChanged && !nudge && (isHub || trimLimit(false, cfg))) {
+    limitNote += ` No ${isHub ? 'WRAP UP' : 'STOP'} note came with this prompt, so you are under ${isHub ? 'the hub\'s' : 'your'} ` +
+      'limit: if you were wrapping up, stop and carry on as normal' +
+      ` (if your title's symbol is 🔄, set your normal status again${isHub ? '' : ': 🔨, or ❓ if you ask a question'}).`
   }
   const rules = rulesNotice({ session: input.session_id, isHub })
   // The hub's close backstop: a report in this prompt, or a chat whose report is in still at ⏳.

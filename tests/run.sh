@@ -276,7 +276,7 @@ asst m4 0 160000; at u1 >/dev/null
 # trim: at trimAt the hub wraps up (no new work, finish what's in flight, notes, then the SAFE TO CLEAR banner)
 t "wrap up: hub past trimAt" "$(op u1 | grep -c 'WRAP UP.*past its limit of 150k.*no new work.*## Next.*in flight.*plain line .*wrapping up.*notes up to date.*SAFE TO CLEAR: type /clear.*Never ask the owner about clearing.*no ask or actions')" 1
 t "wrap up: says when the hard stop comes" "$(op u1 | grep -c 'At 170k tokens the hooks refuse every tool but your notes')" 1
-t "wrap up: says how the owner lifts it" "$(op u1 | grep -c 'Only the owner can lift this: they type /chat-hub-core:limit <a higher limit.*/chat-hub-core:limit off')" 1
+t "wrap up: says how the owner lifts it" "$(op u1 | grep -c 'Only the owner can lift this: they type /chat-hub-core:limit more (25k more for this chat until it.s cleared), /chat-hub-core:limit <a higher limit.*/chat-hub-core:limit off')" 1
 t "wrap up: on every prompt" "$(op u1 | grep -c 'WRAP UP')" 1
 t "wrap up: banner comes with 🔄 in the title" "$(op u1 | grep -c 'SAFE TO CLEAR.*set your title.s symbol to 🔄 (waiting for the owner to clear).*After the clear, set your normal status again')" 1
 t "wrap up: no hard stop yet" "$(op u1 | grep -c 'HARD STOP')" 0
@@ -368,6 +368,33 @@ t "override: /limit 300k lifts both stages" "$(lp u1 300k | grep -c 'Saved.*stop
 t "override: /limit off lifts them too" "$(lp u1 off >/dev/null; den u1 Bash '{"command":"git tag v9"}')" 0
 t "override: /limit 160k is stage 1 again" "$(lp u1 160k >/dev/null; den u1 Bash '{"command":"ls"}'); $(den u1 Bash '{"command":"git tag v9"}')" "0; 1"
 node "$root/hooks/limit.mjs" default >/dev/null
+# /chat-hub-core:limit more: room for one chat past where it is now, until it's cleared.
+t "more: hub in its hard stop gets 25k past its context" "$(lp u1 more | grep -c 'Saved: this chat (the hub) now has room up to 196k tokens, 25k more, until it.s cleared; then its limit is 150k again. Its hard stop is now at 216k')" 1
+t "more: the hub is told to carry on and drop 🔄" "$(lp u1 '' | grep -c 'stop and carry on as normal')$(lp u1 more | grep -c 'stop and carry on as normal (if your title.s symbol is 🔄')" "01"
+t "more: both stops lifted" "$(den u1 Bash '{"command":"ls"}'); $(den u1 mcp__ccd_session__start_session '{}'); $(op u1 | grep -c 'WRAP UP\|HARD STOP')" "0; 0; 0"
+t "more: /limit shows this chat's room" "$(lp u1 '' | grep -c 'This chat has extra room up to 221k until it.s cleared')" 1
+t "more: other chats keep the normal limit" "$(node "$root/hooks/limit.mjs" | grep -c 'extra room'); $(den u9 Bash '{"command":"ls"}')" "0; 0"
+t "more: a size" "$(lp u1 'more 40k' | grep -c 'room up to 261k tokens, 40k more')" 1
+t "more: too big refused" "$(lp u1 'more 500k' | grep -c 'Not changed: 500k is outside 5k–200k')" 1
+t "more: only for the chat it's typed in" "$(lp u1 'hub more' | grep -c 'Not changed.*in the chat that needs the room'); $(node "$root/hooks/limit.mjs" more | grep -c 'Not changed: \"more\" is for one chat')" "1; 1"
+asst m25 0 290000; at u1 >/dev/null
+t "more: past the room, WRAP UP at the new limit" "$(op u1 | grep -c 'past its limit of 261k')" 1
+t "more: hard stop past the room" "$(asst m26 0 307000; at u1 >/dev/null; den u1 Bash '{"command":"ls"}')" 1
+t "more: ends at the clear" "$(ss u1 "$tr" clear >/dev/null; op u1 | grep -c 'HARD STOP.*past its limit of 150k\|HARD STOP.*well past its limit of 150k')" 1
+lp u1 more >/dev/null
+asst m27 0 100000; at u1 >/dev/null; asst m28 0 160000; at u1 >/dev/null
+t "more: ends when the context drops (a compact)" "$(op u1 | grep -c 'past its limit of 150k')" 1
+asst m29 0 50000; at u1 >/dev/null
+t "more: not needed well under the limit" "$(lp u1 more | grep -c 'Not changed: this chat is at 50k, well under its limit of 150k')" 1
+echo '{"level":1,"trimAt":150000,"trimAtWork":100000,"done":["tests pass"]}' > .claude/chat-hub.json
+asst m30 0 120000; at u2 >/dev/null
+t "more: work chat" "$(lp u2 more | grep -c 'Saved: this chat (a work chat) now has room up to 145k tokens, 25k more.*then its limit is 100k again.*under your limit.*🔨')" 1
+t "more: work chat's STOP lifted" "$(op u2 | grep -c 'STOP')" 0
+ttl u2 '🔄  ʀ35 E4 · x'
+t "more: work chat's 🔄 sent back" "$(atb u2 | grep -c '🔄 is only for.*the limit was raised')" 1
+rm -rf "$tmp/u2"
+t "more: work chat without a limit needs none" "$(echo '{"level":1,"trimAt":150000}' > .claude/chat-hub.json; lp u2 more | grep -c 'this chat has no limit')" 1
+echo '{"level":1,"trimAt":150000,"done":["tests pass"]}' > .claude/chat-hub.json
 asst m22 0 50000; at u1 >/dev/null
 t "after a clear: nothing refused" "$(den u1 mcp__ccd_session__start_session '{}')" 0
 # The guard reads the transcript itself, so a long turn is stopped mid-turn, before the after-turn hook.

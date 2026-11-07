@@ -5,15 +5,18 @@
 //   node limit.mjs 200k             the hub's limit (same as "hub 200k")
 //   node limit.mjs work 100k        work chats' limit ("work off" turns it off)
 //   node limit.mjs default          back to the settings ("hub default", "work default": one only)
+// "more" (or "more 40k") gives only the chat it's typed in 25k of room past where it is now, until
+// it's cleared. It needs that chat's session, so it only works typed as /chat-hub-core:limit more.
 // Kept in limits.json in git's shared folder (every worktree sees it, never committed); without
 // git, written into .claude/chat-hub.json.
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname } from 'node:path'
-import { isMain, limitsFile, loadConfig, readLimits } from './config.mjs'
-import { DEFAULT_TRIM_AT, hardStopAfter, short } from './usage.mjs'
+import { isHubChat, isMain, limitsFile, loadConfig, readHub, readLimits } from './config.mjs'
+import { DEFAULT_MORE, DEFAULT_TRIM_AT, addRoom, chatLimit, hardStopAfter, readUsage, short, trimLimit, updateUsage } from './usage.mjs'
 
 export const LIMIT_USAGE = 'Type /chat-hub-core:limit to see the limits, /chat-hub-core:limit 200k for the hub, ' +
-  '/chat-hub-core:limit work 100k (or "work off") for work chats, /chat-hub-core:limit default to go back to the settings.'
+  '/chat-hub-core:limit work 100k (or "work off") for work chats, /chat-hub-core:limit more for 25k more in this chat ' +
+  'until it\'s cleared, /chat-hub-core:limit default to go back to the settings.'
 
 // "200k", "1.5M", "200000"; a bare number under 1000 is read as thousands ("200" = 200k). "off" = 0.
 export function parseSize(w) {
@@ -36,20 +39,22 @@ function describe(which, cfg, limits) {
   return `${which === 'hub' ? 'hub' : 'work chats'} ${value} (${from})`
 }
 
-// Returns { ok, changed, text }. `dir` is the project folder whose settings are read.
-export function limitCommand(args = '', dir = process.cwd()) {
+// Returns { ok, changed, text }. `dir` is the project folder whose settings are read; `session`
+// and `transcript` are the chat it was typed in (only "more" needs them).
+export function limitCommand(args = '', dir = process.cwd(), { session = '', transcript = '' } = {}) {
   const words = String(args).trim().toLowerCase().split(/\s+/).filter(Boolean)
   const which = words[0] in KEY ? words.shift() : null
   const word = words.shift()
   const { cfg: c } = loadConfig(dir)
   const cfg = c || {}
+  if (word === 'more') return moreRoom(which, words, cfg, session, transcript, args)
   // The hub's two stops (usage.mjs): new work at its limit, every tool but its notes `hardStopAfter` later.
   const stops = () => {
     const v = 'trimAt' in readLimits() ? readLimits().trimAt : cfg.trimAt ?? DEFAULT_TRIM_AT
     return v ? ` At its limit the hub can't start chats or releases; at ${short(v + hardStopAfter(cfg))} (${short(hardStopAfter(cfg))} ` +
       'more, hardStopAfter) it can only write its notes until cleared.' : ''
   }
-  const show = (lead = '') => `${lead}Context limits: ${describe('hub', cfg, readLimits())}; ${describe('work', cfg, readLimits())}.${stops()}`
+  const show = (lead = '') => `${lead}Context limits: ${describe('hub', cfg, readLimits())}; ${describe('work', cfg, readLimits())}.${stops()}${roomNote(cfg, session)}`
   if (words.length) return { ok: false, changed: false, text: `Not changed: didn't understand "${args.trim()}". ${LIMIT_USAGE}` }
   if (!word) return { ok: true, changed: false, text: show() }
 
@@ -81,6 +86,39 @@ export function limitCommand(args = '', dir = process.cwd()) {
     }
   } catch (e) { return { ok: false, changed: false, text: `Not changed: couldn't save it (${e.message}).` } }
   return { ok: true, changed: true, text: show('Saved; every chat uses it from its next prompt. ') }
+}
+
+// This chat's extra room, if it has any.
+function roomNote(cfg, session) {
+  if (!session) return ''
+  const isHub = isHubChat(readHub(cfg), session)
+  const base = trimLimit(isHub, cfg), limit = chatLimit(session, isHub, cfg)
+  return limit > base ? ` This chat has extra room up to ${short(limit)} until it's cleared (/chat-hub-core:limit more).` : ''
+}
+
+// /chat-hub-core:limit more [25k]: room for this one chat, past where it is now, until it's cleared.
+function moreRoom(which, words, cfg, session, transcript, args) {
+  const bad = `Not changed: didn't understand "${String(args).trim()}". Type /chat-hub-core:limit more (or "more 40k") ` +
+    'in the chat that needs the room.'
+  if (which || words.length > 1) return { ok: false, changed: false, text: bad }
+  const n = words.length ? parseSize(words[0]) : DEFAULT_MORE
+  if (n === null) return { ok: false, changed: false, text: bad }
+  if (n < 5000 || n > 200000) return { ok: false, changed: false, text: `Not changed: ${short(n)} is outside 5k–200k tokens.` }
+  if (!session) {
+    return { ok: false, changed: false, text: 'Not changed: "more" is for one chat, so the owner types /chat-hub-core:limit more in it.' }
+  }
+  const isHub = isHubChat(readHub(cfg), session)
+  const base = trimLimit(isHub, cfg)
+  if (!base) return { ok: true, changed: false, text: 'Not changed: this chat has no limit, so it needs no extra room.' }
+  // Well under its limit the room would end at once (chatLimit drops it under 80%).
+  const ctx = (transcript ? updateUsage(session, transcript) : readUsage(session)).context
+  if (ctx < base * 0.8) {
+    return { ok: true, changed: false, text: `Not changed: this chat is at ${short(ctx)}, well under its limit of ${short(base)}.` }
+  }
+  const to = addRoom(session, isHub, cfg, n)
+  const stop = isHub ? ` Its hard stop is now at ${short(to + hardStopAfter(cfg))}.` : ''
+  return { ok: true, changed: true, text: `Saved: this chat (${isHub ? 'the hub' : 'a work chat'}) now has room up to ` +
+    `${short(to)} tokens, ${short(n)} more, until it's cleared; then its limit is ${short(base)} again.${stop}` }
 }
 
 if (isMain(import.meta.url)) {
