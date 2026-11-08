@@ -173,6 +173,32 @@ const workText = (ctx, cfg, notes) =>
   'tokens: wrapping up." Once it is, tell the owner what you noted for after the clear, and ' + bannerRule +
   ((cfg?.level || 0) >= 2 ? 'Don\'t promise to check CI after the clear: the start note checks it for you.' : '')
 
+// A warning only, on every prompt while a chat is close to its limit: how many tokens it has left.
+// It starts `warnBefore` (default 20k, 0 = never) before the limit, and runs the whole time a chat
+// has extra room from /chat-hub-core:limit more. It changes nothing: the chat carries on as normal.
+export const DEFAULT_WARN_BEFORE = 20000
+export const warnBefore = cfg => {
+  const n = Number(cfg?.warnBefore)
+  return Number.isFinite(n) && n >= 0 ? n : DEFAULT_WARN_BEFORE
+}
+export const LEFT_SYMBOL = '⏱️'
+export function tokensLeftNote({ session, isHub, cfg, limits = readLimits() }) {
+  if (!session || !cfg) return ''
+  const base = trimLimit(isHub, cfg, limits)
+  if (!base) return ''
+  const limit = chatLimit(session, isHub, cfg, limits)
+  const ctx = readUsage(session).context
+  const room = limit > base
+  if (ctx >= limit || (!room && (!warnBefore(cfg) || ctx < limit - warnBefore(cfg)))) return ''
+  const left = limit - ctx
+  const hard = isHub ? ` (hard stop at ${short(limit + hardStopAfter(cfg))})` : ''
+  const line = `${LEFT_SYMBOL} ${short(left)} tokens left${room ? ' of the extra room' : ''}: this chat is out at ${short(limit)}${hard}.`
+  return `chat-hub-core tokens left: this chat's context is ${short(ctx)} tokens, ${short(left)} under ` +
+    (room ? `its extra room from /chat-hub-core:limit more (up to ${short(limit)}; its normal limit is ${short(base)})` : `its limit of ${short(limit)}`) +
+    '. This is only a warning: carry on as normal (no wrapping up, no stopping, no 🔄). Start your reply with this plain ' +
+    `line, exactly:\n${line}`
+}
+
 // Past the limit: the note comes on every prompt, and once on a tool call when the chat first
 // crosses it. Resets once the context drops below 80% of the limit (after a clear).
 export function trimNudge({ session, isHub, cfg, everyTime = false, notes = '' }) {

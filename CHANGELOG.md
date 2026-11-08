@@ -3,6 +3,21 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## 0.3.48
+
+- **⏱️ Tokens left: a warning before a chat runs out.** A chat given
+  room with `/chat-hub-core:limit more` showed nothing until it ran out
+  of that room too, and a chat nearing its limit gave no sign before the
+  wrap-up. Now every reply starts with a plain line like "⏱️ 18k tokens
+  left of the extra room: this chat is out at 160k (hard stop at 180k)"
+  the whole time a chat has extra room, and "⏱️ 12k tokens left: this
+  chat is out at 135k (hard stop at 155k)" from `warnBefore` under its
+  normal limit (a new setting, default 20k; 0 turns it off). It's a
+  warning only: the chat carries on as normal, and it's gone once the
+  wrap-up or STOP note takes over. The hub's line names its hard stop;
+  work chats get it only with `trimAtWork` set. README, the limit and
+  setup skills describe it.
+
 ## 0.3.46
 
 - **`/chat-hub-core:limit more`: a little more room until the clear.**

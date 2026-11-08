@@ -194,6 +194,7 @@ Don't commit.
   "trimAt": 135000,                 // optional: hub context (tokens) at which it wraps up (no new chats or releases)
   "hardStopAfter": 20000,           // optional: tokens past trimAt at which the hub can only write its notes
   "trimAtWork": 0,                  // optional: the same for work chats (0 = off)
+  "warnBefore": 20000,              // optional: tokens under the limit at which replies start showing tokens left (0 = off)
                                   // (/chat-hub-core:limit overrides both, in .git/chat-hub/limits.json)
   "notesMaxBytes": 6000,            // optional: hub notes size that prompts a rewrite as one snapshot (0 = off)
   "stats": true,                    // optional: false hides the usage line (after each turn and at start)

@@ -30,6 +30,10 @@ didn't run then, tell the owner so.
   now, stop wrapping up, carry on, and set your normal status again if
   your title's symbol is 🔄.
 
+While a chat is in that extra room, and from `warnBefore` (default 20k)
+before any chat's limit, every prompt's note gives a "⏱️ … tokens left"
+line to start the reply with. It's a warning only: carry on as normal.
+
 They're kept in git's shared folder (`.git/chat-hub/limits.json`, beside
 the hub record), so every chat in every worktree uses them from its next
 prompt; they override `.claude/chat-hub.json` and are never committed.
