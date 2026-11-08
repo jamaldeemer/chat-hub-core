@@ -290,7 +290,21 @@ t "wrap up: trimAt sets the limit" "$(op u1 | wc -c | tr -d ' ')" 0
 echo '{"level":0}' > .claude/chat-hub.json
 t "wrap up: default limit is 135k" "$(op u1 | grep -c 'past its limit of 135k')" 1
 asst m8 0 134000; at u1 >/dev/null
-t "wrap up: quiet under 135k by default" "$(op u1 | wc -c | tr -d ' ')" 0
+t "wrap up: none under 135k by default" "$(op u1 | grep -c 'WRAP UP\|HARD STOP')" 0
+# Tokens left: a warning only, from warnBefore (default 20k) under the limit.
+t "tokens left: hub near its limit" "$(op u1 | grep -c 'tokens left: this chat.s context is 134k tokens, 1k under its limit of 135k. This is only a warning: carry on as normal (no wrapping up, no stopping, no 🔄)')" 1
+t "tokens left: the line to show" "$(op u1 | grep -c '⏱️ 1k tokens left: this chat is out at 135k (hard stop at 155k).')" 1
+asst m8b 0 114000; at u1 >/dev/null
+t "tokens left: quiet before warnBefore" "$(op u1 | wc -c | tr -d ' ')" 0
+asst m8c 0 116000; at u1 >/dev/null
+t "tokens left: starts 20k before the limit" "$(op u1 | grep -c '19k tokens left')" 1
+echo '{"level":0,"warnBefore":0}' > .claude/chat-hub.json
+t "tokens left: warnBefore 0 turns it off" "$(op u1 | wc -c | tr -d ' ')" 0
+echo '{"level":0,"warnBefore":30000}' > .claude/chat-hub.json
+asst m8d 0 106000; at u1 >/dev/null
+t "tokens left: warnBefore moves the start" "$(op u1 | grep -c '29k tokens left')" 1
+echo '{"level":0}' > .claude/chat-hub.json
+asst m8 0 134000; at u1 >/dev/null
 asst m9 0 136000; at u1 >/dev/null
 t "wrap up: closing chats whose report is in counts as in flight" "$(op u1 | grep -c 'closing every chat whose wrap-up report is in.*never leave one at ⏳')" 1
 t "wrap up: put-off work noted as After clear" "$(op u1 | grep -c 'starting .*- After clear:')" 1
@@ -372,6 +386,8 @@ node "$root/hooks/limit.mjs" default >/dev/null
 t "more: hub in its hard stop gets 25k past its context" "$(lp u1 more | grep -c 'Saved: this chat (the hub) now has room up to 196k tokens, 25k more, until it.s cleared; then its limit is 150k again. Its hard stop is now at 216k')" 1
 t "more: the hub is told to carry on and drop 🔄" "$(lp u1 '' | grep -c 'stop and carry on as normal')$(lp u1 more | grep -c 'stop and carry on as normal (if your title.s symbol is 🔄')" "01"
 t "more: both stops lifted" "$(den u1 Bash '{"command":"ls"}'); $(den u1 mcp__ccd_session__start_session '{}'); $(op u1 | grep -c 'WRAP UP\|HARD STOP')" "0; 0; 0"
+t "more: tokens left shown in the room" "$(op u1 | grep -c '⏱️ 50k tokens left of the extra room: this chat is out at 221k (hard stop at 241k).')" 1
+t "more: tokens left is a warning only" "$(op u1 | grep -c 'its extra room from /chat-hub-core:limit more (up to 221k; its normal limit is 150k). This is only a warning')" 1
 t "more: /limit shows this chat's room" "$(lp u1 '' | grep -c 'This chat has extra room up to 221k until it.s cleared')" 1
 t "more: other chats keep the normal limit" "$(node "$root/hooks/limit.mjs" | grep -c 'extra room'); $(den u9 Bash '{"command":"ls"}')" "0; 0"
 t "more: a size" "$(lp u1 'more 40k' | grep -c 'room up to 261k tokens, 40k more')" 1
@@ -379,6 +395,7 @@ t "more: too big refused" "$(lp u1 'more 500k' | grep -c 'Not changed: 500k is o
 t "more: only for the chat it's typed in" "$(lp u1 'hub more' | grep -c 'Not changed.*in the chat that needs the room'); $(node "$root/hooks/limit.mjs" more | grep -c 'Not changed: \"more\" is for one chat')" "1; 1"
 asst m25 0 290000; at u1 >/dev/null
 t "more: past the room, WRAP UP at the new limit" "$(op u1 | grep -c 'past its limit of 261k')" 1
+t "more: no tokens left past the room" "$(op u1 | grep -c 'tokens left')" 0
 t "more: hard stop past the room" "$(asst m26 0 307000; at u1 >/dev/null; den u1 Bash '{"command":"ls"}')" 1
 t "more: ends at the clear" "$(ss u1 "$tr" clear >/dev/null; op u1 | grep -c 'HARD STOP.*past its limit of 150k\|HARD STOP.*well past its limit of 150k')" 1
 lp u1 more >/dev/null
@@ -390,9 +407,12 @@ echo '{"level":1,"trimAt":150000,"trimAtWork":100000,"done":["tests pass"]}' > .
 asst m30 0 120000; at u2 >/dev/null
 t "more: work chat" "$(lp u2 more | grep -c 'Saved: this chat (a work chat) now has room up to 145k tokens, 25k more.*then its limit is 100k again.*under your limit.*🔨')" 1
 t "more: work chat's STOP lifted" "$(op u2 | grep -c 'STOP')" 0
+t "more: work chat's tokens left" "$(op u2 | grep -c '⏱️ 25k tokens left of the extra room: this chat is out at 145k.')" 1
 ttl u2 '🔄  ʀ35 E4 · x'
 t "more: work chat's 🔄 sent back" "$(atb u2 | grep -c '🔄 is only for.*the limit was raised')" 1
 rm -rf "$tmp/u2"
+asst m31 0 85000; at u3 >/dev/null
+t "tokens left: work chat near trimAtWork" "$(op u3 | grep -c '⏱️ 15k tokens left: this chat is out at 100k.')" 1
 t "more: work chat without a limit needs none" "$(echo '{"level":1,"trimAt":150000}' > .claude/chat-hub.json; lp u2 more | grep -c 'this chat has no limit')" 1
 echo '{"level":1,"trimAt":150000,"done":["tests pass"]}' > .claude/chat-hub.json
 asst m22 0 50000; at u1 >/dev/null

@@ -4,7 +4,7 @@
 import { fileURLToPath } from 'node:url'
 import { dirname } from 'node:path'
 import { HubTaken, hookInput, hubNotesFile, isHubChat, readConfig, readHub, say, setHub, workNotesFile } from './config.mjs'
-import { trimLimit, trimNudge } from './usage.mjs'
+import { tokensLeftNote, trimLimit, trimNudge } from './usage.mjs'
 import { paceNudge } from './pace.mjs'
 import { limitCommand } from './limit.mjs'
 import { applyDefaults, defaultsNote, toolsCommand } from './tools.mjs'
@@ -53,8 +53,10 @@ if (!m && cfg) {
   const rules = rulesNotice({ session: input.session_id, isHub })
   // The hub's close backstop: a report in this prompt, or a chat whose report is in still at ⏳.
   const close = isHub ? closeBackstop({ prompt, transcript: input.transcript_path }) : ''
+  // Close to the limit, or in extra room from /chat-hub-core:limit more: tokens left, a warning only.
+  const left = nudge ? '' : tokensLeftNote({ session: input.session_id, isHub, cfg })
   const pace = isHub && !nudge ? paceNudge(cfg) : ''
-  const out = [limitNote, defaults, rules?.text, close, nudge, pace].filter(Boolean).join(' ')
+  const out = [limitNote, defaults, rules?.text, close, nudge, left, pace].filter(Boolean).join(' ')
   if (out) say('UserPromptSubmit', out, rules?.shown)
 }
 if (m && input.session_id && cfg) {
