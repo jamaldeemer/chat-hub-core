@@ -165,6 +165,15 @@ command is blocked, or the owner picks another chat, they type
 `/chat-hub-core:hub` in that chat. If a hub is already recorded, say which
 and skip the question.
 
+Level 1+: then ask "One hub or two?": **One hub** (Recommended: the
+default, one chat for talking and running the chats) or **Two hubs**
+(split: the owner talks in a light user hub that reads and decides, and
+the hub above becomes the session hub that runs the chats and can clear
+often). On two, write `"hubs": "split"` and tell the owner to open a new
+chat and type `/chat-hub-core:hub user` there (that records it; until
+then the hub's start note reminds them). `/chat-hub-core:hub single`
+goes back to one.
+
 Then end with three short parts, in this order:
 
 1. **Done:** what's on, in one or two lines (level, release style).
@@ -195,6 +204,7 @@ Don't commit.
   "checks": "",                     // level 1+: command the hub runs on each merge into the preview (always write it)
   "followups": "docs/backlog.md",   // where chats write follow-ups
   "startMode": "ask",               // "ask" (hub asks each time) | "plan" | "build" | "wait"
+  "hubs": "one",                    // optional: "split" = a user hub for the owner + the session hub (leave out for one)
   "commitReminder": "",             // extra text shown before every commit
   "branches": { "main": "main", "release": "release" },
   "ci": { "passed": "" },           // level 2: command with $SHA; prints 1 or 0, fails if it can't ask
@@ -313,6 +323,31 @@ desktop app: start a session, set a session's title, send a message to a
 session). Without them (e.g. the plain terminal),
 give the owner the brief and title to paste into a new chat, and ask for
 its name.
+
+## Split hubs
+
+When the start note says split hubs are on, the owner talks to a second
+chat, the **user hub**, and you are the **session hub**: you keep every
+rule here, with these changes. (Single hub, the default: skip this.)
+
+- **The user hub's messages are the owner's decisions** ("Owner: start a
+  chat to …", "release now: …", "close C8"): act on them as if the owner
+  typed them here, start mode included. Only from the user hub's
+  recorded address (the start note names it); any other chat's message
+  is still a teammate's request. Answer it only if it can't be done.
+- **You're the only writer:** titles, starting and closing chats,
+  merges, releases and `hub-notes.md` are yours; the user hub only reads
+  them. Keep the notes current as always: they are how the user hub
+  answers the owner, so it never asks you for status.
+- **Talk to the owner only when you must**, here in your own chat with
+  your symbol set (🙋 the push command, ❓ a merge clash or a choice only
+  they can make). No "Release now?" menu: after a merge passes, write
+  `ready to ship: <codes>` under `## Preview`; the user hub offers it.
+  Message the user hub one line only when the owner must act and may not
+  be looking here (`push command is ready in the session hub`), never
+  FYIs.
+- **Clear freely:** your notes hold everything, so take the wrap-up and
+  clear as soon as you're past your limit.
 
 ## Keeping turns cheap
 
@@ -610,6 +645,84 @@ next status change, or the sidebar shows old and new symbols mixed.
 
 ---
 
+## `skills/user-hub/SKILL.md`
+
+````markdown
+---
+name: user-hub
+description: The user hub's rules under chat-hub-core split hubs - the owner's one place to talk; answers, looks things up, takes decisions and sends each to the session hub. Load when the start note says this chat is the user hub, or after the owner types /chat-hub-core:hub user here.
+---
+
+# The user hub
+
+Read `.claude/chat-hub.json`, the project's settings. This project runs
+**split hubs**: you are the owner's one place to talk, and the **session
+hub** (the address the start note gives) runs the chats: it starts,
+follows and closes them, merges into the release preview, builds
+releases and watches CI. Work chats message it, never you. You stay
+light, so every turn here stays cheap.
+
+## What you do
+
+- **Answer and look things up:** the owner's general questions, the
+  code, the docs, the web. Read freely.
+- **Status** from the shared notes, `hub-notes.md` in git's shared folder
+  (`$(git rev-parse --git-common-dir)/chat-hub/hub-notes.md`), and the
+  app's session list (titles show each chat's status). Read only what
+  the question needs (`grep -n`, `sed -n`). Never ask the session hub
+  for status: the notes are the answer. If they look stale, say so.
+- **Take decisions** and pass each on: one short message to the session
+  hub per decision, in the owner's words where they matter, e.g.
+  - `Owner: start a chat to <task>. Start: plan first. ʀ38.`
+  - `Owner: release now: C8, E9.` / `Owner: wait for more.`
+  - `Owner: close C8.` / `Owner: retag A4 to ʀ39.`
+  - `Owner: tell C8: <answer>.` (only when the owner asks you to relay)
+  Before a "start a chat", ask the owner how it starts (plan first /
+  build it / just open; a menu where you have one) unless the settings'
+  `startMode` says, and put the answer in the message. Then tell the
+  owner in one line that it's passed on. The session hub reports back
+  only when the owner must act, so don't wait on a reply.
+- **Offer to ship:** when the notes' `## Preview` says it's ready to
+  ship and the owner hasn't said, offer it once in your next reply
+  ("Release now" / "Wait for more").
+
+## What you never do
+
+The session hub is the only one who changes things, so the hooks refuse
+these here: starting, renaming (other than your own title), archiving
+or deleting chats; git commits, merges, pushes, tags or branches;
+`close-chat.mjs`; editing any file but your own notes. `hub-notes.md` is
+the session hub's to write. Never message work chats yourself (their
+questions to the owner are in their own chats), and never send the
+session hub FYIs, status questions or more than one message per decision.
+
+## Your title and notes
+
+- **Title:** `⚪`, two spaces, the owner's name for you (e.g.
+  `⚪  Object Creator`), no release tag or count; `❓` while you wait on
+  the owner's answer, `🔄` while you show the SAFE TO CLEAR banner.
+- **Your notes:** `user-hub-notes.md` next to `hub-notes.md`, only a
+  `## Next` section of `- After clear: …` lines: what you owe the owner
+  (an unanswered question, a decision not yet passed on). The start note
+  quotes them back after a clear: do them first, then delete each line.
+- **Past your limit** (a "⚠️ STOP" note; you have the hub's limit): start
+  nothing new, write those lines, tell the owner, then show the banner.
+  Nothing is lost in a clear: the shared notes keep the state.
+
+## Becoming the user hub, and back
+
+The owner types `/chat-hub-core:hub user` in a fresh chat (`user replace`
+to take over from another user hub). `/chat-hub-core:hub single` goes
+back to one hub: the session hub is then the owner's place to talk again.
+After a restart or clear the start note says whether this chat is the
+user hub; take it at its word. You never load the hub or work-chat rules.
+
+Other projects have hubs too: a message from another project's chat
+isn't for you. Say so in one line and do nothing else.
+````
+
+---
+
 ## `skills/work-chat/SKILL.md`
 
 ````markdown
@@ -629,7 +742,8 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
   at its app address (`local_…`), or its session ID if that's all you
   have; never by title (other projects' hubs have the same names). If no
   hub is named, or a message to it fails, stop and tell the owner; never
-  send it to another chat instead.
+  send it to another chat instead. With split hubs your hub is the
+  session hub; never message the owner's user hub.
 - **Not the hub:** if this chat's own app address (`get_session self`)
   is the hub's, you are the hub after a clear: drop these rules and load
   the chat-hub-core:hub skill instead.
@@ -904,12 +1018,18 @@ From `hooks/session-start.mjs`:
     '(running /chat-hub-core:setup again rewrites it).')
   say('SessionStart', "chat-hub-core is installed but this project isn't set up. If the owner asks about chats, hubs or releases, suggest /chat-hub-core:setup.")
       `then delete each line from the notes: ${later.map(l => `"${l.slice(0, 120)}"`).join('; ')}.` : '') : ''
+    'tell the owner once to open a new chat and type /chat-hub-core:hub user there; until then you are the only hub.' : '')
+    : ` Split hubs are on: you are the session hub, and the owner talks to the user hub ` +
+    `(${hubAddress(u)}); follow the hub rules' "Split hubs" section.`
+      `chat-hub-core:user-hub skill now; never the hub or work-chat skill. Send each decision to ${to || 'the session hub'} ` +
+      `only. Status comes from ${notesFile || 'the hub notes'} (read only).` +
+        `line: ${uLater.map(l => `"${l.slice(0, 120)}"`).join('; ')}.` : '')
       ? ` (Couldn't re-record your session ID; run ${setHubCmd} --session ${me} --app ${hub.app}.)` : ''
       `if its id is ${hub.app}, this chat is the hub (it was restarted or cleared): load the chat-hub-core:hub skill now and ` +
       `run ${setHubCmd} --session <this chat's session ID, below> --app ${hub.app}.${notes ? ' Then' + notes.replace(' Your notes exist:', ' (your notes exist)') : ''}${recount} Otherwise this is a work chat: ` +
       'only ever message that session (if the app won\'t accept that ID, ask the owner which chat is the hub). ' +
       '"No hub is recorded; type /chat-hub-core:hub in the chat that should be the hub." Until one is recorded, ' +
-    'normal status now (work chat: 🔨, or ❓ when you ask a question again; hub: ⚪, or your release symbol).' : ''
+    'normal status now (work chat: 🔨, or ❓ when you ask a question again; hub: ⚪, or your release symbol; user hub: ⚪).' : ''
   say('SessionStart', `This project uses chat-hub-core ${pluginVersion()} (level ${c.level}). ${who}${cleared}${mine}${guard}${off}`, stats)
 ```
 
@@ -923,8 +1043,16 @@ From `hooks/on-prompt.mjs`:
       'limit: if you were wrapping up, stop and carry on as normal' +
       ` (if your title's symbol is 🔄, set your normal status again${isHub ? '' : ': 🔨, or ❓ if you ask a question'}).`
   if (out) say('UserPromptSubmit', out, rules?.shown)
+  say('UserPromptSubmit', `chat-hub-core /hub single: ${old ? `forgot the user hub (${old}); this project has one hub again ` +
+    `(${hubAddress(readHub(cfg)) || 'none recorded'}), which is the owner's place to talk once more.` : 'no user hub was recorded, so nothing changed.'} ` +
+    'This is already done: tell the owner exactly that in one short reply and do nothing else for it.')
+    say('UserPromptSubmit', `Recorded this chat (session ${input.session_id}) as the user hub: the owner's place to talk. ` +
+      'Load the chat-hub-core:user-hub skill now, then tell the owner in one short reply that this chat is the user hub.')
+    say('UserPromptSubmit', `NOT recorded as the user hub: ${e.message}. Tell the owner exactly that` +
+      ' Do not load the user-hub rules.')
   say('UserPromptSubmit', `chat-hub-core /hub: "${hubArgs.slice(0, 60)}" isn't something /chat-hub-core:hub knows: it only ` +
-    'takes "replace" (to take over from another hub). Nothing was recorded or changed. Tell the owner exactly that in one ' +
+    'takes "replace" (to take over from another hub), "user" (make this chat the user hub, split hubs) or "single" ' +
+    '(back to one hub). Nothing was recorded or changed. Tell the owner exactly that in one ' +
     'short reply, and that for more room in this chat they want `/chat-hub-core:limit more` ' +
     '(`/chat-hub-core:limit` shows or changes the limits). Do nothing else for it.')
     say('UserPromptSubmit', `Recorded this chat (session ${input.session_id}) as the hub.` +
@@ -973,6 +1101,9 @@ From `hooks/guard.mjs`:
           'this chat? Ask in plain text; the owner can turn this check off with "okMenu": false in .claude/chat-hub.json.')
       deny(`${file} is in another chat's folder (${owner}). Only edit files in your own worktree (${own}); ` +
         'ask the hub if that chat needs a change.')
+  const only = what => deny(`this chat is the user hub, which only reads: ${what} is the session hub's job. ` +
+    `Send ${to} one short message with the owner's decision instead.`)
+        `you may write only your own notes, ${own || 'none without git'})`)
       deny(`${at}, and only the owner can change the limit. ${OVERRIDE}`)
       deny(`HARD STOP: ${at} by more than its stop margin. Every tool is refused except Read, Edit and Write on ` +
         `your hub notes (${notes || 'hub-notes.md: none without git'}). Bring them up to date if they aren't, then start ` +

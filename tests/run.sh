@@ -897,4 +897,46 @@ echo '{"level":2,"nextRelease":38,"ci":{"passed":"echo 0"}}' > .claude/chat-hub.
 t "ci-watch: still not passed after --for" "$(CHAT_HUB_PROJECTS_DIR="$pd" node "$root/hooks/ci-watch.mjs" --for 0 | grep -c 'still not passed: F2 [0-9a-f]\{7\} (not passed yet)')" 1
 cd "$tmp"; rm -rf "$pd" "$tmp/bk"
 cd "$tmp"
+# Split hubs: a user hub (the owner's chat) next to the hub, which is then the session hub.
+sp="$tmp/split"; mkdir -p "$sp/.claude" && cd "$sp" && git init -q && echo '{"level":1,"done":["tests pass"]}' > .claude/chat-hub.json
+node "$root/hooks/set-hub.mjs" --session h1 --app local_H >/dev/null
+sas() { printf '{"session_id":"%s","cwd":"%s"}' "$2" "$sp" | CLAUDE_CODE_HOST_SESSION_ID="$1" node "$root/hooks/session-start.mjs"; }
+t "split: none recorded, hub start note has no split line" "$(sas local_H h1 | grep -c 'Split hubs\|user hub')" 0
+echo '{"level":1,"done":["tests pass"],"hubs":"split"}' > .claude/chat-hub.json
+t "split: setting without a user hub reminds the hub" "$(sas local_H h1 | grep -c 'no user hub is recorded yet.*hub user')" 1
+echo '{"level":1,"done":["tests pass"]}' > .claude/chat-hub.json
+up() { printf '{"session_id":"%s","prompt":"%s","cwd":"%s"}' "$2" "$3" "$sp" | CLAUDE_CODE_HOST_SESSION_ID="$1" node "$root/hooks/on-prompt.mjs"; }
+t "split: /hub user in the hub is refused" "$(up local_H h1 '/chat-hub-core:hub user' | grep -c 'NOT recorded as the user hub: this chat is the session hub')" 1
+t "split: /hub user records the user hub" "$(up local_U u1 '/chat-hub-core:hub user' | grep -c 'as the user hub.*session hub is local_H.*user-hub skill')" 1
+t "split: user hub record has both IDs" "$(grep -c '"session":"u1","app":"local_U"' .git/chat-hub/user-hub)" 1
+t "split: another chat can't take over without replace" "$(up local_V v1 '/chat-hub-core:hub user' | grep -c "already recorded as this project's user hub.*user replace")" 1
+t "split: /hub in the user hub is refused" "$(up local_U u1 '/chat-hub-core:hub' | grep -c 'NOT recorded as the hub: this chat is the user hub')" 1
+t "split: user hub start note loads user-hub skill" "$(sas local_U u2 | grep -c 'This chat is the user hub.*chat-hub-core:user-hub skill.*decision to local_H')" 1
+t "split: user hub's new session ID recorded after a clear" "$(grep -c '"session":"u2","app":"local_U"' .git/chat-hub/user-hub)" 1
+t "split: session hub told it is the session hub" "$(sas local_H h1 | grep -c 'This chat is the hub.*Split hubs are on: you are the session hub.*local_U')" 1
+t "split: work chat still messages the session hub" "$(sas local_W w1 | grep -c 'This chat is a work chat.*the hub is local_H.*only ever message local_H')" 1
+printf '## Next\n- After clear: tell the owner about X\n' > .git/chat-hub/user-hub-notes.md
+t "split: user hub's after-clear lines quoted" "$(sas local_U u2 | grep -c 'tell the owner about X')" 1
+ug() { printf '%s' "$1" | CLAUDE_CODE_HOST_SESSION_ID=local_U node "$root/hooks/guard.mjs" | grep -c '"deny"'; }
+uin() { printf '{"session_id":"u2","cwd":"%s","tool_name":"%s","tool_input":%s}' "$sp" "$1" "$2"; }
+t "split: user hub can't start a chat" "$(ug "$(uin mcp__ccd_session__start_session '{}')")" 1
+t "split: user hub can't rename another chat" "$(ug "$(uin mcp__ccd_session_mgmt__set_session_title '{"session_id":"local_W","title":"x"}')")" 1
+t "split: user hub may set its own title" "$(ug "$(uin mcp__ccd_session_mgmt__set_session_title '{"session_id":"self","title":"x"}')")" 0
+t "split: user hub can't commit" "$(ug "$(uin Bash '{"command":"git commit -m \"E9: x\""}')")" 1
+t "split: user hub can't merge" "$(ug "$(uin Bash '{"command":"git merge foo"}')")" 1
+t "split: user hub can't run close-chat" "$(ug "$(uin Bash '{"command":"node hooks/close-chat.mjs b"}')")" 1
+t "split: user hub may read git" "$(ug "$(uin Bash '{"command":"git log --oneline -3"}')")" 0
+uw() { uin "$1" "$(printf '{"file_path":"%s","content":"x"}' "$2")"; }
+t "split: user hub can't edit hub-notes.md" "$(ug "$(uw Write "$sp/.git/chat-hub/hub-notes.md")")" 1
+t "split: user hub can't edit project files" "$(ug "$(uw Edit "$sp/README.md")")" 1
+t "split: user hub may write its own notes" "$(ug "$(uw Write "$sp/.git/chat-hub/user-hub-notes.md")")" 0
+t "split: session hub may start a chat" "$(printf '{"session_id":"h1","cwd":"%s","tool_name":"mcp__ccd_session__start_session","tool_input":{}}' "$sp" | CLAUDE_CODE_HOST_SESSION_ID=local_H node "$root/hooks/guard.mjs" | grep -c '"deny"')" 0
+t "split: user hub's role is user-hub, not work" "$(CLAUDE_CODE_HOST_SESSION_ID=local_U node -e "import('$root/hooks/config.mjs').then(m => console.log(m.chatRole('u2')))")" user-hub
+t "split: set-hub --single forgets the user hub" "$(node "$root/hooks/set-hub.mjs" --single | grep -c 'One hub again: forgot the user hub local_U')" 1
+t "split: after single, the start note is single-hub again" "$(sas local_U u3 | grep -c 'This chat is a work chat')" 1
+t "split: set-hub --user records from the shell" "$(node "$root/hooks/set-hub.mjs" --user --session u4 --app local_U | grep -c 'User hub is now local_U')" 1
+t "split: /hub single in a prompt" "$(up local_U u4 '/chat-hub-core:hub single' | grep -c 'forgot the user hub (local_U)')" 1
+t "split: /hub with an unknown word still refused" "$(up local_U u4 '/chat-hub-core:hub more' | grep -c 'only takes.*replace.*user.*single')" 1
+t "split: user-hub skill in the prompts doc" "$(grep -c '^## `skills/user-hub/SKILL.md`' "$root/docs/all-prompts.md")" 1
+cd "$tmp"; rm -rf "$sp"
 rm -rf "$tmp"; exit $fail

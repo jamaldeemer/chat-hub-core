@@ -1,14 +1,14 @@
 // A chat's session ID changes when the desktop app restarts its process mid-conversation, with no
 // clear and often no start note to say so; its app address (`local_…`) stays. Every hook calls
 // syncSession first, so whatever is kept by session ID follows the chat to its new one:
-// - the hub record: when this chat's app address is the hub's, its new session ID is recorded,
+// - the hub record (and the user hub's, with split hubs): when this chat's app address is the hub's, its new session ID is recorded,
 //   so the hooks (title check, /chat-hub-core:hub, limits) keep treating it as the hub;
 // - any chat's extra room from /chat-hub-core:limit more (kept in its usage counts), and the
 //   plugin-update notice it was already given, which a restart doesn't end.
 // The last session ID seen for each app address is kept in git's shared folder
 // (chat-hub/apps/<app address>). Quiet and cheap when nothing changed; never throws.
 import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { hostApp, hubNotesFile, readHub, setHub } from './config.mjs'
+import { hostApp, hubNotesFile, readHub, readUserHub, setHub, setUserHub } from './config.mjs'
 import { readUsage, writeUsage } from './usage.mjs'
 
 const safe = s => String(s).replace(/[^\w.-]/g, '_')
@@ -25,6 +25,12 @@ export function syncSession(session, { cfg, clear = false } = {}) {
     if (hub.app && hub.app === app && hub.session !== session) {
       setHub({ session, app })
       out.hub = true
+    }
+    // Split hubs: the user hub's record follows it the same way.
+    const u = readUserHub()
+    if (u.app && u.app === app && u.session !== session) {
+      setUserHub({ session, app })
+      out.userHub = true
     }
   } catch {}
   try {

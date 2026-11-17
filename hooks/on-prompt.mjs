@@ -3,7 +3,7 @@
 // already the hub, it refuses unless the owner typed "/chat-hub-core:hub replace".
 import { fileURLToPath } from 'node:url'
 import { dirname } from 'node:path'
-import { HubTaken, hookInput, hostApp, hubNotesFile, isHubChat, readConfig, readHub, say, setHub, workNotesFile } from './config.mjs'
+import { HubTaken, chatRole, clearUserHub, hookInput, hostApp, hubAddress, hubNotesFile, readConfig, readHub, say, setHub, setUserHub, userHubNotesFile, workNotesFile } from './config.mjs'
 import { syncSession } from './session-sync.mjs'
 import { tokensLeftNote, trimLimit, trimNudge } from './usage.mjs'
 import { paceNudge } from './pace.mjs'
@@ -47,14 +47,17 @@ if (/^\/chat-hub-core:version\b/.test(prompt)) {
   if (!cfg) say('UserPromptSubmit', limitNote)
 }
 if (!m && cfg) {
-  const isHub = isHubChat(readHub(cfg), input.session_id)
-  const nudge = trimNudge({ session: input.session_id, isHub, cfg, everyTime: true, notes: isHub ? hubNotesFile() : workNotesFile(input.cwd || process.cwd()) })
-  if (limitChanged && !nudge && (isHub || trimLimit(false, cfg))) {
+  // Split hubs: the user hub gets the hub's limit and the rules notice for its own skill, and none
+  // of the session hub's bookkeeping (isHub below stays the session hub's).
+  const role = chatRole(input.session_id, cfg), isHub = role === 'hub', userHub = role === 'user-hub'
+  const nudge = trimNudge({ session: input.session_id, isHub: isHub || userHub, userHub, cfg, everyTime: true,
+    notes: isHub ? hubNotesFile() : userHub ? userHubNotesFile() : workNotesFile(input.cwd || process.cwd()) })
+  if (limitChanged && !nudge && (isHub || userHub || trimLimit(false, cfg))) {
     limitNote += ` No ${isHub ? 'WRAP UP' : 'STOP'} note came with this prompt, so you are under ${isHub ? 'the hub\'s' : 'your'} ` +
       'limit: if you were wrapping up, stop and carry on as normal' +
       ` (if your title's symbol is 🔄, set your normal status again${isHub ? '' : ': 🔨, or ❓ if you ask a question'}).`
   }
-  const rules = rulesNotice({ session: input.session_id, isHub })
+  const rules = rulesNotice({ session: input.session_id, role })
   // The hub's close backstop: a report in this prompt, or a chat whose report is in still at ⏳.
   // A report with its branch: the one close-chat.mjs command for the hub to run (never run here).
   const dir = input.cwd || process.cwd()
@@ -66,17 +69,38 @@ if (!m && cfg) {
     deletedNote({ cfg, transcript: input.transcript_path, dir }), ciNote({ cfg, session: input.session_id, transcript: input.transcript_path, dir })]
     .filter(Boolean).join(' ') : ''
   // Close to the limit, or in extra room from /chat-hub-core:limit more: tokens left, a warning only.
-  const left = nudge ? '' : tokensLeftNote({ session: input.session_id, isHub, cfg })
+  const left = nudge ? '' : tokensLeftNote({ session: input.session_id, isHub: isHub || userHub, userHub, cfg })
   const pace = isHub && !nudge ? paceNudge(cfg) : ''
   const out = [limitNote, defaults, rules?.text, books, close, nudge, left, pace].filter(Boolean).join(' ')
   if (out) say('UserPromptSubmit', out, rules?.shown)
 }
-// /chat-hub-core:hub takes no arguments but "replace". Anything else (e.g. "more", meant for
-// /chat-hub-core:limit) is refused, so a typo can't record or replace the hub.
+// /chat-hub-core:hub takes no arguments but "replace", "user" (split hubs: this chat is the
+// owner's user hub; "user replace" takes over) and "single" (back to one hub). Anything else
+// (e.g. "more", meant for /chat-hub-core:limit) is refused, so a typo can't record or replace a hub.
 const hubArgs = m ? m[1].trim() : ''
-if (m && cfg && hubArgs && !/^replace$/i.test(hubArgs)) {
+const userArgs = hubArgs.match(/^user(?:\s+(replace))?$/i)
+if (m && cfg && /^single$/i.test(hubArgs)) {
+  const old = clearUserHub()
+  say('UserPromptSubmit', `chat-hub-core /hub single: ${old ? `forgot the user hub (${old}); this project has one hub again ` +
+    `(${hubAddress(readHub(cfg)) || 'none recorded'}), which is the owner's place to talk once more.` : 'no user hub was recorded, so nothing changed.'} ` +
+    'This is already done: tell the owner exactly that in one short reply and do nothing else for it.')
+} else if (m && cfg && userArgs && input.session_id) {
+  try {
+    const old = setUserHub({ session: input.session_id, app: hostApp(), replace: !!userArgs[1] })
+    const hub = hubAddress(readHub(cfg))
+    say('UserPromptSubmit', `Recorded this chat (session ${input.session_id}) as the user hub: the owner's place to talk. ` +
+      (old ? `It replaced ${old}. ` : '') +
+      (hub ? `The session hub is ${hub}; send it each decision, and nothing else. ` : 'No session hub is recorded yet: tell the owner to type /chat-hub-core:hub in the chat that should run the chats. ') +
+      'Load the chat-hub-core:user-hub skill now, then tell the owner in one short reply that this chat is the user hub.')
+  } catch (e) {
+    say('UserPromptSubmit', `NOT recorded as the user hub: ${e.message}. Tell the owner exactly that` +
+      (e instanceof HubTaken && /already recorded/.test(e.message) ? ', and that to switch they should type "/chat-hub-core:hub user replace" here.' : '.') +
+      ' Do not load the user-hub rules.')
+  }
+} else if (m && cfg && hubArgs && !/^replace$/i.test(hubArgs)) {
   say('UserPromptSubmit', `chat-hub-core /hub: "${hubArgs.slice(0, 60)}" isn't something /chat-hub-core:hub knows: it only ` +
-    'takes "replace" (to take over from another hub). Nothing was recorded or changed. Tell the owner exactly that in one ' +
+    'takes "replace" (to take over from another hub), "user" (make this chat the user hub, split hubs) or "single" ' +
+    '(back to one hub). Nothing was recorded or changed. Tell the owner exactly that in one ' +
     'short reply, and that for more room in this chat they want `/chat-hub-core:limit more` ' +
     '(`/chat-hub-core:limit` shows or changes the limits). Do nothing else for it.')
 } else if (m && input.session_id && cfg) {

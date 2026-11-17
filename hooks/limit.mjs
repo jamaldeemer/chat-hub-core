@@ -11,7 +11,7 @@
 // git, written into .claude/chat-hub.json.
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname } from 'node:path'
-import { isHubChat, isMain, limitsFile, loadConfig, readHub, readLimits } from './config.mjs'
+import { chatRole, isMain, limitsFile, loadConfig, readLimits } from './config.mjs'
 import { DEFAULT_MORE, DEFAULT_TRIM_AT, addRoom, chatLimit, hardStopAfter, readUsage, short, trimLimit, updateUsage } from './usage.mjs'
 
 export const LIMIT_USAGE = 'Type /chat-hub-core:limit to see the limits, /chat-hub-core:limit 200k for the hub, ' +
@@ -91,7 +91,7 @@ export function limitCommand(args = '', dir = process.cwd(), { session = '', tra
 // This chat's extra room, if it has any.
 function roomNote(cfg, session) {
   if (!session) return ''
-  const isHub = isHubChat(readHub(cfg), session)
+  const isHub = chatRole(session, cfg) !== 'work'   // the user hub (split hubs) has the hub's limit
   const base = trimLimit(isHub, cfg), limit = chatLimit(session, isHub, cfg)
   return limit > base ? ` This chat has extra room up to ${short(limit)} until it's cleared (/chat-hub-core:limit more).` : ''
 }
@@ -107,7 +107,7 @@ function moreRoom(which, words, cfg, session, transcript, args) {
   if (!session) {
     return { ok: false, changed: false, text: 'Not changed: "more" is for one chat, so the owner types /chat-hub-core:limit more in it.' }
   }
-  const isHub = isHubChat(readHub(cfg), session)
+  const role = chatRole(session, cfg), isHub = role !== 'work'   // the user hub has the hub's limit
   const base = trimLimit(isHub, cfg)
   if (!base) return { ok: true, changed: false, text: 'Not changed: this chat has no limit, so it needs no extra room.' }
   // Well under its limit the room would end at once (chatLimit drops it under 80%).
@@ -116,8 +116,8 @@ function moreRoom(which, words, cfg, session, transcript, args) {
     return { ok: true, changed: false, text: `Not changed: this chat is at ${short(ctx)}, well under its limit of ${short(base)}.` }
   }
   const to = addRoom(session, isHub, cfg, n)
-  const stop = isHub ? ` Its hard stop is now at ${short(to + hardStopAfter(cfg))}.` : ''
-  return { ok: true, changed: true, text: `Saved: this chat (${isHub ? 'the hub' : 'a work chat'}) now has room up to ` +
+  const stop = role === 'hub' ? ` Its hard stop is now at ${short(to + hardStopAfter(cfg))}.` : ''
+  return { ok: true, changed: true, text: `Saved: this chat (${role === 'hub' ? 'the hub' : role === 'user-hub' ? 'the user hub' : 'a work chat'}) now has room up to ` +
     `${short(to)} tokens, ${short(n)} more, until it's cleared; then its limit is ${short(base)} again.${stop}` }
 }
 
