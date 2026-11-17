@@ -15,12 +15,14 @@ Each version is a git tag (`v0.1.0`). Projects pin a tag in
     the chats' titles, on every wake, in the start note and after each of
     the hub's turns, and says "open count: … set your own title to …"
     only when the count is wrong.
-  - **Auto-close:** when a wrap-up report with its branch reaches the hub,
-    the prompt hook runs `close-chat.mjs <branch>` itself and gives the hub
-    one line: READY (set ✅, the new count) or FAIL with the reason, to tell
-    the chat. A report whose **Open:** line isn't "nothing" is flagged so
-    the hub holds the ✅. Running outside the hub's sandbox, it can merge
-    protected files too. The close backstop stays.
+  - **Closing:** when a wrap-up report with its branch reaches the hub,
+    the prompt hook gives it the one `close-chat.mjs <branch>` command to
+    run and what to do on READY (✅ and its new count in one batch) or
+    FAIL (tell the chat). The hub runs it in its sandbox, as before: a
+    hook never does, because hooks run outside the sandbox and close-chat
+    runs the settings' `checks` (which a chat can edit) on the chat's
+    code. A report whose **Open:** line isn't "nothing" is flagged so the
+    hub holds the ✅. The close backstop stays.
   - **Deleted chats:** a chat under `## Open chats` in the hub's notes
     whose session is gone from the app is named, with its branch if it
     isn't on main or the release preview, so the hub drops it.
@@ -28,9 +30,10 @@ Each version is a git tag (`v0.1.0`). Projects pin a tag in
     background while any chat shows 🚀: it asks CI once a minute and exits,
     waking the hub, only when a 🚀 chat's head passed, none shows 🚀, or an
     hour went by. The prompt hook names a passed 🚀 head on every wake too,
-    once per commit, so the hub no longer runs `ci-status.mjs` each wake.
-  The hub skill drops the steps these replace. The prompt hook may now take
-  as long as the checks (its timeout is 20 minutes).
+    once per commit (with `ci.passed` from main's committed settings, not
+    a folder's copy a chat could edit), so the hub no longer runs
+    `ci-status.mjs` each wake.
+  The hub skill drops the steps these replace.
 
 ## 0.3.48
 

@@ -500,15 +500,15 @@ check, and prints READY or FAIL, so ✅ comes in the same turn. If the hub's own
 folder has the preview checked out, it merges there (a fast-forward, only with
 nothing uncommitted in it).
 
-**Closing is done by a hook.** When a wrap-up report reaches the hub with
-its branch (`**Commit:** <sha> on \`<branch>\``), the hub's prompt hook runs
-`close-chat.mjs <branch>` itself before the hub reads the report, outside
-the hub's sandbox and context, and hands it one line: READY (set ✅, tell
-you it can be deleted, drop it from the notes, and the new open count) or
-FAIL with the reason, to pass to the chat. If the report's **Open:** line
-isn't "nothing", the line says so and the hub holds the ✅ until it's
-sorted out. Judgment stays with the hub: merge clashes go back to the chat,
-and questions to you. The same hook names any chat under `## Open chats` in
+**The close command comes with the report.** When a wrap-up report
+reaches the hub with its branch (`**Commit:** <sha> on \`<branch>\``), the
+hub's prompt hook hands it the one command to run, `close-chat.mjs
+<branch>`, and what to do on READY (set ✅ and its own new open count in
+one batch, tell you it can be deleted, drop it from the notes) or FAIL
+(tell the chat). The hub runs it in its sandbox: a hook never does, since
+hooks run outside the sandbox and close-chat runs the settings' `checks`
+on the chat's code. If the report's **Open:** line isn't "nothing", the
+line says so and the hub holds the ✅ until it's sorted out. The same hook names any chat under `## Open chats` in
 the hub's notes that you deleted, so the hub drops it.
 
 **A finished chat closes at once.** The hub closes a chat as soon as its
@@ -530,7 +530,9 @@ shows 🚀 the hub keeps `hooks/ci-watch.mjs` running in the background: it
 asks `ci.passed` about each 🚀 chat's head once a minute and exits, waking
 the hub, only when one passed (named once per commit), none shows 🚀 any
 more, or an hour went by without a pass. The hub's prompt hook does the
-same check on every wake, so a pass is named even with no watcher running;
+same check on every wake (with `ci.passed` from the settings committed on
+main, not a folder's copy a chat could edit), so a pass is named even with
+no watcher running;
 the hub then tells that chat. `hooks/ci-status.mjs` still gives every chat
 branch's CI state in one call.
 

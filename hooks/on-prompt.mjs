@@ -12,7 +12,7 @@ import { applyDefaults, defaultsNote, toolsCommand } from './tools.mjs'
 import { versionCommand } from './version.mjs'
 import { rulesNotice } from './config.mjs'
 import { closeBackstop } from './wrapups.mjs'
-import { autoClose, ciNote, countNote, deletedNote } from './books.mjs'
+import { ciNote, closeNote, countNote, deletedNote } from './books.mjs'
 
 const setHubCmd = `node "${dirname(fileURLToPath(import.meta.url))}/set-hub.mjs"`
 const input = hookInput()
@@ -56,11 +56,11 @@ if (!m && cfg) {
   }
   const rules = rulesNotice({ session: input.session_id, isHub })
   // The hub's close backstop: a report in this prompt, or a chat whose report is in still at ⏳.
-  // A report with its branch is closed here and now (close-chat.mjs); the hub gets one line each.
+  // A report with its branch: the one close-chat.mjs command for the hub to run (never run here).
   const dir = input.cwd || process.cwd()
-  const auto = isHub ? autoClose({ prompt, cfg, session: input.session_id, transcript: input.transcript_path, dir }) : { text: '', handled: [] }
+  const auto = isHub ? closeNote({ prompt, cfg, session: input.session_id, transcript: input.transcript_path, dir }) : { text: '', handled: [] }
   const close = isHub ? closeBackstop({ prompt, transcript: input.transcript_path, handled: auto.handled }) : ''
-  // The hub's bookkeeping: its own open count (unless auto-close already gave it), chats the
+  // The hub's bookkeeping: its own open count (unless the close note already gave it), chats the
   // owner deleted, and level 2 CI results.
   const books = isHub ? [auto.text, auto.text ? '' : countNote({ cfg, session: input.session_id, transcript: input.transcript_path, dir }),
     deletedNote({ cfg, transcript: input.transcript_path, dir }), ciNote({ cfg, session: input.session_id, transcript: input.transcript_path, dir })]

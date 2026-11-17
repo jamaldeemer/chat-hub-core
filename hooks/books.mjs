@@ -5,8 +5,8 @@
 //   only when its own count is wrong, and never lists sessions to recount.
 // - Deleted chats: a chat under "## Open chats" in the hub's notes whose session has gone from
 //   the app (the owner deleted it) is named, so the hub drops it.
-// - Auto-close: a wrap-up report in the hub's prompt runs close-chat.mjs <its branch> here, and
-//   the hub gets one READY or FAIL line.
+// - Closing: a wrap-up report in the hub's prompt gets the one close-chat.mjs command to run (in
+//   the hub's sandbox: a hook never runs it) and what to do on READY or FAIL.
 // - CI (level 2): a chat showing 🚀 whose head passed CI is named once per commit.
 // Every chat's title is read from <projects>/<folder>/<session>/custom-title.json; the app
 // removes that folder when a chat is deleted. Outside the desktop app there are no such files,
@@ -162,59 +162,31 @@ export function reports(text) {
   return out
 }
 
-const closedFile = () => { const f = hubNotesFile(); return f ? f.replace(/\/hub-notes\.md$/, '/closed.json') : null }
 const readJson = f => { try { return JSON.parse(readFileSync(f, 'utf8')) || {} } catch { return {} } }
 const writeJson = (f, s) => { try { mkdirSync(dirname(f), { recursive: true }); writeFileSync(f, JSON.stringify(s)) } catch {} }
 
-// Runs close-chat.mjs <branch> from the hub's folder: { ok, last, fails }.
-export function runClose(branch, dir) {
-  let text = '', ok = true
-  try { text = execFileSync('node', [join(here, 'close-chat.mjs'), branch], { cwd: dir, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 16 * 60 * 1000 }) }
-  catch (e) { ok = false; text = `${e.stdout || ''}` || `FAIL: close-chat.mjs didn't run (${e.message.split('\n')[0]})` }
-  const lines = text.trim().split('\n')
-  return { ok, last: lines[lines.length - 1] || '', fails: lines.filter(l => /^FAIL /.test(l)) }
-}
-
 const nothingOpen = open => !open || /^(nothing|none|-|n\/a)\b/i.test(open.replace(/[*_`"]/g, '').trim())
+const safeRef = b => /^[\w][\w./-]*$/.test(b) && !b.includes('..')
 
-// The hub's lines for the reports in this prompt ('' when there are none). Closes each chat that
-// gave a branch; with no branch (level 0, or a report cut short) the hub closes it itself.
-export function autoClose({ prompt, cfg, session, transcript = '', dir = '.' }) {
-  const list = reports(prompt)
+// The hub's lines for the reports in this prompt: { text, handled } (text '' when there are none).
+// It never runs close-chat.mjs itself: hooks run outside the sandbox, and close-chat runs the
+// settings' `checks` (which a chat can edit) on the chat's code. It names the one command for the
+// hub to run in its sandbox, and what to do on READY or FAIL. A report with no branch (level 0,
+// or cut short) gets the close backstop's note instead.
+export function closeNote({ prompt, cfg, session, transcript = '', dir = '.' }) {
+  const list = reports(prompt).filter(r => r.branch && safeRef(r.branch))
   if (!list.length || (cfg?.level || 0) < 1) return { text: '', handled: [] }
-  const f = closedFile()
-  const done = f ? readJson(f) : {}
-  const lines = [], handled = [], readied = []
-  for (const r of list) {
-    if (!r.branch) continue
-    const head = git(dir, 'rev-parse', '--verify', '-q', `refs/heads/${r.branch}`)
-    let res
-    if (head && done[r.branch] === head) res = { ok: true, again: true }
-    else res = runClose(r.branch, dir)
-    handled.push(r.code)
-    if (res.ok) {
-      if (head && f) done[r.branch] = head
-      readied.push(r.code)
-      const open = nothingOpen(r.open) ? '' :
-        ` Its report's Open line says "${r.open.slice(0, 160)}": if that waits on the owner, or isn't in the followups file, hold the ✅ and sort it out first.`
-      lines.push(`${r.code} (\`${r.branch}\`): READY, ${res.again ? 'already merged into' : 'merged into'} ` +
-        `${cfg.branches?.release || 'release'}${res.again ? '' : ' and checks passed'}. Set ✅ at the start of its title now ` +
-        `(keep the rest), tell the owner once it can be deleted, and drop it from your notes.${open}`)
-    } else {
-      const why = (res.fails.length ? res.fails : [res.last]).join('; ').slice(0, 600)
-      lines.push(`${r.code} (\`${r.branch}\`): FAIL, not closed: ${why}. Tell the chat what failed (a merge clash is ` +
-        "the chat's to resolve, not yours); don't merge or test it yourself.")
-    }
-  }
-  if (f && handled.length) writeJson(f, done)
-  if (!lines.length) return { text: '', handled }
-  const count = readied.length ? countNote({ cfg, session, transcript, dir, except: readied }) : ''
-  return {
-    text: `chat-hub-core auto-close (close-chat.mjs already ran, don't run it again): ${lines.join(' ')}` +
-      (count ? ` With those ✅, ${count.replace(/^chat-hub-core open count: /, '')}` : '') +
-      (readied.length ? ' Then offer to ship (Releases).' : ''),
-    handled,
-  }
+  const chats = projectChats({ transcript, dir })
+  const lines = list.map(r => {
+    const open = nothingOpen(r.open) ? '' :
+      ` Its report's Open line says "${r.open.slice(0, 160)}": if that waits on the owner, or isn't in the followups file, hold the ✅ and sort it out first.`
+    const count = countNote({ cfg, session, chats, except: [r.code] }).match(/set your own title to (".*?")/u)?.[1]
+    return `${r.code}: run \`node "${join(here, 'close-chat.mjs')}" ${r.branch}\` now (once; don't merge, test or look up its folder first). ` +
+      `On READY: set ✅ at the start of its title (keep the rest)${count ? ` and your own title to ${count}` : ''} in one batch, ` +
+      `tell the owner once it can be deleted, drop it from your notes, then offer to ship (Releases).${open} ` +
+      "On FAIL: tell the chat what failed (a merge clash is the chat's to resolve, not yours)."
+  })
+  return { text: `chat-hub-core close: this message has a wrap-up report. ${lines.join(' ')}`, handled: list.map(r => r.code) }
 }
 
 // --- CI (level 2) ----------------------------------------------------------------------------
@@ -250,8 +222,18 @@ export const passedLine = fresh => fresh.length
     `"CI passed on <sha>: set 🟢 and ask the owner more or wrap up." (its own watcher may have stopped in a clear).`
   : ''
 
+// ci.passed from the settings committed on the main branch, not the folder's copy, which a chat
+// can edit: hooks run it outside the sandbox. '' when main has none.
+export function committedCi(cfg, dir = '.') {
+  const main = cfg?.branches?.main || 'main'
+  if (!safeRef(main)) return ''
+  try { return JSON.parse(git(dir, 'show', `refs/heads/${main}:.claude/chat-hub.json`) || '{}')?.ci?.passed || '' } catch { return '' }
+}
+
 // The prompt hook's CI line ('' when nothing changed).
 export function ciNote({ cfg, session, transcript = '', dir = '.' }) {
-  if ((cfg?.level || 0) < 2 || !cfg?.ci?.passed) return ''
-  return passedLine(newlyPassed(rocketChats({ cfg, session, transcript, dir })))
+  if ((cfg?.level || 0) < 2) return ''
+  const passed = committedCi(cfg, dir)
+  if (!passed) return ''
+  return passedLine(newlyPassed(rocketChats({ cfg: { ...cfg, ci: { ...cfg.ci, passed } }, session, transcript, dir })))
 }

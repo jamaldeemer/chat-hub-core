@@ -336,7 +336,7 @@ turns × context size, and it's usually most of a project's usage.
     back to you after the clear); say it's noted for after the clear.
   - **Finish what's in flight:** a merge you've started (through its
     tests and commit), closing every chat whose wrap-up
-    report is in (its auto-close line, then ✅; never leave one at ⏳ for
+    report is in (`close-chat.mjs`, then ✅; never leave one at ⏳ for
     after the clear), title changes you owe, replies to messages chats
     have sent you, messages you said you'd send.
   - **While that's going on,** start each reply with the plain
@@ -493,11 +493,10 @@ A chat closes only when all of this holds, checked in this order:
    in. If it hasn't, send it that template.
 2. **Folder:** level 1+: `node "${CLAUDE_PLUGIN_ROOT}/hooks/close-chat.mjs"
    <its branch>` from the project prints READY. When the report gives
-   its branch, a hook has already run it by the time you read the
-   report, and hands you one line ("auto-close: C8 (`<branch>`):
-   READY, …" or "FAIL, not closed: …"): act on that line and don't run
-   it again. Run it yourself only for a report the hook didn't close (it
-   says "Close it now"), or after the chat fixes a FAIL. One command does it all:
+   its branch, a hook hands you that exact command with the report
+   ("close: … C8: run `node …/close-chat.mjs <branch>` now") and what to
+   do on READY (the ✅ and your new count, in one batch) or FAIL: run it
+   once and act on that line. One command does it all:
    it finds the chat's folder, checks it (nothing uncommitted, on its own
    branch, all pushed; level 2 CI passed on its newest commit and no fix
    waiting for the owner's check), merges the branch into the release
@@ -1034,10 +1033,10 @@ From `hooks/books.mjs`:
     `so set your own title to "${want}" (set_session_title with "self"), with your other title calls if you have any.`
     `${gone.length > 1 ? 'are' : 'is'} gone from the app (the owner deleted ${gone.length > 1 ? 'them' : 'it'}): drop ` +
     `${gone.length > 1 ? 'those lines' : 'that line'}.`
-        ` Its report's Open line says "${r.open.slice(0, 160)}": if that waits on the owner, or isn't in the followups file, hold the ✅ and sort it out first.`
-        `${cfg.branches?.release || 'release'}${res.again ? '' : ' and checks passed'}. Set ✅ at the start of its title now ` +
-        `(keep the rest), tell the owner once it can be deleted, and drop it from your notes.${open}`)
-        "the chat's to resolve, not yours); don't merge or test it yourself.")
+      ` Its report's Open line says "${r.open.slice(0, 160)}": if that waits on the owner, or isn't in the followups file, hold the ✅ and sort it out first.`
+      `On READY: set ✅ at the start of its title (keep the rest)${count ? ` and your own title to ${count}` : ''} in one batch, ` +
+      `tell the owner once it can be deleted, drop it from your notes, then offer to ship (Releases).${open} ` +
+      "On FAIL: tell the chat what failed (a merge clash is the chat's to resolve, not yours)."
   ? `chat-hub-core CI: ${fresh.map(r => `${r.code} passed on ${r.sha}`).join(', ')}. Message ${fresh.length > 1 ? 'each' : 'it'}: ` +
     `"CI passed on <sha>: set 🟢 and ask the owner more or wrap up." (its own watcher may have stopped in a clear).`
 ```

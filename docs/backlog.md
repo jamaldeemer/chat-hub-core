@@ -258,3 +258,5 @@ Findings 1–3 shipped in 0.3.4. Still open:
 - `scripts/all-prompts.sh` leaves out `hooks/titles.mjs`, so the title
   check's note isn't in `docs/all-prompts.md`.
 - Pace line in the terminal: a statusline script could save the same plan numbers (its JSON input has `rate_limits`), so CLI users get the pace with no get_usage calls. Claude Code plugins can't set `statusLine`, so it would need the owner to add it to settings.
+
+- **Settings commands run outside the sandbox (from E8).** `session-start.mjs`'s `ciNote` runs `ci.passed` from the chat's own folder copy of `.claude/chat-hub.json` in a hook (outside the sandbox), so a chat that edits it gets that command run unsandboxed on its next start. Read `ci.passed` from main's committed settings there too (like `books.mjs` `committedCi`), and check the other hooks for the same pattern.

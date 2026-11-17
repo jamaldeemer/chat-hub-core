@@ -71,7 +71,7 @@ export function closeBackstop({ prompt = '', transcript = '', now = Date.now(), 
   }
   if (f) writeState(f, state)
   const out = []
-  // Reports auto-close already ran close-chat.mjs get its line instead.
+  // Reports the close note (books.mjs) already gave the command for get that line instead.
   const todo = fresh.filter(c => !handled.includes(c))
   if (todo.length) out.push(
     `chat-hub-core: this message has the wrap-up report of ${todo.join(', ')}. Close it now: ${howToClose}`)

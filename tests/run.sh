@@ -737,7 +737,7 @@ t "hub title: open count in parentheses" "$(grep -c "the \*\*open count\*\* in p
 t "hub title: talk and ✅ chats not counted" "$(grep -c "Talk chats (no release tag), ✅ chats" "$root/skills/hub/SKILL.md")" 1
 t "hub title: count set with other title changes" "$(grep -c "set it in the same batch of title" "$root/skills/hub/SKILL.md")" 1
 t "hub title: a hook recounts, the hub doesn't list sessions" "$(grep -c "never list sessions just to recount" "$root/skills/hub/SKILL.md")" 1
-t "hub: acts on the auto-close line" "$(grep -c "act on that line and don't run" "$root/skills/hub/SKILL.md")" 1
+t "hub: runs the close command the hook names" "$(grep -c "once and act on that line" "$root/skills/hub/SKILL.md")" 1
 t "hub: CI watcher in the background" "$(grep -c 'hooks/ci-watch.mjs"` running in' "$root/skills/hub/SKILL.md")" 1
 t "hub title: retitle only when the count is wrong" "$(grep -c "when your count is wrong tells you the title" "$root/skills/hub/SKILL.md")" 1
 t "hub notes: deleted chats dropped by session id" "$(grep -c "on the line, never the title" "$root/skills/hub/SKILL.md")" 1
@@ -858,24 +858,20 @@ at2() { printf '{"session_id":"%s","cwd":"%s"}' "$1" "$(pwd)" | CHAT_HUB_PROJECT
 t "open count: after-turn sends the hub back once" "$(at2 hb1 | grep -c '"decision":"block".*open count: 2')" 1
 t "open count: start note gives it too" "$(echo '{"session_id":"hb1"}' | CHAT_HUB_PROJECTS_DIR="$pd" node "$root/hooks/session-start.mjs" | grep -c 'open count: 2')" 1
 bt . hb1 '⚪  Hub · ʀ38 (2)'
-t "auto-close: report merged and READY" "$(bp hb1 '**Wrap-up · C8**
+t "close note: names the one command and the READY/FAIL steps" "$(bp hb1 '**Wrap-up · C8**
 - **Commit:** abc1234 on `c8`; nothing uncommitted.
-- **Open:** nothing' | grep -c 'auto-close (close-chat.mjs already ran.*C8 (`c8`): READY, merged into release and checks passed. Set ✅.*set your own title to \\"⚪  Hub · ʀ38 (1)\\"')" 1
-t "auto-close: the branch is in the preview" "$(git merge-base --is-ancestor c8 release; echo $?)" 0
-t "auto-close: no second close-chat note" "$(bp hb1 '**Wrap-up · C8**
+- **Open:** nothing' | grep -c 'C8: run `node \\".*/hooks/close-chat.mjs\\" c8` now.*On READY: set ✅.*your own title to \\"⚪  Hub · ʀ38 (1)\\".*On FAIL: tell the chat')" 1
+t "close note: the hook never merges (no close-chat run outside the sandbox)" "$(git merge-base --is-ancestor c8 release; echo $?)" 1
+t "close note: no second close-chat note" "$(bp hb1 '**Wrap-up · C8**
 - **Commit:** abc on `c8`' | grep -c 'Close it now: run close-chat')" 0
-t "auto-close: same report again says already merged" "$(bp hb1 '**Wrap-up · C8**
-- **Commit:** abc on `c8`' | grep -c 'READY, already merged into release')" 1
-echo dirt > ../e9/dirt.txt
-t "auto-close: a failed check is FAIL, tell the chat" "$(bp hb1 '**Wrap-up · E9**
-- **Commit:** abc on `e9`' | grep -c 'E9 (`e9`): FAIL, not closed: FAIL uncommitted.*Tell the chat what failed')" 1
-rm ../e9/dirt.txt
-t "auto-close: an Open line holds the ✅" "$(bp hb1 '**Wrap-up · F2**
+t "close note: a later-release chat leaves the count alone" "$(bp hb1 '**Wrap-up · E9**
+- **Commit:** abc on `e9`' | grep -c 'E9: run .*On READY: set ✅ at the start of its title (keep the rest) in one batch')" 1
+t "close note: an Open line holds the ✅" "$(bp hb1 '**Wrap-up · F2**
 - **Commit:** abc on `f2`
 - **Open:** should the menu be blue? (for the owner)' | grep -c 'Open line says .*should the menu be blue.*hold the ✅')" 1
-t "auto-close: no branch, the hub closes it itself" "$(bp hb1 '**Wrap-up · A9**
-- **Commit:** abc' | grep -c 'auto-close'; bp hb1 '**Wrap-up · A9**' | grep -c 'Close it now: run close-chat.mjs')" "0
-1"
+t "close note: an odd branch name isn't passed on" "$(bp hb1 '**Wrap-up · F3**
+- **Commit:** abc on `x;rm`' | grep -c 'F3: run')" 0
+t "close note: no branch, the backstop note instead" "$(bp hb1 '**Wrap-up · A9**' | grep -c 'Close it now: run close-chat.mjs')" 1
 notes=$(git rev-parse --git-common-dir)/chat-hub/hub-notes.md
 mkdir -p "$pd/$(enc ../f2)/11111111-2222-3333-4444-555555555555"
 mkdir -p "$(dirname "$notes")/apps"; echo 99999999-2222-3333-4444-555555555555 > "$(dirname "$notes")/apps/local_99999999-aaaa-3333-4444-555555555555"
@@ -885,13 +881,17 @@ t "deleted chats: a session still there isn't" "$(bp hb1 hello | grep -c 'delete
 t "deleted chats: an app address no hook has seen isn't" "$(bp hb1 hello | grep -c 'A5')" 0
 rm -f "$notes"
 t "ci-watch: level 1 has nothing to watch" "$(node "$root/hooks/ci-watch.mjs" | grep -c 'level 1, no CI to watch')" 1
-echo '{"level":2,"nextRelease":38,"ci":{"passed":"echo 1"}}' > .claude/chat-hub.json
+echo '{"level":2,"nextRelease":38,"ci":{"passed":"echo 1"}}' > .claude/chat-hub.json; git add .claude/chat-hub.json; gc -m ci
 t "ci-watch: no 🚀 chat, exits at once" "$(CHAT_HUB_PROJECTS_DIR="$pd" node "$root/hooks/ci-watch.mjs" | grep -c 'no chat shows 🚀')" 1
 bt ../f2 s2 '🚀  ʀ38 F2 · (Other)'
 t "ci-watch: a 🚀 head that passed wakes the hub" "$(CHAT_HUB_PROJECTS_DIR="$pd" node "$root/hooks/ci-watch.mjs" | grep -c 'CI: F2 passed on [0-9a-f]\{7\}. Message it')" 1
 t "ci: prompt hook doesn't repeat what the watcher said" "$(bp hb1 hello | grep -c 'CI: F2')" 0
 t "ci-watch: once named, waits and then says so" "$(CHAT_HUB_PROJECTS_DIR="$pd" node "$root/hooks/ci-watch.mjs" --for 0 | grep -c 'every 🚀 chat passed and was named')" 1
 echo x >> ../f2/f2.txt; git -C ../f2 -c user.email=a@b -c user.name=t commit -qam more; git -C ../f2 push -q origin HEAD
+git show main:.claude/chat-hub.json > "$tmp/keep.json"; sed 's/echo 1/echo 0/' "$tmp/keep.json" > .claude/chat-hub.json; git add .claude/chat-hub.json; gc -m 'ci 0'
+echo '{"level":2,"nextRelease":38,"ci":{"passed":"echo 1"}}' > .claude/chat-hub.json
+t "ci: prompt hook runs main's committed ci.passed, not the folder's copy" "$(bp hb1 hello | grep -c 'CI: F2')" 0
+cp "$tmp/keep.json" .claude/chat-hub.json; git add .claude/chat-hub.json; gc -m 'ci 1'
 t "ci: prompt hook names a new passed head" "$(bp hb1 hello | grep -c 'CI: F2 passed on')" 1
 echo '{"level":2,"nextRelease":38,"ci":{"passed":"echo 0"}}' > .claude/chat-hub.json
 t "ci-watch: still not passed after --for" "$(CHAT_HUB_PROJECTS_DIR="$pd" node "$root/hooks/ci-watch.mjs" --for 0 | grep -c 'still not passed: F2 [0-9a-f]\{7\} (not passed yet)')" 1
