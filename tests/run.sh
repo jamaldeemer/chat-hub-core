@@ -54,7 +54,7 @@ t "app address: cleared hub not asked to look itself up" "$(ssa local_A s7 | gre
 t "app address: cleared hub's new session ID recorded" "$(grep -c '"session":"s7","app":"local_A"' .git/chat-hub/hub)" 1
 t "app address: work chat told so outright" "$(ssa local_Z s6 | grep -c 'This chat is a work chat (its app address is local_Z; the hub is local_A).*only ever message local_A')" 1
 t "app address: work chat not told to read the notes" "$(ssa local_Z s6 | grep -c 'hub-notes.md')" 0
-t "app address: cleared hub told to recount and prune" "$(ssa local_A s7 | grep -c 'drop chats the owner deleted from your notes and fix your title')" 1
+t "app address: cleared hub not told to list sessions" "$(ssa local_A s7 | grep -c 'list sessions')" 0
 t "app address: work chat not told to recount" "$(ssa local_Z s6 | grep -c 'owner deleted')" 0
 # A restart mid-conversation: the app gives the chat a new session ID (same app address) and
 # no start note runs. Every other hook re-records it, so the hub stays the hub.
@@ -722,7 +722,7 @@ t "skills: OK asked with a menu" "$(grep -c 'Ask for it with a menu' "$root/skil
 t "skills: more or wrap up asked with a menu" "$(grep -c 'should I wrap up?" with a menu' "$root/skills/work-chat/SKILL.md")" 1
 t "skills: menu has Wrap up / More changes" "$(grep -c 'options \"Wrap up\" / \"More changes\"' "$root/skills/work-chat/SKILL.md")" 1
 t "titles: More changes sets 🔨" "$(grep -c '"More changes" → set 🔨' "$root/skills/work-chat/SKILL.md")" 1
-t "titles: hub closes when the report arrives" "$(grep -c 'When a wrap-up report arrives, close the chat' "$root/skills/hub/SKILL.md")" 1
+t "titles: hub closes when the report arrives" "$(grep -c 'When a wrap-up report arrives, the chat closes now' "$root/skills/hub/SKILL.md")" 1
 t "skills: hub expects the Wrap up menu answer" "$(grep -c 'should I wrap up?" menu' "$root/skills/hub/SKILL.md")" 1
 t "titles: hub keeps a chat's symbol when retitling" "$(grep -c 'keep its symbol' "$root/skills/hub/SKILL.md")" 1
 t "start modes: Just open in hub" "$(grep -c '\*\*Just open:\*\*' "$root/skills/hub/SKILL.md")" 1
@@ -736,10 +736,12 @@ t "close: setup has checks" "$(grep -c '"checks": ""' "$root/skills/setup/SKILL.
 t "hub title: open count in parentheses" "$(grep -c "the \*\*open count\*\* in parentheses" "$root/skills/hub/SKILL.md")" 1
 t "hub title: talk and ✅ chats not counted" "$(grep -c "Talk chats (no release tag), ✅ chats" "$root/skills/hub/SKILL.md")" 1
 t "hub title: count set with other title changes" "$(grep -c "set it in the same batch of title" "$root/skills/hub/SKILL.md")" 1
-t "hub title: recount on every wake" "$(grep -c "recount on every wake" "$root/skills/hub/SKILL.md")" 1
-t "hub title: retitle only when the count is wrong" "$(grep -c "retitle yourself only if your" "$root/skills/hub/SKILL.md")" 1
-t "hub notes: deleted chats dropped by session id" "$(grep -c "match on session id, never title" "$root/skills/hub/SKILL.md")" 1
-t "hub notes: unmerged deleted chat told once" "$(grep -c "tell the owner once (code, branch)" "$root/skills/hub/SKILL.md")" 1
+t "hub title: a hook recounts, the hub doesn't list sessions" "$(grep -c "never list sessions just to recount" "$root/skills/hub/SKILL.md")" 1
+t "hub: runs the close command the hook names" "$(grep -c "once and act on that line" "$root/skills/hub/SKILL.md")" 1
+t "hub: CI watcher in the background" "$(grep -c 'hooks/ci-watch.mjs"` running in' "$root/skills/hub/SKILL.md")" 1
+t "hub title: retitle only when the count is wrong" "$(grep -c "when your count is wrong tells you the title" "$root/skills/hub/SKILL.md")" 1
+t "hub notes: deleted chats dropped by session id" "$(grep -c "on the line, never the title" "$root/skills/hub/SKILL.md")" 1
+t "hub notes: unmerged deleted chat told once" "$(grep -c "release preview, tell the owner once (code," "$root/skills/hub/SKILL.md")" 1
 t "release tag: hub writes small-caps ʀ" "$(grep -c 'small-caps `ʀ` (U+0280), never a plain `R`' "$root/skills/hub/SKILL.md")" 1
 t "release tag: digits and kind stay plain" "$(grep -c 'the digits and `~`/`+`$' "$root/skills/hub/SKILL.md")" 1
 t "release tag: old plain-R titles still count" "$(grep -c 'old plain-`R` tag (`R07`, `(R7)`)' "$root/skills/hub/SKILL.md")" 1
@@ -821,9 +823,78 @@ t "close backstop: back to 🔨 after a failed close, forgotten" "$(hp hc1 hello
 hp hc1 '**Wrap-up · F9**' >/dev/null
 t "close backstop: no title found, quiet but remembered" "$(hp hc1 hello | grep -c 'close backstop'; grep -c '"F9"' .git/chat-hub/wrapups.json)" "0
 1"
-t "close backstop: hub rules say no parked state" "$(grep -c 'There is no "parked" state' "$root/skills/hub/SKILL.md")" 1
+t "close backstop: hub rules say no parked state" "$(grep -c 'no "parked" state: a finished chat' "$root/skills/hub/SKILL.md")" 1
 t "close backstop: hub closes whichever release" "$(grep -c 'never hold a finished chat at ⏳ for a later release' "$root/skills/hub/SKILL.md")" 1
 t "close backstop: wrap-up note says a later release too" "$(grep -c 'never leave one at ⏳ for after the clear or a later release' "$root/hooks/usage.mjs")" 1
 rm -rf "$pd" .git/chat-hub/wrapups.json
+# books.mjs: the hub's bookkeeping in hooks (open count, deleted chats, auto-close, CI).
+mkdir "$tmp/bk" && cd "$tmp/bk" && git init -q --bare remote.git && git init -q -b main repo && cd repo
+mkdir .claude && echo '{"level":1,"nextRelease":38,"checks":"test ! -e bad.txt"}' > .claude/chat-hub.json && git add -A && gc -m init && git remote add origin ../remote.git && git push -q origin main
+git branch release
+node "$root/hooks/set-hub.mjs" --session hb1 --replace >/dev/null
+pd="$tmp/bkp"
+enc() { (cd "$1" && pwd -P) | sed 's/[^a-zA-Z0-9]/-/g'; }
+bt() { mkdir -p "$pd/$(enc "$1")/$2"; printf '{"customTitle":"%s"}' "$3" > "$pd/$(enc "$1")/$2/custom-title.json"; }
+bw() { git worktree add -q "../$1" -b "$1" main; echo "$1" > "../$1/$1.txt"; git -C "../$1" add -A; git -C "../$1" -c user.email=a@b -c user.name=t commit -q -m "$1"; git -C "../$1" push -q origin HEAD; }
+bp() { node -e 'process.stdout.write(JSON.stringify({session_id:process.argv[1],prompt:process.argv[2],cwd:process.argv[3]}))' "$1" "$2" "$(pwd)" > "$tmp/bp.json"; GIT_AUTHOR_NAME=t GIT_AUTHOR_EMAIL=a@b GIT_COMMITTER_NAME=t GIT_COMMITTER_EMAIL=a@b CHAT_HUB_PROJECTS_DIR="$pd" node "$root/hooks/on-prompt.mjs" < "$tmp/bp.json"; }
+bw c8; bw e9; bw f2
+bt . hb1 '⚪  Hub · ʀ38 (1)'
+bt ../c8 s8 '⏳  ʀ38 C8 · (Thing)'
+bt ../e9 s9 '🔨  ʀ39 E9 · Later'
+bt . t4 '⚪  ᴢ A4 · Talk'
+t "open count: right, quiet" "$(bp hb1 hello | grep -c 'open count')" 0
+bt ../f2 s2 '🔨  ʀ38 F2 · (Other)'
+t "open count: wrong, the hub is told its title" "$(bp hb1 hello | grep -c 'open count: 2 open chat(s) are tagged for ʀ38.*set your own title to \\"⚪  Hub · ʀ38 (2)\\"')" 1
+t "open count: work chats aren't told" "$(bp s2 hello | grep -c 'open count')" 0
+bt ../f2 s2old '✅  ʀ38 F2 · (Other)'; touch -t 202001010000 "$pd/$(enc ../f2)/s2old/custom-title.json"
+t "open count: an older title of the same chat doesn't count" "$(bp hb1 hello | grep -c 'ʀ38 (2)')" 1
+bt . hb0 '⚪  Hub · ʀ38 (9)'
+t "open count: old hub titles don't count" "$(bp hb1 hello | grep -c 'ʀ38 (2)')" 1
+echo '{"level":1,"nextRelease":7,"checks":"test ! -e bad.txt"}' > .claude/chat-hub.json
+t "open count: the hub's own title's release wins over a stale nextRelease" "$(bp hb1 hello | grep -c 'tagged for ʀ38.*ʀ38 (2)')" 1
+git checkout -q -- .claude/chat-hub.json
+t "open count: plain R and padded tags count" "$(node -e 'import(process.argv[1]).then(m=>console.log([m.taggedFor("🔨  R38 C8 · x",38),m.taggedFor("🔨  ʀ07~ C8 · x",7),m.taggedFor("🔨  3F · (x) (ʀ38)",38),m.taggedFor("🔨  ʀ380 C8 · x",38)].join()))' "$root/hooks/books.mjs")" "true,true,true,false"
+at2() { printf '{"session_id":"%s","cwd":"%s"}' "$1" "$(pwd)" | CHAT_HUB_PROJECTS_DIR="$pd" node "$root/hooks/after-turn.mjs"; }
+t "open count: after-turn sends the hub back once" "$(at2 hb1 | grep -c '"decision":"block".*open count: 2')" 1
+t "open count: start note gives it too" "$(echo '{"session_id":"hb1"}' | CHAT_HUB_PROJECTS_DIR="$pd" node "$root/hooks/session-start.mjs" | grep -c 'open count: 2')" 1
+bt . hb1 '⚪  Hub · ʀ38 (2)'
+t "close note: names the one command and the READY/FAIL steps" "$(bp hb1 '**Wrap-up · C8**
+- **Commit:** abc1234 on `c8`; nothing uncommitted.
+- **Open:** nothing' | grep -c 'C8: run `node \\".*/hooks/close-chat.mjs\\" c8` now.*On READY: set ✅.*your own title to \\"⚪  Hub · ʀ38 (1)\\".*On FAIL: tell the chat')" 1
+t "close note: the hook never merges (no close-chat run outside the sandbox)" "$(git merge-base --is-ancestor c8 release; echo $?)" 1
+t "close note: no second close-chat note" "$(bp hb1 '**Wrap-up · C8**
+- **Commit:** abc on `c8`' | grep -c 'Close it now: run close-chat')" 0
+t "close note: a later-release chat leaves the count alone" "$(bp hb1 '**Wrap-up · E9**
+- **Commit:** abc on `e9`' | grep -c 'E9: run .*On READY: set ✅ at the start of its title (keep the rest) in one batch')" 1
+t "close note: an Open line holds the ✅" "$(bp hb1 '**Wrap-up · F2**
+- **Commit:** abc on `f2`
+- **Open:** should the menu be blue? (for the owner)' | grep -c 'Open line says .*should the menu be blue.*hold the ✅')" 1
+t "close note: an odd branch name isn't passed on" "$(bp hb1 '**Wrap-up · F3**
+- **Commit:** abc on `x;rm`' | grep -c 'F3: run')" 0
+t "close note: no branch, the backstop note instead" "$(bp hb1 '**Wrap-up · A9**' | grep -c 'Close it now: run close-chat.mjs')" 1
+notes=$(git rev-parse --git-common-dir)/chat-hub/hub-notes.md
+mkdir -p "$pd/$(enc ../f2)/11111111-2222-3333-4444-555555555555"
+mkdir -p "$(dirname "$notes")/apps"; echo 99999999-2222-3333-4444-555555555555 > "$(dirname "$notes")/apps/local_99999999-aaaa-3333-4444-555555555555"
+printf '## Open chats\n- F2 11111111-2222-3333-4444-555555555555 `f2`\n- ʀ38: E9 "🔨  x", local_99999999-aaaa-3333-4444-555555555555, branch e9, waits\n- A5 local_00000000-aaaa-3333-4444-555555555555 never seen\n## Plans\n' > "$notes"
+t "deleted chats: a gone app address is named, with its unmerged branch" "$(bp hb1 hello | grep -c 'deleted chats: E9 (its branch e9 isn.t on main or release: tell the owner once) under')" 1
+t "deleted chats: a session still there isn't" "$(bp hb1 hello | grep -c 'deleted chats: F2')" 0
+t "deleted chats: an app address no hook has seen isn't" "$(bp hb1 hello | grep -c 'A5')" 0
+rm -f "$notes"
+t "ci-watch: level 1 has nothing to watch" "$(node "$root/hooks/ci-watch.mjs" | grep -c 'level 1, no CI to watch')" 1
+echo '{"level":2,"nextRelease":38,"ci":{"passed":"echo 1"}}' > .claude/chat-hub.json; git add .claude/chat-hub.json; gc -m ci
+t "ci-watch: no 🚀 chat, exits at once" "$(CHAT_HUB_PROJECTS_DIR="$pd" node "$root/hooks/ci-watch.mjs" | grep -c 'no chat shows 🚀')" 1
+bt ../f2 s2 '🚀  ʀ38 F2 · (Other)'
+t "ci-watch: a 🚀 head that passed wakes the hub" "$(CHAT_HUB_PROJECTS_DIR="$pd" node "$root/hooks/ci-watch.mjs" | grep -c 'CI: F2 passed on [0-9a-f]\{7\}. Message it')" 1
+t "ci: prompt hook doesn't repeat what the watcher said" "$(bp hb1 hello | grep -c 'CI: F2')" 0
+t "ci-watch: once named, waits and then says so" "$(CHAT_HUB_PROJECTS_DIR="$pd" node "$root/hooks/ci-watch.mjs" --for 0 | grep -c 'every 🚀 chat passed and was named')" 1
+echo x >> ../f2/f2.txt; git -C ../f2 -c user.email=a@b -c user.name=t commit -qam more; git -C ../f2 push -q origin HEAD
+git show main:.claude/chat-hub.json > "$tmp/keep.json"; sed 's/echo 1/echo 0/' "$tmp/keep.json" > .claude/chat-hub.json; git add .claude/chat-hub.json; gc -m 'ci 0'
+echo '{"level":2,"nextRelease":38,"ci":{"passed":"echo 1"}}' > .claude/chat-hub.json
+t "ci: prompt hook runs main's committed ci.passed, not the folder's copy" "$(bp hb1 hello | grep -c 'CI: F2')" 0
+cp "$tmp/keep.json" .claude/chat-hub.json; git add .claude/chat-hub.json; gc -m 'ci 1'
+t "ci: prompt hook names a new passed head" "$(bp hb1 hello | grep -c 'CI: F2 passed on')" 1
+echo '{"level":2,"nextRelease":38,"ci":{"passed":"echo 0"}}' > .claude/chat-hub.json
+t "ci-watch: still not passed after --for" "$(CHAT_HUB_PROJECTS_DIR="$pd" node "$root/hooks/ci-watch.mjs" --for 0 | grep -c 'still not passed: F2 [0-9a-f]\{7\} (not passed yet)')" 1
+cd "$tmp"; rm -rf "$pd" "$tmp/bk"
 cd "$tmp"
 rm -rf "$tmp"; exit $fail

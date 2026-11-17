@@ -41,11 +41,10 @@ At none, show `(0)`: the release's work is all done or closed.
 Leave the count out if `releases` is "none" (no suffix). When you set a
 title that changes the count (starting, retagging, setting ✅ on or
 closing a chat, and after a release), set it in the same batch of title
-calls. The owner also closes and deletes chats, and nothing tells you,
-so **recount on every wake** (an event, an owner prompt, a start, after
-a clear): use a session list you're taking anyway, else take one
-(include archived), count as above, and retitle yourself only if your
-count is wrong. Only ever change the symbol and that
+calls. The owner also closes and deletes chats; a hook recounts from
+the chats' titles on every wake and after each of your turns, and only
+when your count is wrong tells you the title to set ("open count: …"):
+set it then, and never list sessions just to recount. Only ever change the symbol and that
 suffix (the suffix when it's missing or after a release, the count as
 above); never change or suggest changing the rest. During a release set your own symbol:
 `🙋` release built, waiting on the owner's push; `🚀` CI running on the
@@ -65,11 +64,11 @@ address, title, folder, dev server), `## Next` (next code, `nextRelease`),
 `## Shipped` (the last 2 releases only), `## Preview` (what's merged, as
 commits), `## Waiting` (branch, commit, CI, blocker), `## Open chats` (by
 release: code, session id, title, branch, what they wait on), `## Plans`, `## Gotchas`.
-The wake's session list keeps them true too: a chat under `## Open
-chats` whose session id isn't in it was deleted by the owner, so drop
-it (match on session id, never title). If its branch isn't on main or
-the release preview, tell the owner once (code, branch) as you drop it.
-Without the app's session tools, skip this check and the recount.
+A hook names any chat under `## Open chats` whose session the owner
+deleted ("deleted chats: …"; it matches the session id or app address
+on the line, never the title): drop that line, and if the hook says its
+branch isn't on main or the release preview, tell the owner once (code,
+branch).
 Never add dated, "Latest", "Checkpoint" or "before a clear" blocks, even in
 a hurry; history lives in git. A closed (✅) chat leaves the notes the
 moment you set ✅: no list of ✅ chats, and no ✅ anywhere in the file. A
@@ -220,21 +219,16 @@ Two styles, set by `titles` in the settings:
   keep its symbol. If a chat tells you a status in a message instead
   (its rename failed: "asking for OK" → 🙋, "question for owner" → ❓,
   "working again" → 🔨, "pushed" → 🟢, or 🚀 at level 2), set it for
-  it. When a wrap-up report arrives, close the chat (Closing chats
-  below): a report in means the close happens now, even while wrapping
-  up and even when its work ships in a later release; it never waits
-  for a clear or a release. There is no "parked" state: a finished chat
-  is merged into the release preview and set ✅ at once, and a problem
-  found later is a new chat. Backstop, on every wake (and first thing
-  after a clear): close any chat whose wrap-up report is in and that
-  isn't ✅ yet. A hook remembers each report and reminds you ("close
-  backstop") while that chat's title still shows ⏳: close it then and
-  there, before anything else. Level 2, on the same wakes while any chat shows
-  🚀: run `node "${CLAUDE_PLUGIN_ROOT}/hooks/ci-status.mjs"` (one line
-  per chat branch: CI passed, not passed yet, or not pushed) and message
-  each 🚀 chat whose head passed, once per commit: "CI passed on <sha>:
-  set 🟢 and ask the owner more or wrap up." A clear stops a chat's own
-  CI watcher, so it may not know.
+  it. When a wrap-up report arrives, the chat closes now (Closing
+  chats below), even while wrapping up and even when its work ships in
+  a later release; it never waits for a clear or a release. There is
+  no "parked" state: a finished chat is merged into the release preview
+  and set ✅ at once, and a problem found later is a new chat. A hook
+  remembers each report and reminds you ("close backstop") while that
+  chat's title still shows ⏳: close it then and there, before anything
+  else. Level 2: a hook names each 🚀 chat whose head passed CI, once
+  per commit ("CI: C8 passed on <sha>"); message it what the line says
+  (a clear stops a chat's own CI watcher, so it may not know).
 - **Talk chats** (questions, research, planning; no code to ship): no
   release tag, no branch or worktree, never retagged at a release.
   They start with `⚪` like other chats and keep it (except ❓ while
@@ -276,7 +270,11 @@ A chat closes only when all of this holds, checked in this order:
    (`${CLAUDE_PLUGIN_ROOT}/templates/wrap-up.md`) with every line filled
    in. If it hasn't, send it that template.
 2. **Folder:** level 1+: `node "${CLAUDE_PLUGIN_ROOT}/hooks/close-chat.mjs"
-   <its branch>` from the project prints READY. One command does it all:
+   <its branch>` from the project prints READY. When the report gives
+   its branch, a hook hands you that exact command with the report
+   ("close: … C8: run `node …/close-chat.mjs <branch>` now") and what to
+   do on READY (the ✅ and your new count, in one batch) or FAIL: run it
+   once and act on that line. One command does it all:
    it finds the chat's folder, checks it (nothing uncommitted, on its own
    branch, all pushed; level 2 CI passed on its newest commit and no fix
    waiting for the owner's check), merges the branch into the release
@@ -368,9 +366,14 @@ next status change, or the sidebar shows old and new symbols mixed.
 - `ci.passed` is a command that says whether CI passed on a commit
   (`SHA=<sha> sh -c "<command>"`). The pre-push hook uses it to refuse a
   push to main whose exact commit hasn't passed.
-- Watch CI only while a run is in flight. `ci-status.mjs` (Titles
-  backstop) gives every chat branch's CI state in one call; use it for
-  `## Waiting` in your notes too.
+- Watch CI only while a run is in flight: while any chat shows 🚀,
+  keep one `node "${CLAUDE_PLUGIN_ROOT}/hooks/ci-watch.mjs"` running in
+  the background (never in the foreground). It asks CI once a minute
+  outside your context and exits, waking you, only when a 🚀 chat's head
+  passed, no chat shows 🚀 any more, or an hour went by with heads
+  still not passed (look for a failed run). Start it again if 🚀
+  chats remain. `ci-status.mjs` gives every chat branch's CI state in
+  one call, for `## Waiting` in your notes.
 - If CI can't run at all (no runner, billing, an outage; not a test
   failure), say so and ask the owner whether to merge on the jobs that
   did pass. Never decide that yourself.

@@ -8,6 +8,7 @@ import { CLEAR_SYMBOL, dropRoom, statsLine, updateUsage } from './usage.mjs'
 import { withPace } from './pace.mjs'
 import { applyDefaults, defaultsNote, offNote } from './tools.mjs'
 import { closeBackstop } from './wrapups.mjs'
+import { countNote, deletedNote } from './books.mjs'
 import { syncSession } from './session-sync.mjs'
 import { afterClearItems, ciState, hookInput, hostApp, hubAddress, hubNotesFile, loadConfig, notesProblem, pluginVersion, pushState, readHub, say, setHub, workNotesFile } from './config.mjs'
 
@@ -82,10 +83,12 @@ if (error) {
     ((p => p ? ' ' + p : '')(notesProblem(c, notesFile))) +
     (later.length ? ` Your notes' "## Next" has work you put off until after the clear; do it first, before anything new, ` +
       `then delete each line from the notes: ${later.map(l => `"${l.slice(0, 120)}"`).join('; ')}.` : '') : ''
-  // Owner-deleted chats send the hub no event: recount and prune on start.
-  const recount =
-    " Then list sessions (include archived): drop chats the owner deleted from your notes and fix your title's open count if it's wrong." +
-    ((b => b ? ' ' + b : '')(closeBackstop({ transcript: input.transcript_path })))
+  // Owner-deleted chats send the hub no event: the hooks recount and name them.
+  const maybeHub = (hub.app && hostApp() === hub.app) || (hub.session && me && hub.session === me) || (hub.app && !hostApp())
+  const books = !maybeHub ? '' : [countNote({ cfg: c, session: me, transcript: input.transcript_path, dir: input.cwd || process.cwd() }),
+    deletedNote({ cfg: c, transcript: input.transcript_path, dir: input.cwd || process.cwd() }),
+    closeBackstop({ transcript: input.transcript_path })].filter(Boolean).join(' ')
+  const recount = books ? ' ' + books : ''
   const app = hostApp()
   let who
   if (hub.app && app && app === hub.app) {

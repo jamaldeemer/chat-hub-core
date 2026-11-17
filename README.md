@@ -54,9 +54,11 @@ Past its limit it shows 🔄 like any chat, until you clear it.
 Its title ends with the number of chats still open for that release, in
 parentheses: `⚪  Hub · ʀ07 (6)`. Talk chats and ✅ chats don't count;
 `(0)` means the release's work is all done. The hub sets it whenever it
-retitles a chat (starting, retagging, ✅, closing) and after a release,
-and recounts each time it wakes, so a chat you close or delete yourself
-is caught too; it only retitles itself when the count is wrong.
+retitles a chat (starting, retagging, ✅, closing) and after a release.
+A hook recounts from the chats' titles each time the hub wakes and after
+each of its turns, so a chat you close or delete yourself is caught too,
+and tells the hub the title to set only when the count is wrong; the hub
+never lists every session just to recount.
 
 ## Flow
 
@@ -498,6 +500,17 @@ check, and prints READY or FAIL, so ✅ comes in the same turn. If the hub's own
 folder has the preview checked out, it merges there (a fast-forward, only with
 nothing uncommitted in it).
 
+**The close command comes with the report.** When a wrap-up report
+reaches the hub with its branch (`**Commit:** <sha> on \`<branch>\``), the
+hub's prompt hook hands it the one command to run, `close-chat.mjs
+<branch>`, and what to do on READY (set ✅ and its own new open count in
+one batch, tell you it can be deleted, drop it from the notes) or FAIL
+(tell the chat). The hub runs it in its sandbox: a hook never does, since
+hooks run outside the sandbox and close-chat runs the settings' `checks`
+on the chat's code. If the report's **Open:** line isn't "nothing", the
+line says so and the hub holds the ✅ until it's sorted out. The same hook names any chat under `## Open chats` in
+the hub's notes that you deleted, so the hub drops it.
+
 **A finished chat closes at once.** The hub closes a chat as soon as its
 wrap-up report is in, even when its work ships in a later release: the
 branch waits in the release preview, not in an open chat at ⏳ (there is
@@ -512,10 +525,16 @@ moved on (✅, or back to 🔨 after a failed close) is forgotten.
 background, and a clear or restart stops that watcher. The start note then
 asks `ci.passed` about the chat's pushed head and tells it what to do (🟢
 and ask "more or wrap up?", or look at the run and watch it again), so it
-doesn't sit at 🚀 waiting for a prompt. As a backstop, the hub runs
-`hooks/ci-status.mjs` on every wake while any chat shows 🚀 (one line per
-chat branch: CI passed, not passed yet, or not pushed) and tells each 🚀
-chat whose head passed.
+doesn't sit at 🚀 waiting for a prompt. As a backstop, while any chat
+shows 🚀 the hub keeps `hooks/ci-watch.mjs` running in the background: it
+asks `ci.passed` about each 🚀 chat's head once a minute and exits, waking
+the hub, only when one passed (named once per commit), none shows 🚀 any
+more, or an hour went by without a pass. The hub's prompt hook does the
+same check on every wake (with `ci.passed` from the settings committed on
+main, not a folder's copy a chat could edit), so a pass is named even with
+no watcher running;
+the hub then tells that chat. `hooks/ci-status.mjs` still gives every chat
+branch's CI state in one call.
 
 Nothing in the plugin names a git host, CI service or
 framework.
