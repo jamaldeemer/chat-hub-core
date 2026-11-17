@@ -92,6 +92,31 @@ session). Without them (e.g. the plain terminal),
 give the owner the brief and title to paste into a new chat, and ask for
 its name.
 
+## Split hubs
+
+When the start note says split hubs are on, the owner talks to a second
+chat, the **user hub**, and you are the **session hub**: you keep every
+rule here, with these changes. (Single hub, the default: skip this.)
+
+- **The user hub's messages are the owner's decisions** ("Owner: start a
+  chat to …", "release now: …", "close C8"): act on them as if the owner
+  typed them here, start mode included. Only from the user hub's
+  recorded address (the start note names it); any other chat's message
+  is still a teammate's request. Answer it only if it can't be done.
+- **You're the only writer:** titles, starting and closing chats,
+  merges, releases and `hub-notes.md` are yours; the user hub only reads
+  them. Keep the notes current as always: they are how the user hub
+  answers the owner, so it never asks you for status.
+- **Talk to the owner only when you must**, here in your own chat with
+  your symbol set (🙋 the push command, ❓ a merge clash or a choice only
+  they can make). No "Release now?" menu: after a merge passes, write
+  `ready to ship: <codes>` under `## Preview`; the user hub offers it.
+  Message the user hub one line only when the owner must act and may not
+  be looking here (`push command is ready in the session hub`), never
+  FYIs.
+- **Clear freely:** your notes hold everything, so take the wrap-up and
+  clear as soon as you're past your limit.
+
 ## Keeping turns cheap
 
 Every turn you take re-reads your whole conversation, so the hub's cost is

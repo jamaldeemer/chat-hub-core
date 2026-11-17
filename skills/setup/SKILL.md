@@ -156,6 +156,15 @@ command is blocked, or the owner picks another chat, they type
 `/chat-hub-core:hub` in that chat. If a hub is already recorded, say which
 and skip the question.
 
+Level 1+: then ask "One hub or two?": **One hub** (Recommended: the
+default, one chat for talking and running the chats) or **Two hubs**
+(split: the owner talks in a light user hub that reads and decides, and
+the hub above becomes the session hub that runs the chats and can clear
+often). On two, write `"hubs": "split"` and tell the owner to open a new
+chat and type `/chat-hub-core:hub user` there (that records it; until
+then the hub's start note reminds them). `/chat-hub-core:hub single`
+goes back to one.
+
 Then end with three short parts, in this order:
 
 1. **Done:** what's on, in one or two lines (level, release style).
@@ -186,6 +195,7 @@ Don't commit.
   "checks": "",                     // level 1+: command the hub runs on each merge into the preview (always write it)
   "followups": "docs/backlog.md",   // where chats write follow-ups
   "startMode": "ask",               // "ask" (hub asks each time) | "plan" | "build" | "wait"
+  "hubs": "one",                    // optional: "split" = a user hub for the owner + the session hub (leave out for one)
   "commitReminder": "",             // extra text shown before every commit
   "branches": { "main": "main", "release": "release" },
   "ci": { "passed": "" },           // level 2: command with $SHA; prints 1 or 0, fails if it can't ask

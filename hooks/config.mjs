@@ -159,6 +159,10 @@ export function afterClearItems(file = hubNotesFile()) {
 // second chat can't silently become the hub. Returns the hub it replaced, or ''.
 export class HubTaken extends Error {}
 export function setHub({ session = '', app = '', replace = false }) {
+  const u = readUserHub()
+  if ((session && u.session === session) || (app && u.app === app)) {
+    throw new HubTaken('this chat is the user hub; the session hub must be another chat (to go back to one hub, type /chat-hub-core:hub single first)')
+  }
   const old = readHub()
   const next = session ? { session, app } : { session: old.session, app }
   const replaced = session && hubAddress(old) && old.session !== session && !(app && app === old.app) ? hubAddress(old) : ''
@@ -174,6 +178,63 @@ export function setHub({ session = '', app = '', replace = false }) {
     writeFileSync('.claude/chat-hub.json', JSON.stringify({ ...cfg, hubSession: next.app || next.session }, null, 2) + '\n')
   }
   return replaced
+}
+
+// Split hubs (opt-in): a second record, chat-hub/user-hub next to the hub record, names the
+// owner's own chat, the user hub. The hub record above is then the session hub: it starts,
+// follows and closes chats and releases, and work chats message it as before. No user hub
+// recorded: one hub, exactly as before. Needs git (no fallback in the settings).
+function userHubFile() {
+  const f = sharedHubFile()
+  return f ? f.replace(/\/hub$/, '/user-hub') : null
+}
+export function readUserHub() {
+  const f = userHubFile()
+  if (!f || !existsSync(f)) return { session: '', app: '' }
+  try { const h = JSON.parse(readFileSync(f, 'utf8')); return { session: h?.session || '', app: h?.app || '' } }
+  catch { return { session: '', app: '' } }
+}
+export const splitHubs = () => { const u = readUserHub(); return !!(u.session || u.app) }
+
+// Is this chat the user hub? Like isHubChat: by session ID, or by app address after a clear.
+export const isUserHubChat = (u, session) => isHubChat(u, session)
+
+// Record the user hub; same rules as setHub (a different chat needs `replace`). The session
+// hub's own chat can't also be the user hub. Returns the user hub it replaced, or ''.
+export function setUserHub({ session = '', app = '', replace = false }) {
+  const f = userHubFile()
+  if (!f) throw new Error('no git here: split hubs need git')
+  const hub = readHub()
+  if ((session && hub.session === session) || (app && hub.app === app)) {
+    throw new HubTaken('this chat is the session hub; the user hub must be another chat')
+  }
+  const old = readUserHub()
+  const next = session ? { session, app } : { session: old.session, app }
+  const replaced = session && hubAddress(old) && old.session !== session && !(app && app === old.app) ? hubAddress(old) : ''
+  if (replaced && !replace) throw new HubTaken(`${replaced} is already recorded as this project's user hub`)
+  mkdirSync(dirname(f), { recursive: true })
+  writeFileSync(f, JSON.stringify(next) + '\n')
+  return replaced
+}
+// Back to one hub: forget the user hub. Returns its address, or ''.
+export function clearUserHub() {
+  const f = userHubFile(), old = readUserHub()
+  if (f && existsSync(f)) writeFileSync(f, '')
+  return hubAddress(old)
+}
+
+// The user hub's own notes (user-hub-notes.md): only "## Next" with "- After clear: …" lines,
+// for what it owes the owner after a clear. hub-notes.md stays the session hub's to write.
+export function userHubNotesFile() {
+  const f = sharedHubFile()
+  return f ? f.replace(/\/hub$/, '/user-hub-notes.md') : null
+}
+
+// This chat's role: 'hub' (the hub, or with split hubs the session hub), 'user-hub' or 'work'.
+export function chatRole(session, cfg = readConfig()) {
+  if (isHubChat(readHub(cfg), session)) return 'hub'
+  if (isUserHubChat(readUserHub(), session)) return 'user-hub'
+  return 'work'
 }
 
 // True when the file whose import.meta.url is given was run directly (node file.mjs), not imported.
@@ -199,7 +260,7 @@ export function pluginVersion(root = PLUGIN_ROOT) {
 // notice is kept in git's shared folder (rules/<session>). No git or no launcher: null.
 // Returns { text, shown }: text is for the model only; shown is the one line the app shows the
 // owner ("Updated"), so the model must not talk about the update itself.
-export function rulesNotice({ session, isHub }) {
+export function rulesNotice({ session, isHub, role = isHub ? 'hub' : 'work' }) {
   try {
     const loaded = process.env.CHAT_HUB_LOADED_ROOT
     const f = sharedHubFile()
@@ -210,7 +271,7 @@ export function rulesNotice({ session, isHub }) {
     writeFileSync(rec, now + '\n')
     const read = p => { try { return readFileSync(p, 'utf8') } catch { return null } }
     const restart = read(`${loaded}/hooks/hooks.json`) !== read(`${PLUGIN_ROOT}/hooks/hooks.json`)
-    const skill = isHub ? 'hub' : 'work-chat'
+    const skill = role === 'work' ? 'work-chat' : role
     const shown = restart ? 'Updated: restart this chat' : 'Updated'
     const text = `chat-hub-core was updated to ${now} (this chat started on ${pluginVersion(loaded)}). Before anything else, ` +
       `read ${PLUGIN_ROOT}/skills/${skill}/SKILL.md in full with the Read tool: it replaces the ${skill} rules you loaded ` +

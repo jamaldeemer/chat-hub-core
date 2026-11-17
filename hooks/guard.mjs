@@ -7,11 +7,13 @@
 // owner hasn't OK'd the commit through a menu. Past its context limit the hub is also stopped in
 // two stages (usage.mjs): at the limit no new chats or releases; `hardStopAfter` later, nothing
 // but its notes. Only the owner lifts them (/chat-hub-core:limit).
+// Split hubs: the user hub (the owner's chat) only reads and messages the session hub, so it is
+// refused starting, renaming or closing chats, git writes, close-chat and any edit but its own notes.
 import { execFileSync } from 'node:child_process'
 import { realpathSync, writeSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { basename, dirname, resolve } from 'node:path'
-import { hookInput, hubNotesFile, isHubChat, menuOk, readConfig, readHub, say, workNotesFile } from './config.mjs'
+import { chatRole, hookInput, hostApp, hubAddress, hubNotesFile, menuOk, readConfig, readHub, say, userHubNotesFile, workNotesFile } from './config.mjs'
 import { syncSession } from './session-sync.mjs'
 import { CLEAR_SYMBOL, OVERRIDE, SAFE_BANNER, chatLimit, hubStage, short, trimLimit, trimNudge, updateUsage } from './usage.mjs'
 
@@ -24,7 +26,8 @@ const main = c.branches?.main || 'main'
 // A restart gives this chat a new session ID with no start note: re-record it first.
 syncSession(input.session_id, { cfg: c })
 const hub = readHub(c)
-const isHub = isHubChat(hub, input.session_id)
+const role = chatRole(input.session_id, c)
+const isHub = role === 'hub', userHub = role === 'user-hub', work = role === 'work'
 
 const deny = reason => {
   writeSync(1, JSON.stringify({ hookSpecificOutput: {
@@ -66,14 +69,14 @@ if (tool === 'Bash') {
   }
 
   if (gitVerb('commit')) {
-    if (level >= 1 && !isHub) {
+    if (level >= 1 && work) {
       const branch = tryGit(dir, 'rev-parse', '--abbrev-ref', 'HEAD')
       const hasCommits = !!tryGit(dir, 'rev-parse', '--verify', '-q', 'HEAD')
       if (branch === main && hasCommits) {
         deny(`never commit on ${main}. Work on your own branch and worktree; the hub brings it to ${main} in a release.`)
       }
     }
-    if (!isHub) {
+    if (work) {
       const first = commitSubject(cmd)
       // Codes: today's two characters (A2, 3F) or a project's older letter+two-digit style (L76).
       const coded = /^([ACEF][2-9]|[2-9][ACEF]|[A-Z]\d{2}):\s/.test(first || '')
@@ -92,7 +95,7 @@ if (tool === 'Bash') {
   }
 }
 
-if (level >= 1 && !isHub && /^(Edit|Write|MultiEdit|NotebookEdit)$/.test(tool)) {
+if (level >= 1 && work && /^(Edit|Write|MultiEdit|NotebookEdit)$/.test(tool)) {
   const file = ti.file_path || ti.notebook_path
   if (file) {
     const path = real(expand(file))
@@ -105,6 +108,34 @@ if (level >= 1 && !isHub && /^(Edit|Write|MultiEdit|NotebookEdit)$/.test(tool)) 
       deny(`${file} is in another chat's folder (${owner}). Only edit files in your own worktree (${own}); ` +
         'ask the hub if that chat needs a change.')
     }
+  }
+}
+
+// Split hubs: the user hub only reads. What it would change goes to the session hub as one message.
+if (userHub) {
+  const to = hubAddress(hub) || 'the session hub'
+  const only = what => deny(`this chat is the user hub, which only reads: ${what} is the session hub's job. ` +
+    `Send ${to} one short message with the owner's decision instead.`)
+  const own = userHubNotesFile()
+  if (/(^|__)start_session$/.test(tool)) only('starting a chat')
+  if (/(^|__)(archive_session|delete_session|clear_session|stop_session)$/.test(tool)) only('archiving, deleting, clearing or stopping a chat')
+  if (/(^|__)set_session_title$/.test(tool)) {
+    const id = String(ti.session_id || '')
+    if (id !== 'self' && !(hostApp() && id === hostApp())) only("setting another chat's title")
+  }
+  if (/^(Edit|Write|MultiEdit|NotebookEdit)$/.test(tool)) {
+    const path = String(ti.file_path || ti.notebook_path || '')
+    if (!(own && path && real(expand(path)) === real(own))) {
+      only(`changing files (${path.includes('hub-notes.md') ? 'hub-notes.md is the session hub\'s to write' : 'every change goes to a work chat'}; ` +
+        `you may write only your own notes, ${own || 'none without git'})`)
+    }
+  }
+  if (tool === 'Bash') {
+    const cmd = String(ti.command || '')
+    const git = '\\bgit\\s+(?:-C\\s+\\S+\\s+)?'
+    if (new RegExp(git + '(commit|merge|push|cherry-pick|revert|reset|rebase|am|apply|stash|worktree|branch\\s+-[dDfmM]|checkout\\s+-[bB]|switch\\s+-[cC]|tag\\s+(?!-l\\b|--list\\b)\\S)').test(cmd)) only('changing git (commits, merges, pushes, tags, branches)')
+    if (/close-chat\.mjs|close-check\.mjs/.test(cmd)) only('closing a chat')
+    if (/set-hub\.mjs/.test(cmd) && !/--user\b/.test(cmd)) only('recording the hub')
   }
 }
 
@@ -169,8 +200,10 @@ if (isHub && trimLimit(true, c) && input.session_id) {
 
 // A work chat with a limit (`trimAtWork`): bring its numbers up to date too, so a turn that
 // crosses the limit gets the STOP note on its next tool call, not at the next prompt.
-if (!isHub && input.session_id && trimLimit(false, c)) updateUsage(input.session_id, input.transcript_path)
+if (work && input.session_id && trimLimit(false, c)) updateUsage(input.session_id, input.transcript_path)
 
 // Nothing refused: pass on a trim nudge if this chat just crossed its size limit.
-const nudge = trimNudge({ session: input.session_id, isHub, cfg: c, notes: isHub ? notes : trimLimit(false, c) ? workNotesFile(cwd) : '' })
+if (userHub && input.session_id && trimLimit(true, c)) updateUsage(input.session_id, input.transcript_path)
+const nudge = trimNudge({ session: input.session_id, isHub: isHub || userHub, userHub, cfg: c,
+  notes: isHub ? notes : userHub ? userHubNotesFile() : trimLimit(false, c) ? workNotesFile(cwd) : '' })
 if (nudge) say('PreToolUse', nudge)

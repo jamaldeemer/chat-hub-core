@@ -8,6 +8,9 @@ one **hub** chat in charge.
 - **One hub, many chats.** You talk to the hub; it starts a chat per task
   (each on its own branch and worktree), briefs it, tracks it, and tells
   you when it can close.
+- **Optional split hubs.** Talk to a light user hub that answers and
+  decides, while a session hub runs the chats and clears often; both read
+  the same notes. One hub stays the default.
 - **Sidebar as status board.** Every title shows a code, a release and a
   status symbol, so you see who's waiting on you at a glance.
 - **You stay in control.** Nothing is committed without your OK, which
@@ -335,7 +338,7 @@ after-turn hook records it (for the hub, and for a chat's extra room from
 
 ## How it works
 
-The rules are three skills: `setup`, `hub`, `work-chat`. A start-of-chat
+The rules are skills: `setup`, `hub`, `work-chat` (and `user-hub` with split hubs). A start-of-chat
 hook tells each chat which to load, and which chat is the hub: the hub
 records itself in git's own folder (never committed) by two IDs, Claude's
 session ID and the desktop app's address, so every chat and worktree sees
@@ -351,6 +354,22 @@ the hook checks the chat's transcript for a yes since its last commit
 (`"okMenu": false` turns this off where there's no menu tool). When
 something is wrong (a broken settings file, no hub, a hub it can't
 reach), chats stop and tell you rather than guess.
+
+**Split hubs (optional).** The hub's cost is turns × context size, and it
+fills fast when your questions and the chats' traffic (reports, merges,
+CI) share one chat. Type `/chat-hub-core:hub user` in a fresh chat to
+split it: that chat becomes the **user hub**, your one place to talk. It
+answers, looks things up, reads status from the shared `hub-notes.md`,
+and sends each decision ("start a chat for X, plan first", "release now")
+to the hub as one short message. The hub you had becomes the **session
+hub**: it starts, follows and closes chats, merges, releases and watches
+CI, writes the notes, and talks to you only when it must (the push
+command, a merge clash). Work chats message the session hub as before;
+their questions to you stay in their own chats. The user hub is recorded
+next to the hub (`chat-hub/user-hub`), and the guard refuses it anything
+that changes state: starting, renaming or closing chats, git writes,
+edits other than its own notes. `/chat-hub-core:hub single` goes back to
+one hub. Setup asks "One hub or two?" (`"hubs": "split"`) at level 1+.
 
 **Weekly pace.** Under that line, the desktop app also shows how your plan
 usage is going, e.g. `Week 78% used · 57% of week gone · 21 ahead · runs out

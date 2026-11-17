@@ -14,7 +14,8 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
   at its app address (`local_…`), or its session ID if that's all you
   have; never by title (other projects' hubs have the same names). If no
   hub is named, or a message to it fails, stop and tell the owner; never
-  send it to another chat instead.
+  send it to another chat instead. With split hubs your hub is the
+  session hub; never message the owner's user hub.
 - **Not the hub:** if this chat's own app address (`get_session self`)
   is the hub's, you are the hub after a clear: drop these rules and load
   the chat-hub-core:hub skill instead.

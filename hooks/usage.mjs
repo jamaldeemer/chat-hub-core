@@ -182,7 +182,8 @@ export const warnBefore = cfg => {
   return Number.isFinite(n) && n >= 0 ? n : DEFAULT_WARN_BEFORE
 }
 export const LEFT_SYMBOL = '⏱️'
-export function tokensLeftNote({ session, isHub, cfg, limits = readLimits() }) {
+// The user hub (split hubs) passes isHub with userHub: the hub's limit, but no hard stop.
+export function tokensLeftNote({ session, isHub, userHub = false, cfg, limits = readLimits() }) {
   if (!session || !cfg) return ''
   const base = trimLimit(isHub, cfg, limits)
   if (!base) return ''
@@ -191,7 +192,7 @@ export function tokensLeftNote({ session, isHub, cfg, limits = readLimits() }) {
   const room = limit > base
   if (ctx >= limit || (!room && (!warnBefore(cfg) || ctx < limit - warnBefore(cfg)))) return ''
   const left = limit - ctx
-  const hard = isHub ? ` (hard stop at ${short(limit + hardStopAfter(cfg))})` : ''
+  const hard = isHub && !userHub ? ` (hard stop at ${short(limit + hardStopAfter(cfg))})` : ''
   const line = `${LEFT_SYMBOL} ${short(left)} tokens left${room ? ' of the extra room' : ''}: this chat is out at ${short(limit)}${hard}.`
   return `chat-hub-core tokens left: this chat's context is ${short(ctx)} tokens, ${short(left)} under ` +
     (room ? `its extra room from /chat-hub-core:limit more (up to ${short(limit)}; its normal limit is ${short(base)})` : `its limit of ${short(limit)}`) +
@@ -201,7 +202,9 @@ export function tokensLeftNote({ session, isHub, cfg, limits = readLimits() }) {
 
 // Past the limit: the note comes on every prompt, and once on a tool call when the chat first
 // crosses it. Resets once the context drops below 80% of the limit (after a clear).
-export function trimNudge({ session, isHub, cfg, everyTime = false, notes = '' }) {
+// The user hub (split hubs) passes isHub with userHub: the hub's limit, and the work chats' STOP
+// note (it has nothing in flight to finish; its own notes keep what it owes the owner).
+export function trimNudge({ session, isHub, userHub = false, cfg, everyTime = false, notes = '' }) {
   if (!session || !cfg) return ''
   const limit = chatLimit(session, isHub, cfg)
   if (!limit) return ''
@@ -211,6 +214,6 @@ export function trimNudge({ session, isHub, cfg, everyTime = false, notes = '' }
   if (s.context < limit) return ''
   if (!everyTime && s.nudgedAt) return ''
   if (!s.nudgedAt) { s.nudgedAt = limit; writeUsage(session, s) }
-  if (!isHub) return workText(s.context, cfg, notes)
+  if (!isHub || userHub) return workText(s.context, cfg, notes)
   return hubStage(s.context, cfg, limit) === 2 ? hardStopText(s.context, limit, notes) : wrapUpText(s.context, limit, cfg)
 }

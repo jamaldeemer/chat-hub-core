@@ -10,7 +10,7 @@ import { applyDefaults, defaultsNote, offNote } from './tools.mjs'
 import { closeBackstop } from './wrapups.mjs'
 import { countNote, deletedNote } from './books.mjs'
 import { syncSession } from './session-sync.mjs'
-import { afterClearItems, ciState, hookInput, hostApp, hubAddress, hubNotesFile, loadConfig, notesProblem, pluginVersion, pushState, readHub, say, setHub, workNotesFile } from './config.mjs'
+import { afterClearItems, ciState, hookInput, hostApp, hubAddress, hubNotesFile, loadConfig, notesProblem, pluginVersion, pushState, readHub, readUserHub, say, setHub, userHubNotesFile, workNotesFile } from './config.mjs'
 
 const setHubCmd = `node "${dirname(fileURLToPath(import.meta.url))}/set-hub.mjs"`
 
@@ -90,14 +90,28 @@ if (error) {
     closeBackstop({ transcript: input.transcript_path })].filter(Boolean).join(' ')
   const recount = books ? ' ' + books : ''
   const app = hostApp()
+  // Split hubs: the user hub (the owner's chat), when one is recorded; the hub is then the session hub.
+  const u = readUserHub(), split = !!(u.app || u.session)
+  const isUser = split && ((u.app && app && app === u.app) || (u.session && me && u.session === me))
+  const splitNote = !split ? (c.hubs === 'split' ? ' The settings ask for split hubs, but no user hub is recorded yet: ' +
+    'tell the owner once to open a new chat and type /chat-hub-core:hub user there; until then you are the only hub.' : '')
+    : ` Split hubs are on: you are the session hub, and the owner talks to the user hub ` +
+    `(${hubAddress(u)}); follow the hub rules' "Split hubs" section.`
   let who
-  if (hub.app && app && app === hub.app) {
+  if (isUser) {
+    const uNotes = userHubNotesFile(), uLater = afterClearItems(uNotes)
+    who = `This chat is the user hub (the owner's chat; the session hub is ${to || 'not recorded'}): load the ` +
+      `chat-hub-core:user-hub skill now; never the hub or work-chat skill. Send each decision to ${to || 'the session hub'} ` +
+      `only. Status comes from ${notesFile || 'the hub notes'} (read only).` +
+      (uLater.length ? ` Your notes (${uNotes}) have work you put off until after the clear; do it first, then delete each ` +
+        `line: ${uLater.map(l => `"${l.slice(0, 120)}"`).join('; ')}.` : '')
+  } else if (hub.app && app && app === hub.app) {
     // The app says this chat is the hub (restarted or cleared): syncSession above re-recorded its
     // new session ID, so it needn't look itself up. If that failed, it's told how.
     const rec = me && hub.session !== me
       ? ` (Couldn't re-record your session ID; run ${setHubCmd} --session ${me} --app ${hub.app}.)` : ''
     who = `This chat is the hub (the app gives this chat the hub's address, ${hub.app}): load the chat-hub-core:hub skill now; ` +
-      `never the work-chat skill.${rec}` + notes + recount
+      `never the work-chat skill.${rec}` + splitNote + notes + recount
   } else if (hub.app && app) {
     who = `This chat is a work chat (its app address is ${app}; the hub is ${hub.app}): load the chat-hub-core:work-chat ` +
       `skill now and only ever message ${hub.app}.` + ciNote(c) + workNote()
@@ -105,7 +119,7 @@ if (error) {
     // In the desktop app, record the hub's app address here too when it's missing.
     let added = false
     if (!hub.app && app) { try { setHub({ app }); added = true } catch {} }
-    who = 'This chat is the hub: load the chat-hub-core:hub skill now.' + notes + recount +
+    who = 'This chat is the hub: load the chat-hub-core:hub skill now.' + splitNote + notes + recount +
       (hub.app || added ? '' : ` Work chats can't message you yet: look up this session's own details with your session tools (its id starts with local_) and run ${setHubCmd} --app <that id>.`)
   } else if (hub.app) {
     who = `This project's hub is app session ${hub.app}. Look up this session's own details with your session tools: ` +
@@ -124,7 +138,7 @@ if (error) {
   const mine = me ? ` This chat's session ID is ${me}.` : ''
   // After a clear the app keeps the title, so a 🔄 (waiting for the clear) would stay.
   const cleared = input.source === 'clear' ? ` You were just cleared: if your title's symbol is ${CLEAR_SYMBOL}, set your ` +
-    'normal status now (work chat: 🔨, or ❓ when you ask a question again; hub: ⚪, or your release symbol).' : ''
+    'normal status now (work chat: 🔨, or ❓ when you ask a question again; hub: ⚪, or your release symbol; user hub: ⚪).' : ''
   // What's off for this chat (read before the defaults change it: this chat keeps its tools).
   const off = [offNote(), defaultsNote(applyDefaults())].filter(Boolean).map(t => ' ' + t).join('')
   // The owner's usage line: a new or cleared chat has no turns yet, so it shows the version.

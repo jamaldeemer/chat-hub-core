@@ -3,6 +3,37 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## 0.3.50
+
+- **Split hubs (optional).** The owner can split the hub in two, so the
+  chat they talk to stays light and the one with the chat traffic can
+  clear freely. Both read the same `hub-notes.md`.
+  - **User hub:** `/chat-hub-core:hub user` in a fresh chat records it
+    (`chat-hub/user-hub`, next to the hub record; `user replace` takes
+    over). It answers, looks things up, gives status from the notes
+    without asking, and sends the session hub one short message per
+    decision. New `user-hub` skill. The guard refuses it starting,
+    renaming (other than itself), archiving or deleting chats, git
+    writes, `close-chat.mjs` and any edit but its own
+    `user-hub-notes.md` ("After clear:" lines only). It has the hub's
+    limit with the work chats' STOP note (no hard stop), and no
+    bookkeeping notes.
+  - **Session hub:** the hub you already have; nothing to re-record. It
+    keeps every hub rule, takes the user hub's messages as the owner's
+    decisions, is the only writer of titles, closes, merges, releases
+    and notes, and talks to the owner only when it must. It writes
+    `ready to ship` under `## Preview` instead of the "Release now?"
+    menu; the user hub offers it.
+  - **Work chats:** unchanged; they message the session hub.
+  - A new role check (hub / user hub / work chat) keeps the user hub out
+    of the work-chat rules (title ⚪, commit code, other folders). A
+    restart re-records the user hub like the hub. `set-hub.mjs --user`
+    and `--single` do the same from the shell.
+  - `/chat-hub-core:hub single` goes back to one hub. Setup asks "One hub
+    or two?" at level 1+ (`"hubs": "split"`; the hub's start note reminds
+    the owner while no user hub is recorded). No user hub recorded: all
+    exactly as before.
+
 ## 0.3.49
 
 - **Hooks do the hub's bookkeeping.** The hub's cost is turns × context
