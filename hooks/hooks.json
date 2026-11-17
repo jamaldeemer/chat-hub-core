@@ -35,7 +35,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/run.mjs\" on-prompt"
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/run.mjs\" on-prompt",
+            "timeout": 1200
           }
         ]
       }

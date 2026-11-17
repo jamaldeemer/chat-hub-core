@@ -55,7 +55,7 @@ const howToClose =
   'what keeps it safe, and a chat never waits at ⏳ for a later release (a later problem is a new chat).'
 
 // The hub's note for this prompt ('' when there's nothing to say). prompt: the text that woke it.
-export function closeBackstop({ prompt = '', transcript = '', now = Date.now() } = {}) {
+export function closeBackstop({ prompt = '', transcript = '', now = Date.now(), handled = [] } = {}) {
   const f = stateFile()
   const fresh = reportCodes(prompt)
   const state = f ? readState(f) : {}
@@ -71,8 +71,10 @@ export function closeBackstop({ prompt = '', transcript = '', now = Date.now() }
   }
   if (f) writeState(f, state)
   const out = []
-  if (fresh.length) out.push(
-    `chat-hub-core: this message has the wrap-up report of ${fresh.join(', ')}. Close it now: ${howToClose}`)
+  // Reports auto-close already ran close-chat.mjs get its line instead.
+  const todo = fresh.filter(c => !handled.includes(c))
+  if (todo.length) out.push(
+    `chat-hub-core: this message has the wrap-up report of ${todo.join(', ')}. Close it now: ${howToClose}`)
   if (stale.length) out.push(
     `chat-hub-core close backstop: ${stale.join(', ')} sent its wrap-up report and still shows ⏳. ` +
     `Close it now, before anything else: ${howToClose}`)

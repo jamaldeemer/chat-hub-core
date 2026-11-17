@@ -3,6 +3,35 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## 0.3.49
+
+- **Hooks do the hub's bookkeeping.** The hub's cost is turns × context
+  size, and much of its context was bookkeeping. Now hooks do it outside
+  the hub's context and hand it one short line only when there's
+  something to do:
+  - **Open count:** the hub no longer lists every session on each wake to
+    recount its title's `(N)`. A hook counts the open chats tagged for the
+    release in the hub's own title (else `nextRelease`) and not ✅, from
+    the chats' titles, on every wake, in the start note and after each of
+    the hub's turns, and says "open count: … set your own title to …"
+    only when the count is wrong.
+  - **Auto-close:** when a wrap-up report with its branch reaches the hub,
+    the prompt hook runs `close-chat.mjs <branch>` itself and gives the hub
+    one line: READY (set ✅, the new count) or FAIL with the reason, to tell
+    the chat. A report whose **Open:** line isn't "nothing" is flagged so
+    the hub holds the ✅. Running outside the hub's sandbox, it can merge
+    protected files too. The close backstop stays.
+  - **Deleted chats:** a chat under `## Open chats` in the hub's notes
+    whose session is gone from the app is named, with its branch if it
+    isn't on main or the release preview, so the hub drops it.
+  - **CI (level 2):** new `hooks/ci-watch.mjs`, which the hub runs in the
+    background while any chat shows 🚀: it asks CI once a minute and exits,
+    waking the hub, only when a 🚀 chat's head passed, none shows 🚀, or an
+    hour went by. The prompt hook names a passed 🚀 head on every wake too,
+    once per commit, so the hub no longer runs `ci-status.mjs` each wake.
+  The hub skill drops the steps these replace. The prompt hook may now take
+  as long as the checks (its timeout is 20 minutes).
+
 ## 0.3.48
 
 - **The hub stays the hub after the app restarts it.** When the desktop
