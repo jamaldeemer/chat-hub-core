@@ -3,7 +3,7 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
-## 0.3.48 (E6; version set at release)
+## 0.3.48
 
 - **The hub stays the hub after the app restarts it.** When the desktop
   app restarted a chat's process mid-conversation, the chat got a new
