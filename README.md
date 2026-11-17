@@ -325,7 +325,11 @@ git's own folder (`.git/chat-hub/hub-notes.md`), so a restart or a clear
 loses nothing. In the desktop app the start hook knows the hub by its app
 address, which a clear doesn't change, so a cleared hub is told it's the
 hub outright (and its new session ID recorded) instead of having to work
-it out.
+it out. When the app restarts a chat's process mid-conversation it gets a
+new session ID with no start note; then the next prompt, tool or
+after-turn hook records it (for the hub, and for a chat's extra room from
+`/chat-hub-core:limit more`), so you never have to type
+`/chat-hub-core:hub replace` for that.
 
 ## How it works
 

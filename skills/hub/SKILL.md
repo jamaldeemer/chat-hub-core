@@ -82,7 +82,8 @@ else, and do the "After clear:" items it quotes first.
 **After a restart or clear:** in the desktop app the start note itself
 says whether this chat is the hub (it compares the app's address for
 this chat with the recorded one) and re-records your new session ID; take
-it at its word. If it instead asks you to look up your own id, compare
+it at its word. A restart with no start note is caught by the next hook
+(prompt, tool, after-turn), which re-records it the same way. If it instead asks you to look up your own id, compare
 `get_session self` with the hub's address before loading any skill. A
 hub never loads the work-chat rules.
 

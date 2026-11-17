@@ -8,6 +8,7 @@ import { CLEAR_SYMBOL, dropRoom, statsLine, updateUsage } from './usage.mjs'
 import { withPace } from './pace.mjs'
 import { applyDefaults, defaultsNote, offNote } from './tools.mjs'
 import { closeBackstop } from './wrapups.mjs'
+import { syncSession } from './session-sync.mjs'
 import { afterClearItems, ciState, hookInput, hostApp, hubAddress, hubNotesFile, loadConfig, notesProblem, pluginVersion, pushState, readHub, say, setHub, workNotesFile } from './config.mjs'
 
 const setHubCmd = `node "${dirname(fileURLToPath(import.meta.url))}/set-hub.mjs"`
@@ -70,6 +71,9 @@ if (error) {
   const me = input.session_id || ''
   // Extra room from /chat-hub-core:limit more lasts until the clear.
   if (me && input.source === 'clear') dropRoom(me)
+  // Restarted or cleared: whatever is kept by session ID (the hub record, extra room) follows
+  // this chat to its new one. The other hooks do the same, for a restart with no start note.
+  syncSession(me, { cfg: c, clear: input.source === 'clear' })
   const hub = readHub(c)
   const to = hubAddress(hub)
   const notesFile = hubNotesFile()
@@ -85,12 +89,10 @@ if (error) {
   const app = hostApp()
   let who
   if (hub.app && app && app === hub.app) {
-    // The app says this chat is the hub (restarted or cleared): re-record its new session ID here,
-    // so it needn't look itself up, and so the other hooks know it at once.
-    let rec = ''
-    if (me && hub.session !== me) {
-      try { setHub({ session: me, app: hub.app }) } catch (e) { rec = ` (Couldn't re-record your session ID: ${e.message}; run ${setHubCmd} --session ${me} --app ${hub.app}.)` }
-    }
+    // The app says this chat is the hub (restarted or cleared): syncSession above re-recorded its
+    // new session ID, so it needn't look itself up. If that failed, it's told how.
+    const rec = me && hub.session !== me
+      ? ` (Couldn't re-record your session ID; run ${setHubCmd} --session ${me} --app ${hub.app}.)` : ''
     who = `This chat is the hub (the app gives this chat the hub's address, ${hub.app}): load the chat-hub-core:hub skill now; ` +
       `never the work-chat skill.${rec}` + notes + recount
   } else if (hub.app && app) {
