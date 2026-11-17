@@ -56,6 +56,29 @@ t "app address: work chat told so outright" "$(ssa local_Z s6 | grep -c 'This ch
 t "app address: work chat not told to read the notes" "$(ssa local_Z s6 | grep -c 'hub-notes.md')" 0
 t "app address: cleared hub told to recount and prune" "$(ssa local_A s7 | grep -c 'drop chats the owner deleted from your notes and fix your title')" 1
 t "app address: work chat not told to recount" "$(ssa local_Z s6 | grep -c 'owner deleted')" 0
+# A restart mid-conversation: the app gives the chat a new session ID (same app address) and
+# no start note runs. Every other hook re-records it, so the hub stays the hub.
+node "$root/hooks/set-hub.mjs" --session s7 --app local_A >/dev/null
+rh() { grep -c "\"session\":\"$1\",\"app\":\"local_A\"" .git/chat-hub/hub; }
+t "restart: prompt hook re-records the hub's new session ID" "$(printf '{"session_id":"r1","prompt":"hi","cwd":"%s"}' "$(pwd)" | CLAUDE_CODE_HOST_SESSION_ID=local_A node "$root/hooks/on-prompt.mjs" >/dev/null; rh r1)" 1
+t "restart: after-turn hook re-records it" "$(printf '{"session_id":"r2","cwd":"%s","stop_hook_active":true}' "$(pwd)" | CLAUDE_CODE_HOST_SESSION_ID=local_A node "$root/hooks/after-turn.mjs" >/dev/null; rh r2)" 1
+t "restart: tool guard re-records it" "$(printf '{"session_id":"r3","cwd":"%s","tool_name":"Read","tool_input":{}}' "$(pwd)" | CLAUDE_CODE_HOST_SESSION_ID=local_A node "$root/hooks/guard.mjs" >/dev/null; rh r3)" 1
+t "restart: a work chat's hooks never touch the hub record" "$(printf '{"session_id":"r4","prompt":"hi","cwd":"%s"}' "$(pwd)" | CLAUDE_CODE_HOST_SESSION_ID=local_Z node "$root/hooks/on-prompt.mjs" >/dev/null; rh r3)" 1
+t "restart: /hub in the restarted hub is not refused" "$(printf '{"session_id":"r5","prompt":"/chat-hub-core:hub","cwd":"%s"}' "$(pwd)" | CLAUDE_CODE_HOST_SESSION_ID=local_A node "$root/hooks/on-prompt.mjs" | grep -c 'NOT recorded'; rh r5)" "0
+1"
+t "restart: /hub elsewhere still refused" "$(printf '{"session_id":"r6","prompt":"/chat-hub-core:hub","cwd":"%s"}' "$(pwd)" | CLAUDE_CODE_HOST_SESSION_ID=local_Z node "$root/hooks/on-prompt.mjs" | grep -c 'NOT recorded as the hub: local_A'; rh r5)" "1
+1"
+t "/hub more: unknown argument, points to /limit more" "$(printf '{"session_id":"r5","prompt":"/chat-hub-core:hub more","cwd":"%s"}' "$(pwd)" | CLAUDE_CODE_HOST_SESSION_ID=local_A node "$root/hooks/on-prompt.mjs" | grep -c 'isn.t something /chat-hub-core:hub knows.*Nothing was recorded.*/chat-hub-core:limit more')" 1
+t "/hub more: records and replaces nothing" "$(printf '{"session_id":"r6","prompt":"/chat-hub-core:hub more","cwd":"%s"}' "$(pwd)" | CLAUDE_CODE_HOST_SESSION_ID=local_Z node "$root/hooks/on-prompt.mjs" >/dev/null; rh r5)" 1
+# A work chat's extra room (/chat-hub-core:limit more, kept by session ID) follows it to its new one.
+ud="$TMPDIR/chat-hub-core"; mkdir -p "$ud"; rm -f "$ud/w2.json" "$ud/w3.json"
+printf '{"session_id":"w1","prompt":"hi","cwd":"%s"}' "$(pwd)" | CLAUDE_CODE_HOST_SESSION_ID=local_W node "$root/hooks/on-prompt.mjs" >/dev/null
+echo '{"offset":0,"lastId":"","turns":3,"reads":1,"context":120000,"nudgedAt":0,"roomTo":145000}' > "$ud/w1.json"
+t "restart: work chat's extra room follows its new session ID" "$(printf '{"session_id":"w2","cwd":"%s","stop_hook_active":true}' "$(pwd)" | CLAUDE_CODE_HOST_SESSION_ID=local_W node "$root/hooks/after-turn.mjs" >/dev/null; grep -c '"roomTo":145000' "$ud/w2.json")" 1
+t "restart: work chat stays a work chat" "$(rh r5)" 1
+echo '{"offset":0,"lastId":"","turns":3,"reads":1,"context":120000,"nudgedAt":0,"roomTo":145000}' > "$ud/w2.json"
+t "restart: a clear ends the room, none carried" "$(printf '{"session_id":"w3","source":"clear"}' | CLAUDE_CODE_HOST_SESSION_ID=local_W node "$root/hooks/session-start.mjs" >/dev/null; cat "$ud/w3.json" 2>/dev/null | grep -c '"roomTo":145000')" 0
+node "$root/hooks/set-hub.mjs" --session s7 --app local_A >/dev/null
 # A work chat's own notes (chat-hub/work/<branch>.md): its "- After clear:" lines come back at start.
 mkdir -p .git/chat-hub/work
 printf '## Next\n- After clear: make the face buttons follow the camera softly, as if through a fluid (owner asked, not started)\n- After clear: ask the owner: selected face lit less?\n## Done\n- After clear: not this one\n' > .git/chat-hub/work/main.md
@@ -312,7 +335,8 @@ node "$root/hooks/set-hub.mjs" --session u1 --app local_H >/dev/null
 opa() { printf '{"session_id":"%s","prompt":"hi","cwd":"%s"}' "$2" "$(pwd)" | CLAUDE_CODE_HOST_SESSION_ID="$1" node "$root/hooks/on-prompt.mjs"; }
 cp "$TMPDIR/chat-hub-core/u1.json" "$TMPDIR/chat-hub-core/u1c.json"
 t "wrap up: hub known by app address before its new session ID is recorded" "$(opa local_H u1c | grep -c 'WRAP UP')" 1
-t "wrap up: other app address not the hub" "$(opa local_W u1c | grep -c 'WRAP UP')" 0
+cp "$TMPDIR/chat-hub-core/u1.json" "$TMPDIR/chat-hub-core/u1w.json"
+t "wrap up: other app address not the hub" "$(opa local_W u1w | grep -c 'WRAP UP')" 0
 echo '{"level":0,"trimAt":150000}' > .claude/chat-hub.json
 asst m13 0 151000; at u2 >/dev/null
 t "trim: work chats not by default" "$(op u2 | wc -c | tr -d ' ')" 0

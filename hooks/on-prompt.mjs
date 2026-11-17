@@ -3,7 +3,8 @@
 // already the hub, it refuses unless the owner typed "/chat-hub-core:hub replace".
 import { fileURLToPath } from 'node:url'
 import { dirname } from 'node:path'
-import { HubTaken, hookInput, hubNotesFile, isHubChat, readConfig, readHub, say, setHub, workNotesFile } from './config.mjs'
+import { HubTaken, hookInput, hostApp, hubNotesFile, isHubChat, readConfig, readHub, say, setHub, workNotesFile } from './config.mjs'
+import { syncSession } from './session-sync.mjs'
 import { tokensLeftNote, trimLimit, trimNudge } from './usage.mjs'
 import { paceNudge } from './pace.mjs'
 import { limitCommand } from './limit.mjs'
@@ -17,6 +18,8 @@ const input = hookInput()
 const prompt = (input.prompt || '').trim()
 const m = prompt.match(/^\/chat-hub-core:hub\b(.*)$/s)
 const cfg = readConfig(input.cwd || process.cwd())
+// A restart gives this chat a new session ID with no start note: re-record it first.
+if (cfg) syncSession(input.session_id, { cfg })
 // /chat-hub-core:limit [hub|work] [200k|off|default]: show or change the context limits. Done
 // here, outside the chat's sandbox, before the nudge below so it already uses the new limit.
 const lm = prompt.match(/^\/chat-hub-core:limit\b(.*)$/s)
@@ -59,13 +62,23 @@ if (!m && cfg) {
   const out = [limitNote, defaults, rules?.text, close, nudge, left, pace].filter(Boolean).join(' ')
   if (out) say('UserPromptSubmit', out, rules?.shown)
 }
-if (m && input.session_id && cfg) {
+// /chat-hub-core:hub takes no arguments but "replace". Anything else (e.g. "more", meant for
+// /chat-hub-core:limit) is refused, so a typo can't record or replace the hub.
+const hubArgs = m ? m[1].trim() : ''
+if (m && cfg && hubArgs && !/^replace$/i.test(hubArgs)) {
+  say('UserPromptSubmit', `chat-hub-core /hub: "${hubArgs.slice(0, 60)}" isn't something /chat-hub-core:hub knows: it only ` +
+    'takes "replace" (to take over from another hub). Nothing was recorded or changed. Tell the owner exactly that in one ' +
+    'short reply, and that for more room in this chat they want `/chat-hub-core:limit more` ' +
+    '(`/chat-hub-core:limit` shows or changes the limits). Do nothing else for it.')
+} else if (m && input.session_id && cfg) {
   try {
-    const old = setHub({ session: input.session_id, replace: /^\s*replace\b/i.test(m[1]) })
+    // The app address too: a restarted hub (same address, new session ID) is then never refused.
+    const old = setHub({ session: input.session_id, app: hostApp(), replace: /^replace$/i.test(hubArgs) })
     say('UserPromptSubmit', `Recorded this chat (session ${input.session_id}) as the hub.` +
       (old ? ` It replaced ${old}; if that isn't this chat and it's still open, tell the owner.` : '') +
-      ` Now add your app address so work chats can message you: look up this session's own details with your` +
-      ` session tools (its id starts with local_) and run: ${setHubCmd} --app <that id>`)
+      (hostApp() ? ` Work chats message you at your app address, ${hostApp()}.`
+        : ` Now add your app address so work chats can message you: look up this session's own details with your` +
+          ` session tools (its id starts with local_) and run: ${setHubCmd} --app <that id>`))
   } catch (e) {
     if (e instanceof HubTaken) {
       say('UserPromptSubmit', `NOT recorded as the hub: ${e.message}. Tell the owner exactly that, and that if that chat ` +

@@ -12,6 +12,7 @@ import { realpathSync, writeSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { basename, dirname, resolve } from 'node:path'
 import { hookInput, hubNotesFile, isHubChat, menuOk, readConfig, readHub, say, workNotesFile } from './config.mjs'
+import { syncSession } from './session-sync.mjs'
 import { CLEAR_SYMBOL, OVERRIDE, SAFE_BANNER, chatLimit, hubStage, short, trimLimit, trimNudge, updateUsage } from './usage.mjs'
 
 const input = hookInput()
@@ -20,6 +21,8 @@ const c = readConfig(cwd)
 if (!c) process.exit(0)
 const level = c.level || 0
 const main = c.branches?.main || 'main'
+// A restart gives this chat a new session ID with no start note: re-record it first.
+syncSession(input.session_id, { cfg: c })
 const hub = readHub(c)
 const isHub = isHubChat(hub, input.session_id)
 

@@ -5,11 +5,14 @@
 import { hookInput, isHubChat, readConfig, readHub } from './config.mjs'
 import { chatLimit, statsLine, updateUsage } from './usage.mjs'
 import { titleNote } from './titles.mjs'
+import { syncSession } from './session-sync.mjs'
 import { withPace } from './pace.mjs'
 
 const input = hookInput()
 const cfg = readConfig(input.cwd || process.cwd())
 if (!cfg || !input.session_id) process.exit(0)
+// A restart gives this chat a new session ID with no start note: re-record it before the title check.
+syncSession(input.session_id, { cfg })
 const out = {}
 const s = updateUsage(input.session_id, input.transcript_path)
 if (cfg.stats !== false) {

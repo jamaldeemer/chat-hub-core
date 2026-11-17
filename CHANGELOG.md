@@ -3,6 +3,25 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## 0.3.48 (E6; version set at release)
+
+- **The hub stays the hub after the app restarts it.** When the desktop
+  app restarted a chat's process mid-conversation, the chat got a new
+  session ID but no start note ran to record it, so the hooks took the
+  hub for a work chat: the after-turn title check refused its ⚪,
+  `/chat-hub-core:hub` said "NOT recorded as the hub: <old id> is already
+  recorded", and the owner had to type `/chat-hub-core:hub replace`. Now
+  every hook (prompt, tool guard, after-turn, start) sees the chat's app
+  address, and when it's the hub's, records the new session ID itself.
+  The same goes for what a work chat (or the hub) keeps by session ID: its
+  extra room from `/chat-hub-core:limit more` follows it to the new ID
+  (a clear still ends it). The last session ID of each app address is
+  kept in `.git/chat-hub/apps/`. `/chat-hub-core:hub` in the restarted
+  hub is no longer refused either.
+- **`/chat-hub-core:hub more` is refused, not run.** `/chat-hub-core:hub`
+  takes only `replace`; anything else now records nothing and the chat
+  says so and points to `/chat-hub-core:limit more`.
+
 ## 0.3.47
 
 - **⏱️ Tokens left: a warning before a chat runs out.** A chat given
