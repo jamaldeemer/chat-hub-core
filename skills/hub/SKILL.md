@@ -31,7 +31,7 @@ replacing a session that's still open, tell the owner.
 **Your own title** is `⚪`, two spaces, the owner's name for you, then the next release:
 `⚪  <owner's name> · ʀ<next>`: `nextRelease`, the soonest release, e.g.
 `⚪  Object Creator Hub · ʀ15`, or with tick-tock its kind too,
-`⚪  Session Manager · ʀ15+` (the ⚪ lines it up with other chats; padded to two digits if `titles` is
+`⚪  Session Manager · ʀ15+` (`ʀ15` with `tickTockMarks: false`; the ⚪ lines it up with other chats; padded to two digits if `titles` is
 release-first). The suffix ends with the **open count** in parentheses:
 how many open chats are tagged for that release and not yet ✅, e.g.
 `⚪  Object Creator Hub · ʀ15 (3)`. Talk chats (no release tag), ✅ chats
@@ -199,7 +199,11 @@ Two styles, set by `titles` in the settings:
 - **(ʀ<n>):** the release the work ships in. Leave it out if `releases` is
   "none". With "tick-tock", even releases are fixes (`ʀ10~`) and odd ones
   features (`ʀ11+`); a chat takes the next release of its kind. Work that
-  misses its release moves to the next. The tag's letter is always
+  misses its release moves to the next. With `tickTockMarks: false`
+  the tags go without `~`/`+` everywhere you write one (`ʀ10`, `ʀ11`,
+  titles, your suffix, notes): the kinds still alternate by even and
+  odd. A tag with or without a mark is the same tag; write this
+  project's form whenever you set a title. The tag's letter is always
   small-caps `ʀ` (U+0280), never a plain `R`; the digits and `~`/`+`
   stay plain. Codes stay as they are (talk chats' `ᴢ ` is small-caps
   too, below). A title with an old plain-`R` tag (`R07`, `(R7)`) is

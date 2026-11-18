@@ -37,7 +37,8 @@ Only what you couldn't tell. Usually:
 
 1. Level (your suggestion first, marked Recommended).
 2. Release tags in titles: plain (ʀ1, ʀ2…, default), tick-tock (ʀ10~
-   fixes, ʀ11+ features), or none. Unless none: code first
+   fixes, ʀ11+ features), tick-tock without marks (even fixes, odd
+   features, tags plain `ʀ10`, `ʀ11`: `tickTockMarks: false`), or none. Unless none: code first
    (`3F · Title (ʀ7)`, default) or release first (`ʀ07 3F · Title`, so an
    alphabetical sort groups chats by release). Either way, chats in the
    coming release show their name in parentheses (`3F · (Title) (ʀ7)`,
@@ -189,6 +190,7 @@ Don't commit.
   "level": 1,
   "hubSession": "",                 // only without git: the hub records itself (setup leaves this out)
   "releases": "plain",              // "plain" | "tick-tock" | "none"
+  "tickTockMarks": true,            // optional, tick-tock only: false leaves ~/+ out of tags (ʀ10, ʀ11)
   "titles": "code-first",           // "code-first" | "release-first" (ʀ07 3F · Title)
   "nextRelease": 1,                 // release the next finished work ships in
   "done": ["tests pass", "docs updated"],

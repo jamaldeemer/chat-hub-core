@@ -4,7 +4,7 @@
 // once to fix it (never twice in a row, so a rename that fails can't loop).
 import { chatRole, hookInput, readConfig } from './config.mjs'
 import { chatLimit, statsLine, updateUsage } from './usage.mjs'
-import { titleNote } from './titles.mjs'
+import { noMarks, titleNote } from './titles.mjs'
 import { countNote } from './books.mjs'
 import { syncSession } from './session-sync.mjs'
 import { withPace } from './pace.mjs'
@@ -28,7 +28,7 @@ if (!input.stop_hook_active) {
   const limit = chatLimit(input.session_id, !workChat, cfg)
   const pastLimit = !!limit && s.context >= limit
   // The hub's open count, after a turn that may have set ✅ or started a chat: sent back once.
-  const note = titleNote(input, { workChat, pastLimit }) ||
+  const note = titleNote(input, { workChat, pastLimit, marks: !noMarks(cfg) }) ||
     (role !== 'hub' ? '' : (c => c ? `${c} Then end your turn: don't repeat your last reply.` : '')(
       countNote({ cfg, session: input.session_id, transcript: input.transcript_path, dir: input.cwd || process.cwd() })))
   if (note) Object.assign(out, { decision: 'block', reason: note })
