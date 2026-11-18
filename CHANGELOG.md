@@ -3,6 +3,18 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## 0.3.51
+
+- **Tick-tock without marks (optional).** `"tickTockMarks": false` next
+  to `"releases": "tick-tock"` keeps the alternation (even releases fix,
+  odd ones add features) but leaves `~`/`+` out of every tag: chat
+  titles (`ʀ44 A7`), the hub's suffix (`ʀ45 (3)`) and its notes. Tags
+  with and without a mark are read as the same tag (open count, close
+  checks, as before). The after-turn title check sends a chat back to
+  drop a leftover mark, with the fixed title. Setup offers it as a
+  fourth release-tag choice. To switch, add the setting and retitle
+  open chats (or let the title check send each one back once).
+
 ## 0.3.50
 
 - **Split hubs (optional).** The owner can split the hub in two, so the

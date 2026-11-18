@@ -16,12 +16,17 @@ const SYMBOLS = ['🙋', '⏳', '🔨', '❓', '🟢', '🚀', '🔴', '⚪', '�
 const lead = new RegExp(`^(${SYMBOLS.join('|')})️?( *)`, 'u')
 // Plain-R release tags: release-first "R26~ 8E" and code-first "(R7)".
 const plainR = /(^|[\s(])R(\d+[~+]?)(?=[\s)])/u
+// A tick-tock mark after a release tag ("ʀ26~", "(ʀ7+)"), wrong when `tickTockMarks` is false.
+const mark = /(^|[\s(])([ʀR]\d+)[~+](?=[\s)]|$)/u
+// Marks are left out of tags only with tick-tock releases and `tickTockMarks: false`.
+export const noMarks = cfg => cfg?.releases === 'tick-tock' && cfg?.tickTockMarks === false
 
 // What's wrong with a title, as short sentences ([] when it's fine). Only titles that look like
 // ours (a symbol, a tag or a " · ") are checked, so an app-made title in a new chat is left alone.
 // workChat: a chat that isn't the hub; ⚪ is then only right on a talk chat (no ʀ tag).
 // pastLimit: the chat is past its context limit, the only time 🔄 (waiting for /clear) is right.
-export function titleProblems(title, { workChat = false, pastLimit = true } = {}) {
+// marks: false when tick-tock tags go without `~`/`+` (a mark is then sent back).
+export function titleProblems(title, { workChat = false, pastLimit = true, marks = true } = {}) {
   if (!title) return []
   const m = title.match(lead)
   const tagged = /ʀ\d/u.test(title) || plainR.test(title)
@@ -30,6 +35,7 @@ export function titleProblems(title, { workChat = false, pastLimit = true } = {}
   if (!m) out.push('it has no status symbol: put yours first, then two spaces')
   else if (m[2].length !== 2) out.push(`it needs exactly two spaces after the symbol, not ${m[2].length}`)
   if (plainR.test(title)) out.push('its release tag has a plain R: write small-caps ʀ (U+0280)')
+  if (!marks && mark.test(title)) out.push('its release tag has a ~ or +: this project leaves tick-tock marks out (ʀ26, not ʀ26~)')
   if (m && m[1] === '⚪' && workChat && /[ʀR]\d/u.test(title)) {
     out.push('⚪ is only for talk chats and the hub: set the symbol for where you are now (🔨 working, ❓ waiting on an answer, 🙋 asking for an OK, …)')
   }
@@ -42,17 +48,19 @@ export function titleProblems(title, { workChat = false, pastLimit = true } = {}
   return out
 }
 
-// The title with what the hook can fix by itself fixed: two spaces after the symbol, ʀ for R.
-export function fixedTitle(title) {
-  return title.replace(lead, (_, s) => `${s}  `).replace(new RegExp(plainR.source, 'gu'), '$1ʀ$2')
+// The title with what the hook can fix by itself fixed: two spaces after the symbol, ʀ for R,
+// and no tick-tock mark when marks are off.
+export function fixedTitle(title, { marks = true } = {}) {
+  const t = title.replace(lead, (_, s) => `${s}  `).replace(new RegExp(plainR.source, 'gu'), '$1ʀ$2')
+  return marks ? t : t.replace(new RegExp(mark.source, 'gu'), '$1$2')
 }
 
 // The note that sends the chat back to fix its title, or '' when the title is fine.
-export function titleNote(input, { workChat, pastLimit = true }) {
+export function titleNote(input, { workChat, pastLimit = true, marks = true }) {
   const title = readTitle(input)
-  const p = titleProblems(title, { workChat, pastLimit })
+  const p = titleProblems(title, { workChat, pastLimit, marks })
   if (!p.length) return ''
-  const fix = fixedTitle(title)
+  const fix = fixedTitle(title, { marks })
   return `chat-hub-core title check: this chat's title is "${title}", and ${p.join('; ')}. ` +
     `Set it now (set_session_title with "self")${fix !== title ? `, e.g. "${fix}"` : ''}, keeping the rest exactly ` +
     '(the tag, code and name are the hub\'s). Then end your turn: don\'t repeat your last reply.'

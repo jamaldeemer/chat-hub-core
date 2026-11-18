@@ -260,6 +260,7 @@ asks which title style the project wants:
 | New, nothing reported yet | `⚪  3F · (Fix menu spacing) (ʀ7)` | `⚪  ʀ07 3F · (Fix menu spacing)` |
 | Under way, nothing waiting on you | `🔨  3F · (Fix menu spacing) (ʀ7)` | `🔨  ʀ07 3F · (Fix menu spacing)` |
 | Tick-tock releases | `🔨  3F · (Fix menu spacing) (ʀ16~)` | `🔨  ʀ16~ 3F · (Fix menu spacing)` |
+| Tick-tock, no marks | `🔨  3F · (Fix menu spacing) (ʀ16)` | `🔨  ʀ16 3F · (Fix menu spacing)` |
 | Waiting on your OK | `🙋  3F · (Fix menu spacing) (ʀ7)` | `🙋  ʀ07 3F · (Fix menu spacing)` |
 | Waiting on your answer | `❓  3F · (Fix menu spacing) (ʀ7)` | `❓  ʀ07 3F · (Fix menu spacing)` |
 | OK given, committing | `⏳  3F · (Fix menu spacing) (ʀ7)` | `⏳  ʀ07 3F · (Fix menu spacing)` |
@@ -325,7 +326,11 @@ hub shortens the name to fit when it starts or retitles a chat.
 Release first pads the number to two digits, so an alphabetical sort
 groups chats by release, and talk chats (`ᴢ `) sort last. With tick-tock,
 `~` releases are fixes and `+` releases features; the hub's title shows
-the soonest next release (`⚪  Hub · ʀ15+ (2)`). The hub also keeps notes in
+the soonest next release (`⚪  Hub · ʀ15+ (2)`). With `"tickTockMarks": false`
+the tags leave the marks out (`ʀ16`, `⚪  Hub · ʀ15 (2)`) and the kinds
+still alternate: even releases fix, odd ones add features. Tags with and
+without a mark count as the same tag, and the after-turn title check
+sends a chat back to drop a leftover mark. The hub also keeps notes in
 git's own folder (`.git/chat-hub/hub-notes.md`), so a restart or a clear
 loses nothing. In the desktop app the start hook knows the hub by its app
 address, which a clear doesn't change, so a cleared hub is told it's the

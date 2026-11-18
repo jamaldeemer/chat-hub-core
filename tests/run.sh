@@ -275,6 +275,27 @@ t "title check: hub keeps ⚪" "$(atb u1 | grep -c '"decision"')" 0
 echo '{"level":0,"stats":false}' > .claude/chat-hub.json
 ttl u1 '❓ ʀ25+ 7F · x'
 t "title check: runs with stats off" "$(atb u1 | grep -c '"decision":"block"')" 1
+# tickTockMarks: false leaves ~/+ out of tags; a leftover mark is sent back with the fix.
+echo '{"level":0,"releases":"tick-tock","tickTockMarks":false}' > .claude/chat-hub.json
+ttl u1 '🔨  ʀ26 2F · More menu fixes'
+t "no marks: a plain tick-tock tag passes" "$(atb u1 | grep -c '"decision"')" 0
+ttl u1 '🔨  ʀ26~ 2F · More menu fixes'
+t "no marks: a ~ is sent back with the fix" "$(atb u1 | grep -c 'has a ~ or +.*e.g. \\"🔨  ʀ26 2F · More menu fixes')" 1
+ttl u1 '🔨  3F · (Fix menu) (ʀ7+)'
+t "no marks: code-first + too" "$(atb u1 | grep -c 'e.g. \\"🔨  3F · (Fix menu) (ʀ7)')" 1
+ttl u1 '⚪  Hub · ʀ45+ (3)'
+t "no marks: the hub's suffix too" "$(atb u1 | grep -c 'e.g. \\"⚪  Hub · ʀ45 (3)')" 1
+ttl u1 '🔨  R26+ 8E · x'
+t "no marks: plain R and mark fixed together" "$(atb u1 | grep -c 'e.g. \\"🔨  ʀ26 8E · x')" 1
+echo '{"level":0,"releases":"tick-tock"}' > .claude/chat-hub.json
+ttl u1 '🔨  ʀ26~ 2F · More menu fixes'
+t "marks on (default): a ~ passes" "$(atb u1 | grep -c '"decision"')" 0
+echo '{"level":0,"releases":"plain","tickTockMarks":false}' > .claude/chat-hub.json
+ttl u1 '🔨  ʀ26~ 2F · More menu fixes'
+t "no marks: only with tick-tock" "$(atb u1 | grep -c '"decision"')" 0
+t "no marks: open count reads both forms" "$(node -e 'import(process.argv[1]).then(m=>console.log([m.taggedFor("🔨  ʀ44 A7 · x",44),m.taggedFor("🔨  ʀ44~ A7 · x",44),m.taggedFor("🔨  3F · (x) (ʀ45+)",45),m.taggedFor("🔨  3F · (x) (ʀ45)",45)].join()))' "$root/hooks/books.mjs")" "true,true,true,true"
+t "no marks: setup offers it" "$(grep -c 'tickTockMarks: false`), or none' "$root/skills/setup/SKILL.md")" 1
+t "no marks: hub skill explains it" "$(grep -c 'With `tickTockMarks: false`' "$root/skills/hub/SKILL.md")" 1
 # 🔄 (waiting for /clear) is only right past the chat's limit.
 echo '{"level":0}' > .claude/chat-hub.json
 asst e3a 0 50000; ttl u1 '🔄  ʀ34 E3 · Clear symbol'
