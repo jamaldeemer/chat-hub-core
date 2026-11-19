@@ -295,7 +295,7 @@ only ⚪ (starting a chat), ✅ (closing it) and the rest of every title.
 | 🟢 | Pushed (level 1) or CI passed (level 2); the chat is asking "Anything more, or should I wrap up?" in a menu ("Wrap up" / "More changes"); it changes as soon as you answer, so 🟢 always means the question is open | the chat pushes / its CI run passes | 1+ |
 | 🔴 | CI failed | its CI run fails | 2 |
 | ✅ | Ready to close | the hub: the chat's wrap-up passes the close check | all |
-| 🔄 | Past its limit and showing the SAFE TO CLEAR banner: waiting for you to type `/clear` | the chat (hub or work chat) first shows the banner; after the clear it sets its normal status again | all |
+| 🔄 | Past its limit and showing the SAFE TO CLEAR banner: waiting for you to type `/clear` | the chat (hub or work chat) ends a turn with the banner and the after-turn hook asks for it; after the clear it sets its normal status again | all |
 
 The release tag's letter is small-caps `ʀ` (`ʀ07`, `(ʀ7)`), so it
 stands apart from the code; the digits, `~` and `+` stay plain. Older
@@ -400,8 +400,8 @@ started, closing every chat whose wrap-up report is in, titles it owes,
 replies to chats, messages it promised), brings
 its notes up to date, and only then asks you to clear it, so a clear
 never lands in the middle of a step. Until then each reply starts
-"⚠️ Hub at …: wrapping up", then a boxed "SAFE TO CLEAR: type /clear"
-banner. The hub never asks you about clearing
+"⚠️ Hub at …: wrapping up"; once it's done, each reply ends with a boxed
+"SAFE TO CLEAR: type /clear" banner, nothing after it. The hub never asks you about clearing
 (no question or buttons: a button can't clear a chat); you just type
 `/clear` in the hub chat. Work chats get a similar reminder past `trimAtWork`,
 if set: stop at a natural point, then the same banner. Before the banner
@@ -415,7 +415,10 @@ Like the hub, a work chat's count is checked before every tool call
 too, so a long turn can't run far past the limit.
 
 A chat showing the banner sets its title's symbol to 🔄, so you can
-spot every chat waiting for `/clear` in the sidebar. After the clear
+spot every chat waiting for `/clear` in the sidebar. It never sets 🔄
+on its own: once a turn has ended with the banner (all its work done),
+the after-turn hook asks it to, and until then the guard refuses it.
+So 🔄 means the chat is really finished, not still wrapping up. After the clear
 the start note tells it to set its normal status again (🔨, ❓; the hub
 ⚪ or its release symbol), and the after-turn title check sends back a
 🔄 left on a chat that's under its limit.

@@ -8,7 +8,7 @@ import { pluginVersion, readLimits } from './config.mjs'
 
 const dir = `${tmpdir()}/chat-hub-core`
 const stateFile = session => `${dir}/${String(session).replace(/[^\w-]/g, '_')}.json`
-const fresh = () => ({ offset: 0, lastId: '', turns: 0, reads: 0, context: 0, nudgedAt: 0, roomTo: 0 })
+const fresh = () => ({ offset: 0, lastId: '', turns: 0, reads: 0, context: 0, nudgedAt: 0, roomTo: 0, clearAsk: false })
 
 export function readUsage(session) {
   try { return { ...fresh(), ...JSON.parse(readFileSync(stateFile(session), 'utf8')) } } catch { return fresh() }
@@ -126,12 +126,53 @@ export const SAFE_BANNER =
   '║   ✅  SAFE TO CLEAR: type /clear   ║\n' +
   '╚════════════════════════════════════╝'
 // The title symbol for a chat showing that banner, so the owner spots it in the sidebar.
+// It goes up only once the chat is really done: the chat never sets it on its own. When a turn
+// ends (all its tools run) with the banner as its last words, the after-turn hook asks for 🔄,
+// and only then does the guard let the chat set it (`clearAsk` in its usage counts, until the
+// next prompt). So the owner never sees 🔄 on a chat that is still finishing its wrap-up.
 export const CLEAR_SYMBOL = '🔄'
-const titleRule = `In the same turn you first show it, set your title's symbol to ${CLEAR_SYMBOL} (waiting for the owner ` +
-  'to clear): read your title (get_session self), swap only its first character and set it (set_session_title ' +
-  'with self), keeping the rest exactly. After the clear, set your normal status again. '
-const bannerRule = 'start every reply until you\'re cleared with this banner, as its own code block (```), ' +
-  'exactly:\n```\n' + SAFE_BANNER + '\n```\n' + titleRule
+const titleRule = `Don't set ${CLEAR_SYMBOL} in your title yourself (the guard refuses it): once a turn ends with the banner, ` +
+  `the after-turn hook asks you to set it, so it only shows when you're really done. After the clear, set your normal status again. `
+const bannerRule = 'end your reply, and every reply after it until you\'re cleared, with this banner as its own code block (```) ' +
+  'and nothing after it, exactly:\n```\n' + SAFE_BANNER + '\n```\n' + titleRule
+
+// Did this chat's last turn end with the banner? The last text it wrote since the owner's
+// last prompt (tool results don't count as a prompt) holds the banner's words.
+const BANNER_WORDS = 'SAFE TO CLEAR: type /clear'
+export function turnEndsWithBanner(transcript) {
+  if (!transcript || !existsSync(transcript)) return false
+  let lines
+  try { lines = readFileSync(transcript, 'utf8').split('\n') } catch { return false }
+  for (let i = lines.length - 1; i >= 0; i--) {
+    if (!lines[i].includes('"assistant"') && !lines[i].includes('"user"')) continue
+    let e
+    try { e = JSON.parse(lines[i]) } catch { continue }
+    if (e.isSidechain) continue
+    const c = e.message?.content
+    if (e.type === 'assistant' && Array.isArray(c)) {
+      const text = c.filter(b => b?.type === 'text').map(b => b.text || '').join('\n')
+      if (text.trim()) return text.includes(BANNER_WORDS)
+    }
+    if (e.type === 'user' && !e.isMeta) {
+      const prompt = typeof c === 'string' || (Array.isArray(c) && !c.some(b => b?.type === 'tool_result'))
+      if (prompt) return false
+    }
+  }
+  return false
+}
+
+// After a turn that ended with the banner, with no 🔄 yet: the one thing left to do.
+export const clearAskText = () =>
+  `chat-hub-core clear check: your turn ended with the SAFE TO CLEAR banner, so your wrap-up is done: set your title's ` +
+  `symbol to ${CLEAR_SYMBOL} now (waiting for the owner to clear): read your title (get_session self), swap only its first ` +
+  'character and set it (set_session_title with self), keeping the rest exactly. Do only that: no text and no other ' +
+  'tools, so the banner stays the last thing the owner reads.'
+// 🔄 on a chat past its limit whose turn didn't end with the banner: still wrapping up.
+export const clearEarlyText = workChat =>
+  `chat-hub-core clear check: your title shows ${CLEAR_SYMBOL}, but your turn didn't end with the SAFE TO CLEAR banner, ` +
+  'so the owner would find you still busy. Set your normal status again now (' +
+  (workChat ? '🔨 working, ❓ waiting on an answer, …' : '⚪, or your release symbol during a release') +
+  `). Once a turn ends with the banner, the hook asks you for ${CLEAR_SYMBOL}. Then end your turn: don't repeat your last reply.`
 
 // Stage 1: the hub wraps up. It takes on no new work, finishes what it already has in flight,
 // brings its notes up to date and only then shows the banner, so a clear never lands in the
