@@ -3,6 +3,22 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## 0.3.52
+
+- **🔄 only once a chat is really done.** Chats set 🔄 (waiting for
+  /clear) in the turn they first showed the SAFE TO CLEAR banner, often
+  before that turn's merges, closes, titles or notes were done, so the
+  owner went to clear a chat that was still busy. Now the banner goes
+  at the end of the reply (nothing after it), and 🔄 is hook-driven:
+  - **After-turn hook:** past the limit, once a turn ends (all its
+    tools run) with the banner as its last words, it sends the chat
+    back to set 🔄 and do nothing else. 🔄 on a turn that didn't end
+    with the banner is sent back to the normal status.
+  - **Guard:** refuses a chat setting 🔄 on its own title until that
+    ask (`clearAsk` in its usage counts; the next prompt ends it).
+  - Hub, work-chat and user-hub skills, the WRAP UP / STOP / HARD STOP
+    notes and the README say so.
+
 ## 0.3.51
 
 - **Tick-tock without marks (optional).** `"tickTockMarks": false` next

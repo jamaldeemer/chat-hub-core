@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url'
 import { dirname } from 'node:path'
 import { HubTaken, chatRole, clearUserHub, hookInput, hostApp, hubAddress, hubNotesFile, readConfig, readHub, say, setHub, setUserHub, userHubNotesFile, workNotesFile } from './config.mjs'
 import { syncSession } from './session-sync.mjs'
-import { tokensLeftNote, trimLimit, trimNudge } from './usage.mjs'
+import { readUsage, tokensLeftNote, trimLimit, trimNudge, writeUsage } from './usage.mjs'
 import { paceNudge } from './pace.mjs'
 import { limitCommand } from './limit.mjs'
 import { applyDefaults, defaultsNote, toolsCommand } from './tools.mjs'
@@ -46,6 +46,8 @@ if (/^\/chat-hub-core:version\b/.test(prompt)) {
     'in one short reply and do nothing else for it.'
   if (!cfg) say('UserPromptSubmit', limitNote)
 }
+// A new prompt ends the after-turn hook's ask for 🔄 (the guard lets the chat set it only then).
+if (cfg && input.session_id) { const u = readUsage(input.session_id); if (u.clearAsk) { u.clearAsk = false; writeUsage(input.session_id, u) } }
 if (!m && cfg) {
   // Split hubs: the user hub gets the hub's limit and the rules notice for its own skill, and none
   // of the session hub's bookkeeping (isHub below stays the session hub's).

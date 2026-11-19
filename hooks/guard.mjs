@@ -15,7 +15,7 @@ import { homedir } from 'node:os'
 import { basename, dirname, resolve } from 'node:path'
 import { chatRole, hookInput, hostApp, hubAddress, hubNotesFile, menuOk, readConfig, readHub, say, userHubNotesFile, workNotesFile } from './config.mjs'
 import { syncSession } from './session-sync.mjs'
-import { CLEAR_SYMBOL, OVERRIDE, SAFE_BANNER, chatLimit, hubStage, short, trimLimit, trimNudge, updateUsage } from './usage.mjs'
+import { CLEAR_SYMBOL, OVERRIDE, SAFE_BANNER, chatLimit, hubStage, readUsage, short, trimLimit, trimNudge, updateUsage } from './usage.mjs'
 
 const input = hookInput()
 const cwd = input.cwd || process.cwd()
@@ -54,6 +54,16 @@ function commitSubject(cmd) {
   return msg?.split('\n').find(l => l.trim())?.trim()
 }
 
+
+// 🔄 (waiting for /clear) on this chat's own title only once its wrap-up is done: the after-turn
+// hook asks for it after a turn that ended with the SAFE TO CLEAR banner (clearAsk, until the next
+// prompt). Set any earlier, the owner would go to clear a chat that's still busy.
+if (/(^|__)set_session_title$/.test(tool) && String(ti.title || '').startsWith(CLEAR_SYMBOL) &&
+    (ti.session_id === 'self' || (hostApp() && ti.session_id === hostApp())) && !readUsage(input.session_id).clearAsk) {
+  deny(`not yet: ${CLEAR_SYMBOL} goes up only once your wrap-up is completely done. Finish everything first, end your ` +
+    'reply with the SAFE TO CLEAR banner as the last thing, and the after-turn hook will ask you to set ' +
+    `${CLEAR_SYMBOL} then. Keep your current symbol until it does.`)
+}
 
 if (tool === 'Bash') {
   const cmd = String(ti.command || '')
@@ -169,9 +179,9 @@ if (isHub && trimLimit(true, c) && input.session_id) {
       (tool === 'Skill' && /^chat-hub-core:limit$/.test(String(ti.skill || '')))
     if (!(free || (own && /^(Read|Edit|Write|MultiEdit)$/.test(tool)))) {
       deny(`HARD STOP: ${at} by more than its stop margin. Every tool is refused except Read, Edit and Write on ` +
-        `your hub notes (${notes || 'hub-notes.md: none without git'}). Bring them up to date if they aren't, then start ` +
-        `every reply with this banner as its own code block:\n\`\`\`\n${SAFE_BANNER}\n\`\`\`\n` +
-        `and set your title's symbol to ${CLEAR_SYMBOL} (waiting for the clear). ${OVERRIDE}`)
+        `your hub notes (${notes || 'hub-notes.md: none without git'}). Bring them up to date if they aren't, then end ` +
+        `every reply with this banner as its own code block, the last thing in it:\n\`\`\`\n${SAFE_BANNER}\n\`\`\`\n` +
+        `Once a turn ends with it, the after-turn hook asks you to set your title's symbol to ${CLEAR_SYMBOL} (waiting for the clear). ${OVERRIDE}`)
     }
   }
   if (stage === 1) {

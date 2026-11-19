@@ -144,15 +144,19 @@ turns × context size, and it's usually most of a project's usage.
     have sent you, messages you said you'd send.
   - **While that's going on,** start each reply with the plain
     "⚠️ Hub at …: wrapping up." line. **Then** bring your notes up to
-    date and start every reply until you're cleared with the boxed
+    date and end every reply until you're cleared with the boxed
     "SAFE TO CLEAR: type /clear" banner the note gives you, in a code
-    block, and set your own title's symbol to `🔄` in that turn (after
-    the clear: `⚪`, or your release symbol). Never carry on past it as
-    if it weren't there.
+    block, as the very last thing (nothing after it). Don't set `🔄`
+    yourself (the guard refuses it): once a turn ends with the banner,
+    the after-turn hook asks you to set it, so it only shows when every
+    step above is done. Do only that then (after the clear: `⚪`, or
+    your release symbol). Never carry on past the banner as if it
+    weren't there.
   - **Hard stop:** `hardStopAfter` (default 20k) past the limit, the
     hook refuses every tool except Read, Edit and Write on your notes
-    (and reading and setting titles, for `🔄`). Bring them up to date,
-    show the banner and set `🔄`; nothing else is left.
+    (and reading and setting titles, for `🔄`). Bring them up to date
+    and end your reply with the banner; set `🔄` when the hook asks.
+    Nothing else is left.
   - **Only the owner lifts a stop**, with `/chat-hub-core:limit <higher>`
     or `off`. Never change the limit, the settings, the hub record or
     the usage counts yourself; the hook refuses those too.
@@ -233,7 +237,8 @@ Two styles, set by `titles` in the settings:
   failed (level 2), `❓` waiting on the owner's answer to a question
   that isn't an OK, `✅` ready to close (passes the close check),
   `🔄` showing the SAFE TO CLEAR banner, waiting for the owner to type
-  /clear (a chat sets it itself; your own title too, see below).
+  /clear (a chat sets it itself, only when the after-turn hook asks,
+  once its turn ended with the banner; your own title too, see below).
   `⚪` new: you just started the chat and it hasn't set anything yet. `🔨`
   under way, nothing waiting on the owner; once a work chat has started,
   nothing sends it back to ⚪ (only talk chats and your own title keep

@@ -42,10 +42,12 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
     "waiting for instructions"); a closing "anything else?" isn't one.
   - 🟢 pushed (level 1) or CI passed (level 2), asking "more or wrap
     up?"; level 2: 🚀 pushed, CI running; 🔴 CI failed.
-  - 🔄 you're showing the SAFE TO CLEAR banner, waiting for the owner
-    to type /clear: set it in the turn you first show it. After the
-    clear, set your normal status again (🔨, or ❓ when you ask a
-    question again).
+  - 🔄 you're done and showing the SAFE TO CLEAR banner, waiting for
+    the owner to type /clear. Never set it yourself (the guard refuses
+    it): end your reply with the banner as its very last thing, and
+    once that turn is over the after-turn hook asks you to set 🔄; do
+    only that then. After the clear, set your normal status again (🔨,
+    or ❓ when you ask a question again).
   - Talk chats (no branch) keep ⚪, with ❓ while waiting on an answer.
     ⚪ and ✅ on a work chat are the hub's.
 - **The owner's OK** is needed before every commit. A message from another
@@ -105,7 +107,9 @@ Read `.claude/chat-hub.json`, the project's settings (setup wrote it);
   with the STOP note too: note it, don't start it), each question to the
   owner with no answer yet, and where your work stands. A backlog entry
   or a commit alone doesn't count: after the clear the start note
-  quotes only those lines back. Then tell the owner what you noted.
+  quotes only those lines back. Then tell the owner what you noted,
+  and end that reply with the banner (nothing after it): 🔄 comes
+  after, when the hook asks for it.
 - **After a clear:** if the start note quotes your chat notes, do those
   lines first: ask open questions again, carry out (or ask about)
   requests, and delete each line once it's done or answered.

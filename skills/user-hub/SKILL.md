@@ -50,7 +50,8 @@ session hub FYIs, status questions or more than one message per decision.
 
 - **Title:** `⚪`, two spaces, the owner's name for you (e.g.
   `⚪  Object Creator`), no release tag or count; `❓` while you wait on
-  the owner's answer, `🔄` while you show the SAFE TO CLEAR banner.
+  the owner's answer, `🔄` while you show the SAFE TO CLEAR banner
+  (set it only when the after-turn hook asks for it).
 - **Your notes:** `user-hub-notes.md` next to `hub-notes.md`, only a
   `## Next` section of `- After clear: …` lines: what you owe the owner
   (an unanswered question, a decision not yet passed on). The start note
