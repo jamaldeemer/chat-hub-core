@@ -379,8 +379,9 @@ answers, looks things up, reads status from the shared `hub-notes.md`,
 and sends each decision ("start a chat for X, plan first", "release now")
 to the hub as one short message. The hub you had becomes the **session
 hub**: it starts, follows and closes chats, merges, releases and watches
-CI, writes the notes, and talks to you only when it must (the push
-command, a merge clash). Work chats message the session hub as before;
+CI, writes the notes, and never talks to you itself: a push command, a
+merge clash or a choice only you can make goes to the user hub, which
+puts it to you and sends your answer back. Work chats message the session hub as before;
 their questions to you stay in their own chats. The user hub is recorded
 next to the hub (`chat-hub/user-hub`), and the guard refuses it anything
 that changes state: starting, renaming or closing chats, git writes,

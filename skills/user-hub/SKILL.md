@@ -35,6 +35,16 @@ light, so every turn here stays cheap.
   both answers in the message. Then tell the
   owner in one line that it's passed on. The session hub reports back
   only when the owner must act, so don't wait on a reply.
+- **From the session hub:** it never talks to the owner itself, so
+  whatever the owner must answer, run or hear comes to you, and you put
+  it to them in your next reply:
+  - `Ask owner: …`: ask it, with a menu where the choices are clear;
+    send the answer back as `Owner: <answer>.`
+  - `Owner to run: <command>`: show the command exactly, in its own
+    code block, and say what it does; when they say it's done, send
+    `Owner: ran it.`
+  - `Tell owner: …`: tell them in a line; nothing to send back.
+  One message back per answer. If the owner answers later, send it then.
 - **Offer to ship:** when the notes' `## Preview` says it's ready to
   ship and the owner hasn't said, offer it once in your next reply
   ("Release now" / "Wait for more").

@@ -3,6 +3,22 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## 0.3.54
+
+- **With split hubs, the session hub never talks to the owner.** Everything
+  the owner must answer, run or hear (a push command, a merge clash, a
+  choice only they can make, a start mode or base the message left out,
+  carried branches, a stuck check, CI that can't run, every "tell the
+  owner" in a hook's note) goes to the user hub as one message:
+  `Ask owner: …`, `Owner to run: <command>` or `Tell owner: …`. The user
+  hub puts it to the owner (a menu where the choices are clear, commands
+  in their own code block) and sends each answer back as `Owner: …`. The
+  session hub still sets 🙋 or ❓ on its title while it waits. Its start
+  note says so. When it ends a reply with the SAFE TO CLEAR banner, it
+  also tells the user hub to have the owner type /clear there; past the
+  hard stop the guard still lets it message the user hub (only that
+  chat). Single hub: unchanged.
+
 ## 0.3.53
 
 - **Start a chat from the release preview.** When the hub starts a chat
