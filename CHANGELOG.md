@@ -3,6 +3,26 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## 0.3.53
+
+- **Start a chat from the release preview.** When the hub starts a chat
+  (level 1+), the start menu asks a second question, "Start from?":
+  **Last release (main)** (the default) or **Release preview** (main
+  plus every finished branch waiting for the next release, named in the
+  option). It's skipped when the preview has nothing main doesn't. The
+  hub passes that branch as the new chat's source (before, the app's
+  default: the hub folder's own branch) and writes it on the brief's
+  new **Base:** line and in its notes.
+  - **Setting:** `"startBase": "ask" | "main" | "release"`, like
+    `startMode`; a fixed value skips the question. The user hub asks
+    and relays it too.
+  - **Releases:** a chat started from the preview carries every branch
+    in it. New `hooks/release-check.mjs <picked branches…>` says which
+    picked branch carries work of one left out (a branch's own work:
+    the non-merge commits on its first-parent line since main). On
+    CHECK the hub asks the owner: ship that branch too, hold the
+    carrying one back, or have its chat revert the work.
+
 ## 0.3.52
 
 - **🔄 only once a chat is really done.** Chats set 🔄 (waiting for

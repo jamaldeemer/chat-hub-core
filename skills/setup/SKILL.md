@@ -70,7 +70,9 @@ Only what you couldn't tell. Usually:
 
 Don't ask how chats start: `startMode` defaults to "ask" (the hub asks
 before each chat). Set "plan", "build" or "wait" (just open the chat
-and wait) only if the owner says so.
+and wait) only if the owner says so. The same for `startBase` (level
+1+, what a chat's branch is cut from): "ask" by default; "main" or
+"release" (the release preview) only if the owner says so.
 
 ## 4. Summary, then write
 
@@ -197,6 +199,7 @@ Don't commit.
   "checks": "",                     // level 1+: command the hub runs on each merge into the preview (always write it)
   "followups": "docs/backlog.md",   // where chats write follow-ups
   "startMode": "ask",               // "ask" (hub asks each time) | "plan" | "build" | "wait"
+  "startBase": "ask",               // level 1+: new chats cut from "ask" | "main" (last release) | "release" (the preview)
   "hubs": "one",                    // optional: "split" = a user hub for the owner + the session hub (leave out for one)
   "commitReminder": "",             // extra text shown before every commit
   "branches": { "main": "main", "release": "release" },
