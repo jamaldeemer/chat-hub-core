@@ -153,8 +153,8 @@ turns × context size, and it's usually most of a project's usage.
     report is in (`close-chat.mjs`, then ✅; never leave one at ⏳ for
     after the clear), title changes you owe, replies to messages chats
     have sent you, messages you said you'd send.
-  - **While that's going on,** start each reply with the plain
-    "⚠️ Hub at …: wrapping up." line. **Then** bring your notes up to
+  - **While that's going on,** start each reply with the "⚠️ wrapping
+    up" usage bar the note gives you, in a code block. **Then** bring your notes up to
     date and end every reply until you're cleared with the boxed
     "SAFE TO CLEAR: type /clear" banner the note gives you, in a code
     block, as the very last thing (nothing after it). Don't set `🔄`

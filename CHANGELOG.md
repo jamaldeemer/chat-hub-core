@@ -3,6 +3,26 @@
 Each version is a git tag (`v0.1.0`). Projects pin a tag in
 `.claude/settings.json`, so they get a new version only when they move to it.
 
+## 0.3.55
+
+- **⏱️ The tokens-left line is now a cute usage bar.** Near its limit (or
+  in extra room) a chat used to start each reply with a plain line like
+  "⏱️ 20k tokens left: this chat is out at 135k (hard stop at 155k)". Now
+  it's a small boxed meter in a code block, so it lines up in the
+  desktop app:
+
+  ```
+  ╭─ ⏱️ tokens ─────────────────────────╮
+  │ ▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▱▱▱┊▒▒▒  20k left  │
+  ╰─ 115k used · out at 135k · ⛔ 155k ─╯
+  ```
+
+  20 cells fill up to the limit; the hub's 3 cells after `┊` fill on the
+  way to its hard stop (work chats have none). The wrap-up lines ("⚠️ Hub
+  at … tokens: wrapping up.", "⚠️ This chat is at … tokens: wrapping up.")
+  are the same bar, titled "⚠️ wrapping up", full, with how far over it
+  is. README, the hub and limit skills describe it.
+
 ## 0.3.54
 
 - **With split hubs, the session hub never talks to the owner.** Everything

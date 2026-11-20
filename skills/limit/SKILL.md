@@ -31,8 +31,8 @@ didn't run then, tell the owner so.
   your title's symbol is 🔄.
 
 While a chat is in that extra room, and from `warnBefore` (default 20k)
-before any chat's limit, every prompt's note gives a "⏱️ … tokens left"
-line to start the reply with. It's a warning only: carry on as normal.
+before any chat's limit, every prompt's note gives a "⏱️ tokens" usage bar
+(a small boxed meter in a code block) to start the reply with. It's a warning only: carry on as normal.
 
 They're kept in git's shared folder (`.git/chat-hub/limits.json`, beside
 the hub record), so every chat in every worktree uses them from its next

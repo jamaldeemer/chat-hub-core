@@ -469,14 +469,23 @@ context drops well under the limit) it's back to its normal limit.
 `/chat-hub-core:limit` in that chat shows the room it has.
 
 **Tokens left, a warning only.** While a chat is in that extra room, every
-reply starts with a plain line like "⏱️ 18k tokens left of the extra room:
-this chat is out at 160k (hard stop at 180k)". The same line comes before a
-chat reaches its limit, from `warnBefore` under it (default 20k tokens, so
-the hub's default 135k limit starts warning at 115k; set it in
-`.claude/chat-hub.json`, 0 turns it off): "⏱️ 12k tokens left: this chat is
-out at 135k (hard stop at 155k)". It changes nothing: the chat carries on as
-normal, no wrapping up or stopping. Work chats get it only if `trimAtWork`
-is set, and their line has no hard stop.
+reply starts with a little usage bar, in a code block so it stays lined up:
+
+```
+╭─ ⏱️ extra room ─────────────────────╮
+│ ▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▱▱▱┊▒▒▒  18k left  │
+╰─ 142k used · out at 160k · ⛔ 180k ─╯
+```
+
+The 20 cells fill up to the limit; the hub's three after the `┊` fill on
+the way to its hard stop. The same bar ("⏱️ tokens") comes before a chat
+reaches its limit, from `warnBefore` under it (default 20k tokens, so the
+hub's default 135k limit starts warning at 115k; set it in
+`.claude/chat-hub.json`, 0 turns it off). It changes nothing: the chat
+carries on as normal, no wrapping up or stopping. Work chats get it only if
+`trimAtWork` is set, and their bar has no hard stop. Past the limit, while
+a chat wraps up, the bar turns into "⚠️ wrapping up" and shows how far over
+it is.
 
 **Set the limit well above the hub's base.** A fresh hub already holds
 its tools, skills list, CLAUDE.md and its own rules before you say

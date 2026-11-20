@@ -390,8 +390,8 @@ turns × context size, and it's usually most of a project's usage.
     report is in (`close-chat.mjs`, then ✅; never leave one at ⏳ for
     after the clear), title changes you owe, replies to messages chats
     have sent you, messages you said you'd send.
-  - **While that's going on,** start each reply with the plain
-    "⚠️ Hub at …: wrapping up." line. **Then** bring your notes up to
+  - **While that's going on,** start each reply with the "⚠️ wrapping
+    up" usage bar the note gives you, in a code block. **Then** bring your notes up to
     date and end every reply until you're cleared with the boxed
     "SAFE TO CLEAR: type /clear" banner the note gives you, in a code
     block, as the very last thing (nothing after it). Don't set `🔄`
@@ -958,8 +958,8 @@ didn't run then, tell the owner so.
   your title's symbol is 🔄.
 
 While a chat is in that extra room, and from `warnBefore` (default 20k)
-before any chat's limit, every prompt's note gives a "⏱️ … tokens left"
-line to start the reply with. It's a warning only: carry on as normal.
+before any chat's limit, every prompt's note gives a "⏱️ tokens" usage bar
+(a small boxed meter in a code block) to start the reply with. It's a warning only: carry on as normal.
 
 They're kept in git's shared folder (`.git/chat-hub/limits.json`, beside
 the hub record), so every chat in every worktree uses them from its next
@@ -1203,6 +1203,9 @@ From `hooks/usage.mjs`:
   `chat-hub-core clear check: your title shows ${CLEAR_SYMBOL}, but your turn didn't end with the SAFE TO CLEAR banner, ` +
   'so the owner would find you still busy. Set your normal status again now (' +
   `). Once a turn ends with the banner, the hook asks you for ${CLEAR_SYMBOL}. Then end your turn: don't repeat your last reply.`
+    `╭─ ${title} ${'─'.repeat(w - 3 - cells(title))}╮`,
+    `│${mid}${' '.repeat(w - cells(mid))}│`,
+    `╰─ ${foot} ${'─'.repeat(w - 3 - cells(foot))}╯`
   `⚠️ WRAP UP: this chat's context is ${short(ctx)} tokens, past its limit of ${short(limit)}, and every turn ` +
   're-reads all of it. Take on no new work: no new chats or releases (the hooks now refuse both), and nothing new the owner or a chat ' +
   'asks for (add each to "## Next" in your hub notes as a line starting "- After clear:", which the start note ' +
@@ -1210,7 +1213,7 @@ From `hooks/usage.mjs`:
   'Finish everything already in flight: a merge you have started (through its tests and commit), ' +
   'closing every chat whose wrap-up report is in (close-chat.mjs, then ✅: never leave one at ⏳ for after the clear or a later release), ' +
   'title changes you owe, replies to messages chats have sent you, and messages you said you would send. ' +
-  'Until all of that is done, start each reply with the plain line "⚠️ Hub at ' + short(ctx) + ' tokens: wrapping up." Once it is, ' +
+  'Until all of that is done, start each reply with this usage bar as its own code block, exactly:\n' +
   `At ${short(limit + hardStopAfter(cfg))} tokens the hooks refuse every tool but your notes, so finish soon. ` +
   'Never ask the owner about clearing: no question, menu or buttons (a button can\'t clear a chat, and a ' +
   'cleared chat has nothing left to answer). In the desktop app, end the turn with a wrap-up recap only, ' +
@@ -1222,9 +1225,9 @@ From `hooks/usage.mjs`:
   'haven\'t finished (including one that came with this message: noted, not started), every question you asked ' +
   'the owner that has no answer yet, and where your work stands (what\'s done, committed or pushed, and the next step). ' +
   'The start note after the clear quotes exactly those lines back, and nothing else: a backlog entry or a commit ' +
-  `alone is not enough. Until that's written, start each reply with the plain line "⚠️ This chat is at ${short(ctx)} ` +
-    '. This is only a warning: carry on as normal (no wrapping up, no stopping, no 🔄). Start your reply with this plain ' +
-    `line, exactly:\n${line}`
+  'alone is not enough. Until that\'s written, start each reply with this usage bar as its own code block, exactly:\n' +
+    '. This is only a warning: carry on as normal (no wrapping up, no stopping, no 🔄). Start your reply with this usage ' +
+    `bar as its own code block, exactly:\n${line}`
 ```
 
 From `hooks/wrapups.mjs`:
