@@ -63,7 +63,7 @@ snapshot, edited in place under exactly these headings: `## Me` (app
 address, title, folder, dev server), `## Next` (next code, `nextRelease`),
 `## Shipped` (the last 2 releases only), `## Preview` (what's merged, as
 commits), `## Waiting` (branch, commit, CI, blocker), `## Open chats` (by
-release: code, session id, title, branch, what they wait on), `## Plans`, `## Gotchas`.
+release: code, session id, title, branch, base if the preview, what they wait on), `## Plans`, `## Gotchas`.
 A hook names any chat under `## Open chats` whose session the owner
 deleted ("deleted chats: …"; it matches the session id or app address
 on the line, never the title): drop that line, and if the hook says its
@@ -184,6 +184,23 @@ settings' `startMode` is "plan", "build" or "wait" (default "ask"):
   waits for the owner's instructions.
 
 Put the answer on the brief's **Start:** line.
+
+**Base** (level 1+): what the chat's branch is cut from. Ask it as a
+second question in the same menu ("Start from?"), unless the settings'
+`startBase` is "main" or "release" (default "ask"), or the release
+preview has nothing that isn't on main (then it's main, unasked):
+
+- **Last release (main)** (first, the default): only what's shipped.
+- **Release preview:** main plus every finished branch merged for the
+  next release; name them in the option ("main + C8, F5"). For work
+  that builds on finished work that hasn't shipped yet.
+
+Start the chat with that branch as its source (`branches.main` or
+`branches.release`; the start-session tool's `source_branch`), never
+the app's default (your own folder's branch). Put it on the brief's
+**Base:** line with its commit and, for the preview, the codes in it
+(`release preview @ 35f6451 (C8, F5)`), and on the chat's line in your
+notes. A preview-based chat carries those branches: see Releases.
 
 ## Titles
 
@@ -351,7 +368,14 @@ which chats just became ✅ and why the others can't close yet.
   checks, ask the owner with a menu: "Release now" (lists what's in it) /
   "Wait for more". If they wait, ask again after the next merge.
 - When the owner says "release" (or picks "Release now"): list branches not yet on main; the owner
-  picks; build `release` from main with those merged (`--no-ff`); run the
+  picks; run `node "${CLAUDE_PLUGIN_ROOT}/hooks/release-check.mjs"
+  <picked branches…>`. A chat started from the preview (or that merged
+  it) carries every branch that was in it then, so leaving one of those
+  out would still ship it. On CHECK, show the owner its CARRIES lines
+  and ask: ship the carried branch too, leave the carrying one out as
+  well (it waits for a later release), or have the carrying chat revert
+  that work; never ship it silently. Run it again on the new pick. Then
+  build `release` from main with those merged (`--no-ff`); run the
   checks; write a short note: one line per included chat,
   `- **<title>** (<code>, \`<branch>\`)`, so tools can read it, then what
   was left out and why, conflicts resolved, and fixes to check.

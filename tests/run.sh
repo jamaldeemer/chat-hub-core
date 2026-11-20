@@ -698,6 +698,30 @@ out=$(ch b8)
 t "close-chat: preview checked out here merges here" "$(echo "$out" | grep -c 'PASS preview: release is checked out here')" 1
 t "close-chat: merging here is ready" "$(echo "$out" | tail -1 | grep -c '^READY to close b8')" 1
 t "close-chat: merging here updates the files" "$(cat i.txt 2>/dev/null)" eight
+# release-check.mjs: picked branches ship only their own work (a chat cut from the preview carries it)
+mkdir "$tmp/rc" && cd "$tmp/rc" && git init -q -b main && mkdir .claude && echo '{"level":1}' > .claude/chat-hub.json && git add -A && gc -m init
+rcb() { git checkout -q -b "$1" "$2"; echo "$1" > "$1.txt"; git add -A; gc -m "$1 work"; }
+rcm() { git checkout -q release; git -c user.email=a@b -c user.name=t merge -q --no-ff -m "Merge branch '$1' into release" "$1"; }
+git branch release; rcb x1 main; rcm x1; rcb x2 main; rcm x2
+rcb p1 release   # cut from the preview: carries x1 and x2
+rcb p2 main
+git checkout -q main
+rc() { node "$root/hooks/release-check.mjs" "$@" 2>&1; }
+t "release-check: branch cut from main passes" "$(rc p2 | grep -c '^PASS p2: ships only its own work')" 1
+t "release-check: all clear says OK" "$(rc p2 | tail -1 | grep -c '^OK')" 1
+t "release-check: a preview-based branch carries the left-out ones" "$(rc p1 x2 | grep -c '^CARRIES p1: 1 commit(s) of x1 (left out)')" 1
+t "release-check: picked ones aren't flagged" "$(rc p1 x2 | grep -c 'of x2')" 0
+t "release-check: carrying ends in CHECK and exits 1" "$(rc p1 x2 | tail -1 | grep -c '^CHECK: .*ship those branches too, leave the carrying branch out')$(rc p1 x2 >/dev/null; echo $?)" 11
+t "release-check: picking what it carries passes" "$(rc p1 x1 x2; echo $?)" "PASS p1: ships only its own work (and other picked branches')
+PASS x1: ships only its own work (and other picked branches')
+PASS x2: ships only its own work (and other picked branches')
+OK: the picked branches ship only their own work.
+0"
+t "release-check: a branch cut from it isn't carried by it" "$(rcb p3 p1; git checkout -q main; rc p1 x1 x2 | grep -c 'p3')" 0
+git branch -D -q x2
+t "release-check: work of a deleted branch still caught" "$(rc p1 x1 | grep -c '^CARRIES p1: 1 commit(s) from no branch here: x2 work')" 1
+t "release-check: unknown branch stops" "$(rc nope | grep -c 'no branch nope')" 1
+cd "$tmp/ch/repo"
 t "close-chat: merging here leaves the folder clean" "$(git status --porcelain | wc -l | tr -d ' ')" 0
 git checkout -q main
 cd "$tmp/cc/repo"

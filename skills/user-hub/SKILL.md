@@ -23,13 +23,16 @@ light, so every turn here stays cheap.
   for status: the notes are the answer. If they look stale, say so.
 - **Take decisions** and pass each on: one short message to the session
   hub per decision, in the owner's words where they matter, e.g.
-  - `Owner: start a chat to <task>. Start: plan first. ʀ38.`
+  - `Owner: start a chat to <task>. Start: plan first. Base: main. ʀ38.`
   - `Owner: release now: C8, E9.` / `Owner: wait for more.`
   - `Owner: close C8.` / `Owner: retag A4 to ʀ39.`
   - `Owner: tell C8: <answer>.` (only when the owner asks you to relay)
   Before a "start a chat", ask the owner how it starts (plan first /
   build it / just open; a menu where you have one) unless the settings'
-  `startMode` says, and put the answer in the message. Then tell the
+  `startMode` says, and, at level 1+, in the same menu what it starts
+  from (last release (main) / release preview, the session hub's rule)
+  unless `startBase` says or `## Preview` has nothing unshipped. Put
+  both answers in the message. Then tell the
   owner in one line that it's passed on. The session hub reports back
   only when the owner must act, so don't wait on a reply.
 - **Offer to ship:** when the notes' `## Preview` says it's ready to

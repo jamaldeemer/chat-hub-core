@@ -79,7 +79,9 @@ Only what you couldn't tell. Usually:
 
 Don't ask how chats start: `startMode` defaults to "ask" (the hub asks
 before each chat). Set "plan", "build" or "wait" (just open the chat
-and wait) only if the owner says so.
+and wait) only if the owner says so. The same for `startBase` (level
+1+, what a chat's branch is cut from): "ask" by default; "main" or
+"release" (the release preview) only if the owner says so.
 
 ## 4. Summary, then write
 
@@ -206,6 +208,7 @@ Don't commit.
   "checks": "",                     // level 1+: command the hub runs on each merge into the preview (always write it)
   "followups": "docs/backlog.md",   // where chats write follow-ups
   "startMode": "ask",               // "ask" (hub asks each time) | "plan" | "build" | "wait"
+  "startBase": "ask",               // level 1+: new chats cut from "ask" | "main" (last release) | "release" (the preview)
   "hubs": "one",                    // optional: "split" = a user hub for the owner + the session hub (leave out for one)
   "commitReminder": "",             // extra text shown before every commit
   "branches": { "main": "main", "release": "release" },
@@ -297,7 +300,7 @@ snapshot, edited in place under exactly these headings: `## Me` (app
 address, title, folder, dev server), `## Next` (next code, `nextRelease`),
 `## Shipped` (the last 2 releases only), `## Preview` (what's merged, as
 commits), `## Waiting` (branch, commit, CI, blocker), `## Open chats` (by
-release: code, session id, title, branch, what they wait on), `## Plans`, `## Gotchas`.
+release: code, session id, title, branch, base if the preview, what they wait on), `## Plans`, `## Gotchas`.
 A hook names any chat under `## Open chats` whose session the owner
 deleted ("deleted chats: …"; it matches the session id or app address
 on the line, never the title): drop that line, and if the hook says its
@@ -418,6 +421,23 @@ settings' `startMode` is "plan", "build" or "wait" (default "ask"):
   waits for the owner's instructions.
 
 Put the answer on the brief's **Start:** line.
+
+**Base** (level 1+): what the chat's branch is cut from. Ask it as a
+second question in the same menu ("Start from?"), unless the settings'
+`startBase` is "main" or "release" (default "ask"), or the release
+preview has nothing that isn't on main (then it's main, unasked):
+
+- **Last release (main)** (first, the default): only what's shipped.
+- **Release preview:** main plus every finished branch merged for the
+  next release; name them in the option ("main + C8, F5"). For work
+  that builds on finished work that hasn't shipped yet.
+
+Start the chat with that branch as its source (`branches.main` or
+`branches.release`; the start-session tool's `source_branch`), never
+the app's default (your own folder's branch). Put it on the brief's
+**Base:** line with its commit and, for the preview, the codes in it
+(`release preview @ 35f6451 (C8, F5)`), and on the chat's line in your
+notes. A preview-based chat carries those branches: see Releases.
 
 ## Titles
 
@@ -585,7 +605,14 @@ which chats just became ✅ and why the others can't close yet.
   checks, ask the owner with a menu: "Release now" (lists what's in it) /
   "Wait for more". If they wait, ask again after the next merge.
 - When the owner says "release" (or picks "Release now"): list branches not yet on main; the owner
-  picks; build `release` from main with those merged (`--no-ff`); run the
+  picks; run `node "${CLAUDE_PLUGIN_ROOT}/hooks/release-check.mjs"
+  <picked branches…>`. A chat started from the preview (or that merged
+  it) carries every branch that was in it then, so leaving one of those
+  out would still ship it. On CHECK, show the owner its CARRIES lines
+  and ask: ship the carried branch too, leave the carrying one out as
+  well (it waits for a later release), or have the carrying chat revert
+  that work; never ship it silently. Run it again on the new pick. Then
+  build `release` from main with those merged (`--no-ff`); run the
   checks; write a short note: one line per included chat,
   `- **<title>** (<code>, \`<branch>\`)`, so tools can read it, then what
   was left out and why, conflicts resolved, and fixes to check.
@@ -684,13 +711,16 @@ light, so every turn here stays cheap.
   for status: the notes are the answer. If they look stale, say so.
 - **Take decisions** and pass each on: one short message to the session
   hub per decision, in the owner's words where they matter, e.g.
-  - `Owner: start a chat to <task>. Start: plan first. ʀ38.`
+  - `Owner: start a chat to <task>. Start: plan first. Base: main. ʀ38.`
   - `Owner: release now: C8, E9.` / `Owner: wait for more.`
   - `Owner: close C8.` / `Owner: retag A4 to ʀ39.`
   - `Owner: tell C8: <answer>.` (only when the owner asks you to relay)
   Before a "start a chat", ask the owner how it starts (plan first /
   build it / just open; a menu where you have one) unless the settings'
-  `startMode` says, and put the answer in the message. Then tell the
+  `startMode` says, and, at level 1+, in the same menu what it starts
+  from (last release (main) / release preview, the session hub's rule)
+  unless `startBase` says or `## Preview` has nothing unshipped. Put
+  both answers in the message. Then tell the
   owner in one line that it's passed on. The session hub reports back
   only when the owner must act, so don't wait on a reply.
 - **Offer to ship:** when the notes' `## Preview` says it's ready to
@@ -977,6 +1007,8 @@ Browser pane for a UI fix) asks the owner to type
 
 **Start:** <"plan first": look around, send a short plan, wait for the owner's go before changing anything; "build it": go straight to work, stop only for the commit OK; or "just open": start the dev server if there is one, say you're ready, wait for the owner's instructions>
 
+**Base:** <level 1+: "main @ <sha>" (the last release), or "release preview @ <sha> (<codes in it>)": this branch carries their work>
+
 **Read first:** <files and docs>
 
 **Your hub:** <its app address, local_…> (session <its session ID>, "<its title>"). Message it at that address only.
@@ -1215,6 +1247,13 @@ From `hooks/after-turn.mjs`:
 
 ```js
   if (s.turns) out.systemMessage = withPace(statsLine(s), cfg)
+```
+
+From `hooks/release-check.mjs`:
+
+```js
+  ? `CHECK: left-out work would ship inside the branches above. Ask the owner: ship those branches too, leave the carrying branch out as well, or have its chat revert that work.`
+  : `OK: the picked branches ship only their own work.`)
 ```
 
 From `githooks/pre-push` (shown when a push to main is refused):

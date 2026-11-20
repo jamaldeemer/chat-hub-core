@@ -163,6 +163,16 @@ for the commit OK) or **just open** (start the dev server if
 `devServer` is set, say it's ready, wait for your instructions);
 "plan", "build" or "wait" skips the question.
 
+Optional setting `startBase` (level 1+): "ask" (default) has the hub ask,
+in the same menu, what the chat starts from: **last release (main)**
+(the default) or the **release preview** (main plus the finished work
+waiting for the next release, for work that builds on it; asked only
+when the preview has something main doesn't). "main" or "release" skips
+the question. A chat started from the preview carries that work: at
+release time the hub runs `release-check.mjs` on your pick and, if a
+picked branch carries one you left out, asks you whether to ship that
+one too, hold the carrying chat back, or have it revert the work.
+
 Commit them and anyone who clones the project gets the same setup (they
 only repeat steps 1–2). Run setup again to change level or other answers.
 
@@ -227,6 +237,7 @@ LEVEL 1 · + branches
                                `checks` command (tests, build...)
                                           |
                      you say "release" and pick the branches
+                     (the hub checks none carries a left-out one)
                                           v
                                `release` = main + those branches
                                           |  you push it to main
