@@ -174,6 +174,33 @@ export const clearEarlyText = workChat =>
   (workChat ? '🔨 working, ❓ waiting on an answer, …' : '⚪, or your release symbol during a release') +
   `). Once a turn ends with the banner, the hook asks you for ${CLEAR_SYMBOL}. Then end your turn: don't repeat your last reply.`
 
+// The usage bar a chat shows near or past its limit: a little boxed meter in a code block (so it
+// stays lined up in the desktop app). 20 cells fill up to the limit; the hub's 3 cells after the ┊
+// fill on the way to its hard stop. Emoji count as two cells, so the right edge lines up.
+const BAR = 20, OVER = 3
+const cells = s => [...s.replace(/\uFE0F/g, '')].reduce((n, ch) => n + (/\p{Extended_Pictographic}/u.test(ch) ? 2 : 1), 0)
+export function usageBar({ ctx, limit, hard = 0, room = false }) {
+  const over = ctx >= limit
+  const clamp = (n, max) => Math.max(0, Math.min(max, n))
+  const fill = clamp(Math.floor(ctx / limit * BAR), BAR)
+  let bar = '▰'.repeat(fill) + '▱'.repeat(BAR - fill)
+  if (hard > limit) {
+    const past = over ? clamp(Math.ceil((ctx - limit) / (hard - limit) * OVER), OVER) : 0
+    bar += '┊' + '▓'.repeat(past) + '▒'.repeat(OVER - past)
+  }
+  const title = over ? '⚠️ wrapping up' : room ? '⏱️ extra room' : '⏱️ tokens'
+  const label = over ? `${short(ctx - limit)} over` : `${short(limit - ctx)} left`
+  const foot = `${short(ctx)} used · ${over ? 'limit' : 'out at'} ${short(limit)}${hard > limit ? ` · ⛔ ${short(hard)}` : ''}`
+  const mid = ` ${bar}  ${label} `
+  const w = Math.max(cells(mid), cells(title) + 4, cells(foot) + 4)
+  return [
+    `╭─ ${title} ${'─'.repeat(w - 3 - cells(title))}╮`,
+    `│${mid}${' '.repeat(w - cells(mid))}│`,
+    `╰─ ${foot} ${'─'.repeat(w - 3 - cells(foot))}╯`
+  ].join('\n')
+}
+export const usageBlock = o => '```\n' + usageBar(o) + '\n```'
+
 // Stage 1: the hub wraps up. It takes on no new work, finishes what it already has in flight,
 // brings its notes up to date and only then shows the banner, so a clear never lands in the
 // middle of a step.
@@ -185,7 +212,8 @@ export const wrapUpText = (ctx, limit, cfg) =>
   'Finish everything already in flight: a merge you have started (through its tests and commit), ' +
   'closing every chat whose wrap-up report is in (close-chat.mjs, then ✅: never leave one at ⏳ for after the clear or a later release), ' +
   'title changes you owe, replies to messages chats have sent you, and messages you said you would send. ' +
-  'Until all of that is done, start each reply with the plain line "⚠️ Hub at ' + short(ctx) + ' tokens: wrapping up." Once it is, ' +
+  'Until all of that is done, start each reply with this usage bar as its own code block, exactly:\n' +
+  usageBlock({ ctx, limit, hard: limit + hardStopAfter(cfg) }) + '\nOnce it is, ' +
   'bring your hub notes up to date, then ' + bannerRule +
   `At ${short(limit + hardStopAfter(cfg))} tokens the hooks refuse every tool but your notes, so finish soon. ` +
   'Never ask the owner about clearing: no question, menu or buttons (a button can\'t clear a chat, and a ' +
@@ -203,15 +231,15 @@ export const hardStopText = (ctx, limit, notes) =>
 // A work chat past `trimAtWork`. A clear loses everything not written down, so before the banner
 // it logs what a fresh chat needs in its own notes file, which the start note quotes back.
 // A request that came with this very prompt counts too: that's the one most easily lost.
-const workText = (ctx, cfg, notes) =>
+const workText = (ctx, cfg, notes, limit) =>
   `⚠️ STOP: this chat's context is ${short(ctx)} tokens, and every turn re-reads all of it. Start nothing new: ` +
   'get to a natural stopping point. Then write down in ' + (notes ? `your chat notes (${notes})` : 'your chat notes (no file without git: put them in a commit)') +
   ', under "## Next", one line starting "- After clear:" for each of these: every request from the owner you ' +
   'haven\'t finished (including one that came with this message: noted, not started), every question you asked ' +
   'the owner that has no answer yet, and where your work stands (what\'s done, committed or pushed, and the next step). ' +
   'The start note after the clear quotes exactly those lines back, and nothing else: a backlog entry or a commit ' +
-  `alone is not enough. Until that's written, start each reply with the plain line "⚠️ This chat is at ${short(ctx)} ` +
-  'tokens: wrapping up." Once it is, tell the owner what you noted for after the clear, and ' + bannerRule +
+  'alone is not enough. Until that\'s written, start each reply with this usage bar as its own code block, exactly:\n' +
+  usageBlock({ ctx, limit: limit || ctx }) + '\nOnce it is, tell the owner what you noted for after the clear, and ' + bannerRule +
   ((cfg?.level || 0) >= 2 ? 'Don\'t promise to check CI after the clear: the start note checks it for you.' : '')
 
 // A warning only, on every prompt while a chat is close to its limit: how many tokens it has left.
@@ -222,7 +250,6 @@ export const warnBefore = cfg => {
   const n = Number(cfg?.warnBefore)
   return Number.isFinite(n) && n >= 0 ? n : DEFAULT_WARN_BEFORE
 }
-export const LEFT_SYMBOL = '⏱️'
 // The user hub (split hubs) passes isHub with userHub: the hub's limit, but no hard stop.
 export function tokensLeftNote({ session, isHub, userHub = false, cfg, limits = readLimits() }) {
   if (!session || !cfg) return ''
@@ -233,12 +260,12 @@ export function tokensLeftNote({ session, isHub, userHub = false, cfg, limits = 
   const room = limit > base
   if (ctx >= limit || (!room && (!warnBefore(cfg) || ctx < limit - warnBefore(cfg)))) return ''
   const left = limit - ctx
-  const hard = isHub && !userHub ? ` (hard stop at ${short(limit + hardStopAfter(cfg))})` : ''
-  const line = `${LEFT_SYMBOL} ${short(left)} tokens left${room ? ' of the extra room' : ''}: this chat is out at ${short(limit)}${hard}.`
+  const hard = isHub && !userHub ? limit + hardStopAfter(cfg) : 0
+  const line = usageBlock({ ctx, limit, hard, room })
   return `chat-hub-core tokens left: this chat's context is ${short(ctx)} tokens, ${short(left)} under ` +
     (room ? `its extra room from /chat-hub-core:limit more (up to ${short(limit)}; its normal limit is ${short(base)})` : `its limit of ${short(limit)}`) +
-    '. This is only a warning: carry on as normal (no wrapping up, no stopping, no 🔄). Start your reply with this plain ' +
-    `line, exactly:\n${line}`
+    '. This is only a warning: carry on as normal (no wrapping up, no stopping, no 🔄). Start your reply with this usage ' +
+    `bar as its own code block, exactly:\n${line}`
 }
 
 // Past the limit: the note comes on every prompt, and once on a tool call when the chat first
@@ -255,6 +282,6 @@ export function trimNudge({ session, isHub, userHub = false, cfg, everyTime = fa
   if (s.context < limit) return ''
   if (!everyTime && s.nudgedAt) return ''
   if (!s.nudgedAt) { s.nudgedAt = limit; writeUsage(session, s) }
-  if (!isHub || userHub) return workText(s.context, cfg, notes)
+  if (!isHub || userHub) return workText(s.context, cfg, notes, limit)
   return hubStage(s.context, cfg, limit) === 2 ? hardStopText(s.context, limit, notes) : wrapUpText(s.context, limit, cfg)
 }
