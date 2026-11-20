@@ -447,6 +447,13 @@ t "stage 2: writing the notes allowed" "$(den u1 Write "{\"file_path\":\"$notes\
 t "stage 2: wrap-up box allowed" "$(den u1 mcp__ccd_turn__wrap_up '{}')" 0
 t "stage 2: reading its title allowed" "$(den u1 mcp__ccd_session_mgmt__get_session '{"session_id":"self"}')" 0
 t "stage 2: setting its title allowed" "$(den u1 mcp__ccd_session_mgmt__set_session_title '{}')" 0
+node "$root/hooks/set-hub.mjs" --user --session uh9 --app local_UH >/dev/null
+t "stage 2, split: message to the user hub allowed" "$(den u1 SendMessage '{"to":"local_UH","message":"x"}')" 0
+t "stage 2, split: by its session ID too" "$(den u1 mcp__ccd_session_mgmt__send_message '{"session_id":"uh9"}')" 0
+t "stage 2, split: message to another chat refused" "$(den u1 SendMessage '{"to":"local_W","message":"x"}')" 1
+t "stage 2, split: refusal names the user hub" "$(pt u1 Bash '{"command":"ls"}' | grep -c 'and messages to the user hub (local_UH): tell it you.re ready to clear')" 1
+node "$root/hooks/set-hub.mjs" --single >/dev/null
+t "stage 2, single: no user hub in the refusal" "$(pt u1 Bash '{"command":"ls"}' | grep -c 'messages to the user hub')" 0
 t "stage 2: prompt note says 🔄 comes when asked" "$(op u1 | grep -c 'HARD STOP.*Don.t set 🔄 in your title yourself')" 1
 t "stage 2: refusal says 🔄 comes after the banner turn" "$(pt u1 Bash '{"command":"ls"}' | grep -c 'Once a turn ends with it, the after-turn hook asks you to set your title.s symbol to 🔄 (waiting for the clear)')" 1
 echo '{"level":1,"trimAt":150000,"hardStopAfter":40000,"done":["tests pass"]}' > .claude/chat-hub.json
@@ -990,6 +997,7 @@ t "split: /hub in the user hub is refused" "$(up local_U u1 '/chat-hub-core:hub'
 t "split: user hub start note loads user-hub skill" "$(sas local_U u2 | grep -c 'This chat is the user hub.*chat-hub-core:user-hub skill.*decision to local_H')" 1
 t "split: user hub's new session ID recorded after a clear" "$(grep -c '"session":"u2","app":"local_U"' .git/chat-hub/user-hub)" 1
 t "split: session hub told it is the session hub" "$(sas local_H h1 | grep -c 'This chat is the hub.*Split hubs are on: you are the session hub.*local_U')" 1
+t "split: session hub told never to address the owner" "$(sas local_H h1 | grep -c 'Never address the owner here: every question, command or word for them goes to local_U as one message')" 1
 t "split: work chat still messages the session hub" "$(sas local_W w1 | grep -c 'This chat is a work chat.*the hub is local_H.*only ever message local_H')" 1
 printf '## Next\n- After clear: tell the owner about X\n' > .git/chat-hub/user-hub-notes.md
 t "split: user hub's after-clear lines quoted" "$(sas local_U u2 | grep -c 'tell the owner about X')" 1

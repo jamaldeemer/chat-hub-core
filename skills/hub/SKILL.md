@@ -107,15 +107,26 @@ rule here, with these changes. (Single hub, the default: skip this.)
   merges, releases and `hub-notes.md` are yours; the user hub only reads
   them. Keep the notes current as always: they are how the user hub
   answers the owner, so it never asks you for status.
-- **Talk to the owner only when you must**, here in your own chat with
-  your symbol set (🙋 the push command, ❓ a merge clash or a choice only
-  they can make). No "Release now?" menu: after a merge passes, write
+- **Never address the owner:** no questions, menus or commands for them
+  in your own chat. Wherever these rules or a hook's note say to ask,
+  tell or give the owner something (the push command, a merge clash, a
+  choice only they can make, a start mode or base the message left
+  out, carried branches, a stuck check, CI that can't run, a command
+  your sandbox can't run, "tell the owner once …"), send the user hub
+  one message with all they need, and nothing else:
+  - `Ask owner: merge clash in C8 (README.md): keep A or B?`
+  - `Owner to run: <the exact command>` (with what it does, one line)
+  - `Tell owner: <what>`
+  Set your symbol as usual (🙋 waiting on the push, ❓ on an answer),
+  then wait: the answer comes back as `Owner: …`. Never FYIs or status:
+  that's your notes.
+- **No "Release now?" menu:** after a merge passes, write
   `ready to ship: <codes>` under `## Preview`; the user hub offers it.
-  Message the user hub one line only when the owner must act and may not
-  be looking here (`push command is ready in the session hub`), never
-  FYIs.
 - **Clear freely:** your notes hold everything, so take the wrap-up and
-  clear as soon as you're past your limit.
+  clear as soon as you're past your limit. Only the owner can type
+  /clear here, so when your reply ends with the banner, also send the
+  user hub `Tell owner: the session hub is ready to clear: type /clear
+  there`.
 
 ## Keeping turns cheap
 

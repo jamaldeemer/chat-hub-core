@@ -13,7 +13,7 @@ import { execFileSync } from 'node:child_process'
 import { realpathSync, writeSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { basename, dirname, resolve } from 'node:path'
-import { chatRole, hookInput, hostApp, hubAddress, hubNotesFile, menuOk, readConfig, readHub, say, userHubNotesFile, workNotesFile } from './config.mjs'
+import { chatRole, hookInput, hostApp, hubAddress, hubNotesFile, menuOk, readConfig, readHub, readUserHub, say, userHubNotesFile, workNotesFile } from './config.mjs'
 import { syncSession } from './session-sync.mjs'
 import { CLEAR_SYMBOL, OVERRIDE, SAFE_BANNER, chatLimit, hubStage, readUsage, short, trimLimit, trimNudge, updateUsage } from './usage.mjs'
 
@@ -177,9 +177,15 @@ if (isHub && trimLimit(true, c) && input.session_id) {
     const free = /^mcp__ccd_turn__/.test(tool) || tool === 'ToolSearch' ||
       /^mcp__ccd_session_mgmt__(get_session|set_session_title)$/.test(tool) ||
       (tool === 'Skill' && /^chat-hub-core:limit$/.test(String(ti.skill || '')))
-    if (!(free || (own && /^(Read|Edit|Write|MultiEdit)$/.test(tool)))) {
+    // Split hubs: the session hub never addresses the owner, so it may still tell the user hub
+    // it's ready to clear (only the owner can type /clear there).
+    const u = readUserHub(), target = String(ti.to || ti.session_id || '')
+    const toUser = /^(SendMessage|mcp__ccd_session_mgmt__send_message)$/.test(tool) && !!target &&
+      (target === u.app || target === u.session)
+    if (!(free || toUser || (own && /^(Read|Edit|Write|MultiEdit)$/.test(tool)))) {
       deny(`HARD STOP: ${at} by more than its stop margin. Every tool is refused except Read, Edit and Write on ` +
-        `your hub notes (${notes || 'hub-notes.md: none without git'}). Bring them up to date if they aren't, then end ` +
+        `your hub notes (${notes || 'hub-notes.md: none without git'})` +
+        `${u.app || u.session ? `, and messages to the user hub (${hubAddress(u)}): tell it you're ready to clear` : ''}. Bring them up to date if they aren't, then end ` +
         `every reply with this banner as its own code block, the last thing in it:\n\`\`\`\n${SAFE_BANNER}\n\`\`\`\n` +
         `Once a turn ends with it, the after-turn hook asks you to set your title's symbol to ${CLEAR_SYMBOL} (waiting for the clear). ${OVERRIDE}`)
     }

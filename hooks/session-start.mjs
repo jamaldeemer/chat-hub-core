@@ -96,7 +96,8 @@ if (error) {
   const splitNote = !split ? (c.hubs === 'split' ? ' The settings ask for split hubs, but no user hub is recorded yet: ' +
     'tell the owner once to open a new chat and type /chat-hub-core:hub user there; until then you are the only hub.' : '')
     : ` Split hubs are on: you are the session hub, and the owner talks to the user hub ` +
-    `(${hubAddress(u)}); follow the hub rules' "Split hubs" section.`
+    `(${hubAddress(u)}); follow the hub rules' "Split hubs" section. Never address the owner here: every question, ` +
+    `command or word for them goes to ${hubAddress(u)} as one message (that includes "tell the owner" in these notes).`
   let who
   if (isUser) {
     const uNotes = userHubNotesFile(), uLater = afterClearItems(uNotes)

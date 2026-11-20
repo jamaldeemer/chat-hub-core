@@ -344,15 +344,26 @@ rule here, with these changes. (Single hub, the default: skip this.)
   merges, releases and `hub-notes.md` are yours; the user hub only reads
   them. Keep the notes current as always: they are how the user hub
   answers the owner, so it never asks you for status.
-- **Talk to the owner only when you must**, here in your own chat with
-  your symbol set (🙋 the push command, ❓ a merge clash or a choice only
-  they can make). No "Release now?" menu: after a merge passes, write
+- **Never address the owner:** no questions, menus or commands for them
+  in your own chat. Wherever these rules or a hook's note say to ask,
+  tell or give the owner something (the push command, a merge clash, a
+  choice only they can make, a start mode or base the message left
+  out, carried branches, a stuck check, CI that can't run, a command
+  your sandbox can't run, "tell the owner once …"), send the user hub
+  one message with all they need, and nothing else:
+  - `Ask owner: merge clash in C8 (README.md): keep A or B?`
+  - `Owner to run: <the exact command>` (with what it does, one line)
+  - `Tell owner: <what>`
+  Set your symbol as usual (🙋 waiting on the push, ❓ on an answer),
+  then wait: the answer comes back as `Owner: …`. Never FYIs or status:
+  that's your notes.
+- **No "Release now?" menu:** after a merge passes, write
   `ready to ship: <codes>` under `## Preview`; the user hub offers it.
-  Message the user hub one line only when the owner must act and may not
-  be looking here (`push command is ready in the session hub`), never
-  FYIs.
 - **Clear freely:** your notes hold everything, so take the wrap-up and
-  clear as soon as you're past your limit.
+  clear as soon as you're past your limit. Only the owner can type
+  /clear here, so when your reply ends with the banner, also send the
+  user hub `Tell owner: the session hub is ready to clear: type /clear
+  there`.
 
 ## Keeping turns cheap
 
@@ -723,6 +734,16 @@ light, so every turn here stays cheap.
   both answers in the message. Then tell the
   owner in one line that it's passed on. The session hub reports back
   only when the owner must act, so don't wait on a reply.
+- **From the session hub:** it never talks to the owner itself, so
+  whatever the owner must answer, run or hear comes to you, and you put
+  it to them in your next reply:
+  - `Ask owner: …`: ask it, with a menu where the choices are clear;
+    send the answer back as `Owner: <answer>.`
+  - `Owner to run: <command>`: show the command exactly, in its own
+    code block, and say what it does; when they say it's done, send
+    `Owner: ran it.`
+  - `Tell owner: …`: tell them in a line; nothing to send back.
+  One message back per answer. If the owner answers later, send it then.
 - **Offer to ship:** when the notes' `## Preview` says it's ready to
   ship and the owner hasn't said, offer it once in your next reply
   ("Release now" / "Wait for more").
@@ -1068,7 +1089,8 @@ From `hooks/session-start.mjs`:
       `then delete each line from the notes: ${later.map(l => `"${l.slice(0, 120)}"`).join('; ')}.` : '') : ''
     'tell the owner once to open a new chat and type /chat-hub-core:hub user there; until then you are the only hub.' : '')
     : ` Split hubs are on: you are the session hub, and the owner talks to the user hub ` +
-    `(${hubAddress(u)}); follow the hub rules' "Split hubs" section.`
+    `(${hubAddress(u)}); follow the hub rules' "Split hubs" section. Never address the owner here: every question, ` +
+    `command or word for them goes to ${hubAddress(u)} as one message (that includes "tell the owner" in these notes).`
       `chat-hub-core:user-hub skill now; never the hub or work-chat skill. Send each decision to ${to || 'the session hub'} ` +
       `only. Status comes from ${notesFile || 'the hub notes'} (read only).` +
         `line: ${uLater.map(l => `"${l.slice(0, 120)}"`).join('; ')}.` : '')
@@ -1157,7 +1179,8 @@ From `hooks/guard.mjs`:
         `you may write only your own notes, ${own || 'none without git'})`)
       deny(`${at}, and only the owner can change the limit. ${OVERRIDE}`)
       deny(`HARD STOP: ${at} by more than its stop margin. Every tool is refused except Read, Edit and Write on ` +
-        `your hub notes (${notes || 'hub-notes.md: none without git'}). Bring them up to date if they aren't, then end ` +
+        `your hub notes (${notes || 'hub-notes.md: none without git'})` +
+        `${u.app || u.session ? `, and messages to the user hub (${hubAddress(u)}): tell it you're ready to clear` : ''}. Bring them up to date if they aren't, then end ` +
         `every reply with this banner as its own code block, the last thing in it:\n\`\`\`\n${SAFE_BANNER}\n\`\`\`\n` +
         `Once a turn ends with it, the after-turn hook asks you to set your title's symbol to ${CLEAR_SYMBOL} (waiting for the clear). ${OVERRIDE}`)
     const newWork = why => deny(`${at}, so no new work: ${why} Finish what's in flight, put this under "## Next" ` +
