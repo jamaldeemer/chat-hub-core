@@ -260,3 +260,14 @@ Findings 1–3 shipped in 0.3.4. Still open:
 - Pace line in the terminal: a statusline script could save the same plan numbers (its JSON input has `rate_limits`), so CLI users get the pace with no get_usage calls. Claude Code plugins can't set `statusLine`, so it would need the owner to add it to settings.
 
 - **Settings commands run outside the sandbox (from E8).** `session-start.mjs`'s `ciNote` runs `ci.passed` from the chat's own folder copy of `.claude/chat-hub.json` in a hook (outside the sandbox), so a chat that edits it gets that command run unsandboxed on its next start. Read `ci.passed` from main's committed settings there too (like `books.mjs` `committedCi`), and check the other hooks for the same pattern.
+
+## Found while building F7 (2026-11-19)
+
+Ideas for the same cute boxed look as the F7 usage bar (`usageBar` in `hooks/usage.mjs`):
+- The SAFE TO CLEAR banner: a matching box with a small "all saved ✓" line.
+- `/chat-hub-core:limit` output: a bar for each chat (hub and work chats) showing how full it is.
+- The hub's open-chats count: a row like `●●●○○ 3 of 5 chats`.
+- The hub's release progress: a step strip, e.g. `merged ▰▰▰▱ tests ▱ tag ▱`.
+- A work chat's wrap-up report: a short status card at the top.
+- The ⛔ HARD STOP note: the same bar with the end cells all filled.
+- Check the F7 bar in the desktop app: emoji are counted two cells wide; if one draws narrower there, the right edge is off by one.
